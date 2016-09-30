@@ -20,18 +20,12 @@ package org.apache.hadoop.hive.ql.parse;
 
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
-import java.util.LinkedList;
 import java.util.List;
-import java.util.Queue;
 import java.util.Set;
-import java.util.Stack;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.HiveStatsUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -42,7 +36,6 @@ import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.exec.ColumnStatsTask;
 import org.apache.hadoop.hive.ql.exec.FetchTask;
-import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.StatsTask;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
@@ -54,7 +47,6 @@ import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.optimizer.GenMapRedUtils;
-import org.apache.hadoop.hive.ql.optimizer.physical.AnnotateRunTimeStatsOptimizer;
 import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer.AnalyzeRewriteContext;
 import org.apache.hadoop.hive.ql.plan.ColumnStatsDesc;
 import org.apache.hadoop.hive.ql.plan.ColumnStatsWork;
@@ -76,6 +68,8 @@ import org.apache.hadoop.hive.serde2.SerDeUtils;
 import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe;
 import org.apache.hadoop.hive.serde2.thrift.ThriftFormatter;
 import org.apache.hadoop.hive.serde2.thrift.ThriftJDBCBinarySerDe;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.Interner;
 import com.google.common.collect.Interners;
@@ -113,7 +107,7 @@ public abstract class TaskCompiler {
     List<LoadFileDesc> loadFileWork = pCtx.getLoadFileWork();
 
     boolean isCStats = pCtx.getQueryProperties().isAnalyzeRewrite();
-    int outerQueryLimit = pCtx.getQueryProperties().getOuterQueryLimit();
+    int outerQueryLimit = globalLimitCtx.getGlobalLimit();
 
     if (pCtx.getFetchTask() != null) {
       if (pCtx.getFetchTask().getTblDesc() == null) {
@@ -191,11 +185,10 @@ public abstract class TaskCompiler {
       // in memory and count how many rows we get. It's not practical if the
       // limit factor is too big
       int fetchLimit = HiveConf.getIntVar(conf, HiveConf.ConfVars.HIVELIMITOPTMAXFETCH);
-      if (globalLimitCtx.isEnable() && globalLimitCtx.getGlobalLimit() > fetchLimit) {
+      if (globalLimitCtx.isInputsPruningEnabled() && globalLimitCtx.getGlobalLimit() > fetchLimit) {
         LOG.info("For FetchTask, LIMIT " + globalLimitCtx.getGlobalLimit() + " > " + fetchLimit
             + ". Doesn't qualify limit optimiztion.");
-        globalLimitCtx.disableOpt();
-
+        globalLimitCtx.disableInputsPruning();
       }
       if (outerQueryLimit == 0) {
         // Believe it or not, some tools do generate queries with limit 0 and than expect
@@ -330,14 +323,16 @@ public abstract class TaskCompiler {
       patchUpAfterCTASorMaterializedView(rootTasks, outputs, crtViewTask);
     }
 
-    if (globalLimitCtx.isEnable() && pCtx.getFetchTask() != null) {
-      LOG.info("set least row check for FetchTask: " + globalLimitCtx.getGlobalLimit());
-      pCtx.getFetchTask().getWork().setLeastNumRows(globalLimitCtx.getGlobalLimit());
+    if (globalLimitCtx.isInputsPruningEnabled() && pCtx.getFetchTask() != null) {
+      final int offsetLimit = globalLimitCtx.getGlobalLimit() + globalLimitCtx.getGlobalOffset();
+      LOG.info("set least row check for FetchTask: " + offsetLimit);
+      pCtx.getFetchTask().getWork().setLeastNumRows(offsetLimit);
     }
 
-    if (globalLimitCtx.isEnable() && globalLimitCtx.getLastReduceLimitDesc() != null) {
-      LOG.info("set least row check for LimitDesc: " + globalLimitCtx.getGlobalLimit());
-      globalLimitCtx.getLastReduceLimitDesc().setLeastRows(globalLimitCtx.getGlobalLimit());
+    if (globalLimitCtx.isInputsPruningEnabled() && globalLimitCtx.getLastReduceLimitDesc() != null) {
+      final int offsetLimit = globalLimitCtx.getGlobalLimit() + globalLimitCtx.getGlobalOffset();
+      LOG.info("set least row check for LimitDesc: " + offsetLimit);
+      globalLimitCtx.getLastReduceLimitDesc().setLeastRows(offsetLimit);
       List<ExecDriver> mrTasks = Utilities.getMRTasks(rootTasks);
       for (ExecDriver tsk : mrTasks) {
         tsk.setRetryCmdWhenFail(true);

@@ -25,9 +25,9 @@ import org.apache.hadoop.hive.ql.plan.LimitDesc;
  */
 public class GlobalLimitCtx {
 
-  private boolean enable;
   private int globalLimit;
   private int globalOffset;
+  private boolean inputsPruningEnabled;
   private boolean hasTransformOrUDTF;
   private LimitDesc lastReduceLimitDesc;
 
@@ -43,7 +43,7 @@ public class GlobalLimitCtx {
     return globalOffset;
   }
 
-  public boolean ifHasTransformOrUDTF() {
+  public boolean isHasTransformOrUDTF() {
     return hasTransformOrUDTF;
   }
 
@@ -59,25 +59,27 @@ public class GlobalLimitCtx {
     this.lastReduceLimitDesc = lastReduceLimitDesc;
   }
 
-  public boolean isEnable() {
-    return enable;
+  public boolean isInputsPruningEnabled() {
+    return inputsPruningEnabled;
   }
 
-  public void enableOpt(int globalLimit, int globalOffset) {
-    this.enable = true;
+  public void enableInputsPruning(int globalLimit, int globalOffset) {
+    this.inputsPruningEnabled = true;
+    this.setGlobalLimitOffset(globalLimit, globalOffset);
+  }
+
+  public void setGlobalLimitOffset(int globalLimit, int globalOffset) {
     this.globalLimit = globalLimit;
     this.globalOffset = globalOffset;
   }
 
-  public void disableOpt() {
-    this.enable = false;
-    this.globalLimit = -1;
-    this.globalOffset = 0;
+  public void disableInputsPruning() {
+    this.inputsPruningEnabled = false;
     this.lastReduceLimitDesc = null;
   }
 
   public void reset() {
-    enable = false;
+    inputsPruningEnabled = false;
     globalLimit = -1;
     globalOffset = 0;
     hasTransformOrUDTF = false;

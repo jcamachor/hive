@@ -430,7 +430,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     viewsExpanded = null;
     viewSelect = null;
     ctesExpanded = null;
-    globalLimitCtx.disableOpt();
+    globalLimitCtx.disableInputsPruning();
     viewAliasToInput.clear();
     reduceSinkOperatorsAddedByEnforceBucketingSorting.clear();
     topToTableProps.clear();
@@ -7244,8 +7244,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     RowResolver inputRR = opParseCtx.get(input).getRowResolver();
 
     LimitDesc limitDesc = new LimitDesc(offset, limit);
-    globalLimitCtx.setLastReduceLimitDesc(limitDesc);
-
     Operator limitMap = putOpInsertMap(OperatorFactory.getAndMakeChild(
         limitDesc, new RowSchema(inputRR.getColumnInfos()), input),
         inputRR);
@@ -9476,7 +9474,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
         curr = genLimitMapRedPlan(dest, qb, curr, offset.intValue(),
             limit.intValue(), extraMRStep);
-        qb.getParseInfo().setOuterQueryLimit(limit.intValue());
       }
       if (!queryState.getHiveOperation().equals(HiveOperation.CREATEVIEW)) {
         curr = genFileSinkPlan(dest, qb, curr);
@@ -13116,7 +13113,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       queryProperties.setCTAS(qb.getTableDesc() != null);
       queryProperties.setHasOuterOrderBy(!qb.getParseInfo().getIsSubQ() &&
               !qb.getParseInfo().getDestToOrderBy().isEmpty());
-      queryProperties.setOuterQueryLimit(qb.getParseInfo().getOuterQueryLimit());
       queryProperties.setMaterializedView(qb.getViewDesc() != null);
     }
   }

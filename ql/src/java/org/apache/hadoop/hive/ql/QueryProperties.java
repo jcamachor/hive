@@ -39,7 +39,6 @@ public class QueryProperties {
   boolean noScanAnalyzeCommand;
   boolean analyzeRewrite;
   boolean ctas;
-  int outerQueryLimit;
 
   boolean hasJoin = false;
   boolean hasGroupBy = false;
@@ -114,14 +113,6 @@ public class QueryProperties {
 
   public void setCTAS(boolean ctas) {
     this.ctas = ctas;
-  }
-
-  public int getOuterQueryLimit() {
-    return outerQueryLimit;
-  }
-
-  public void setOuterQueryLimit(int outerQueryLimit) {
-    this.outerQueryLimit = outerQueryLimit;
   }
 
   public boolean hasJoin() {
@@ -282,7 +273,6 @@ public class QueryProperties {
     noScanAnalyzeCommand = false;
     analyzeRewrite = false;
     ctas = false;
-    outerQueryLimit = -1;
 
     hasJoin = false;
     hasGroupBy = false;

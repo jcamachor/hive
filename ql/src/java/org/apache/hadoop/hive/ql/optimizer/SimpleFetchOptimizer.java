@@ -38,6 +38,7 @@ import org.apache.hadoop.fs.LocatedFileStatus;
 import org.apache.hadoop.fs.RemoteIterator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import org.apache.hadoop.fs.ContentSummary;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -55,7 +56,6 @@ import org.apache.hadoop.hive.ql.exec.ScriptOperator;
 import org.apache.hadoop.hive.ql.exec.SelectOperator;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
-import org.apache.hadoop.hive.ql.exec.UDTFOperator;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.io.ContentSummaryInputFormat;
@@ -91,6 +91,8 @@ import org.apache.hadoop.hive.ql.udf.generic.GenericUDFToUtcTimestamp;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFToVarchar;
 import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.mapred.JobConf;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Tries to convert simple fetch query to single fetch task, which fetches rows directly
@@ -135,7 +137,11 @@ public class SimpleFetchOptimizer extends Transform {
         pctx.getConf(), HiveConf.ConfVars.HIVEFETCHTASKCONVERSION);
 
     boolean aggressive = "more".equals(mode);
-    final int limit = pctx.getQueryProperties().getOuterQueryLimit();
+    final int limit = pctx.getGlobalLimitCtx().getGlobalLimit();
+    if (pctx.getGlobalLimitCtx().getGlobalOffset() == 0) {
+      // Bail out: SimpleFetchOptimizer does not currently work with offset
+      return null;
+    }
     FetchData fetch = checkTree(aggressive, pctx, alias, source);
     if (fetch != null && checkThreshold(fetch, limit, pctx)) {
       FetchWork fetchWork = fetch.convertToWork();

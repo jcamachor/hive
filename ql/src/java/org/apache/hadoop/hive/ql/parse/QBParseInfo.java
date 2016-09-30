@@ -106,7 +106,6 @@ public class QBParseInfo {
   // KEY of SimpleEntry: offset
   // VALUE of SimpleEntry: rowcount
   private final HashMap<String, SimpleEntry<Integer, Integer>> destToLimit;
-  private int outerQueryLimit;
 
   // used by GroupBy
   private final LinkedHashMap<String, LinkedHashMap<String, ASTNode>> destToAggregationExprs;
@@ -147,7 +146,6 @@ public class QBParseInfo {
 
     this.alias = alias;
     this.isSubQ = isSubQ;
-    outerQueryLimit = -1;
 
     aliasToLateralViews = new HashMap<String, ArrayList<ASTNode>>();
 
@@ -457,21 +455,6 @@ public class QBParseInfo {
 
   public Integer getDestLimitOffset(String dest) {
     return destToLimit.get(dest) == null ? 0 : destToLimit.get(dest).getKey();
-  }
-
-  /**
-   * @return the outerQueryLimit
-   */
-  public int getOuterQueryLimit() {
-    return outerQueryLimit;
-  }
-
-  /**
-   * @param outerQueryLimit
-   *          the outerQueryLimit to set
-   */
-  public void setOuterQueryLimit(int outerQueryLimit) {
-    this.outerQueryLimit = outerQueryLimit;
   }
 
   public boolean isTopLevelSimpleSelectStarQuery() {

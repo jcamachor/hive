@@ -533,10 +533,10 @@ public final class GenMapRedUtils {
 
     long sizeNeeded = Integer.MAX_VALUE;
     int fileLimit = -1;
-    if (parseCtx.getGlobalLimitCtx().isEnable()) {
+    if (parseCtx.getGlobalLimitCtx().isInputsPruningEnabled()) {
       if (isAcidTable) {
         LOG.info("Skip Global Limit optimization for ACID table");
-        parseCtx.getGlobalLimitCtx().disableOpt();
+        parseCtx.getGlobalLimitCtx().disableInputsPruning();
       } else {
         long sizePerRow = HiveConf.getLongVar(parseCtx.getConf(),
             HiveConf.ConfVars.HIVELIMITMAXROWSIZE);
@@ -552,7 +552,7 @@ public final class GenMapRedUtils {
 
         if (sizePerRow <= 0 || fileLimit <= 0) {
           LOG.info("Skip optimization to reduce input size of 'limit'");
-          parseCtx.getGlobalLimitCtx().disableOpt();
+          parseCtx.getGlobalLimitCtx().disableInputsPruning();
         } else if (parts.isEmpty()) {
           LOG.info("Empty input: skip limit optimiztion");
         } else {
@@ -597,7 +597,7 @@ public final class GenMapRedUtils {
       if (sampleDescr != null) {
         assert (listBucketingPruner == null) : "Sampling and list bucketing can't coexit.";
         paths = SamplePruner.prune(part, sampleDescr);
-        parseCtx.getGlobalLimitCtx().disableOpt();
+        parseCtx.getGlobalLimitCtx().disableInputsPruning();
       } else if (listBucketingPruner != null) {
         assert (sampleDescr == null) : "Sampling and list bucketing can't coexist.";
         /* Use list bucketing prunner's path. */
@@ -605,7 +605,7 @@ public final class GenMapRedUtils {
       } else {
         // Now we only try the first partition, if the first partition doesn't
         // contain enough size, we change to normal mode.
-        if (parseCtx.getGlobalLimitCtx().isEnable()) {
+        if (parseCtx.getGlobalLimitCtx().isInputsPruningEnabled()) {
           if (isFirstPart) {
             long sizeLeft = sizeNeeded;
             ArrayList<Path> retPathList = new ArrayList<Path>();
@@ -618,7 +618,7 @@ public final class GenMapRedUtils {
                   + sizeNeeded
                   + " bytes");
 
-              parseCtx.getGlobalLimitCtx().disableOpt();
+              parseCtx.getGlobalLimitCtx().disableInputsPruning();
 
             } else {
               emptyInput = false;
@@ -633,7 +633,7 @@ public final class GenMapRedUtils {
                 // table/partition with only one file. By disabling this
                 // optimization, we can avoid retrying the query if there is
                 // not sufficient rows.
-                parseCtx.getGlobalLimitCtx().disableOpt();
+                parseCtx.getGlobalLimitCtx().disableInputsPruning();
               }
             }
             isFirstPart = false;
@@ -641,7 +641,7 @@ public final class GenMapRedUtils {
             paths = new Path[0];
           }
         }
-        if (!parseCtx.getGlobalLimitCtx().isEnable()) {
+        if (!parseCtx.getGlobalLimitCtx().isInputsPruningEnabled()) {
           paths = part.getPath();
         }
       }
@@ -692,7 +692,7 @@ public final class GenMapRedUtils {
     }
 
     if (emptyInput) {
-      parseCtx.getGlobalLimitCtx().disableOpt();
+      parseCtx.getGlobalLimitCtx().disableInputsPruning();
     }
 
     Utilities.addSchemaEvolutionToTableScanOperator(partsList.getSourceTable(),tsOp);

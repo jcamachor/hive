@@ -46,7 +46,6 @@ import org.apache.hadoop.hive.conf.HiveConf.StrictChecks;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
 import org.apache.hadoop.hive.ql.exec.FilterOperator;
 import org.apache.hadoop.hive.ql.exec.JoinOperator;
-import org.apache.hadoop.hive.ql.exec.LimitOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.OperatorFactory;
 import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
@@ -149,18 +148,9 @@ public class HiveOpConverter {
     }
   }
 
-  private void handleTopLimit(Operator<?> rootOp) {
-    if (rootOp instanceof LimitOperator) {
-      // this can happen only on top most limit, not while visiting Limit Operator
-      // since that can be within subquery.
-      this.semanticAnalyzer.getQB().getParseInfo().setOuterQueryLimit(((LimitOperator) rootOp).getConf().getLimit());
-    }
-  }
-
   public Operator convert(RelNode root) throws SemanticException {
     OpAttr opAf = dispatch(root);
     Operator rootOp = opAf.inputs.get(0);
-    handleTopLimit(rootOp);
     return rootOp;
   }
 

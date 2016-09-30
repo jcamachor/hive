@@ -208,7 +208,7 @@ public class MapReduceCompiler extends TaskCompiler {
 
         long estimatedInput;
 
-        if (globalLimitCtx != null && globalLimitCtx.isEnable()) {
+        if (globalLimitCtx != null && globalLimitCtx.isInputsPruningEnabled()) {
           // If the global limit optimization is triggered, we will
           // estimate input data actually needed based on limit rows.
           // estimated Input = (num_limit * max_size_per_row) * (estimated_map + 2)
