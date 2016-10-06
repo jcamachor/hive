@@ -109,6 +109,32 @@ public class ForeignKeyInfo implements Serializable {
     this.foreignKeys = foreignKeys;
   }
 
+  /**
+   *
+   * @param databaseName
+   * @param tableName
+   * @param colName
+   * @return
+   */
+  public boolean containsPrimaryKey(String fKColName, String pkDatabaseName,
+       String pKTableName, String pKColName) {
+    for (List<ForeignKeyCol> foreignKeyList : foreignKeys.values()) {
+      for (ForeignKeyCol foreignKey : foreignKeyList) {
+        if (!foreignKey.childColName.equalsIgnoreCase(fKColName)) {
+          // This key does not refer the column we search
+          continue;
+        }
+        if (foreignKey.parentDatabaseName.equalsIgnoreCase(pkDatabaseName) &&
+            foreignKey.parentTableName.equalsIgnoreCase(pKTableName) &&
+            foreignKey.parentColName.equalsIgnoreCase(pKColName)) {
+          // We found it
+          return true;
+        }
+      }
+    }
+    return false;
+  }
+
   @Override
   public String toString() {
     StringBuilder sb = new StringBuilder();

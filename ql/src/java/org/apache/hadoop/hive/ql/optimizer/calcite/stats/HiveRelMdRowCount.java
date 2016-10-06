@@ -33,6 +33,7 @@ import org.apache.calcite.rel.core.SemiJoin;
 import org.apache.calcite.rel.core.Sort;
 import org.apache.calcite.rel.core.TableScan;
 import org.apache.calcite.rel.metadata.ReflectiveRelMetadataProvider;
+import org.apache.calcite.rel.metadata.RelColumnOrigin;
 import org.apache.calcite.rel.metadata.RelMdRowCount;
 import org.apache.calcite.rel.metadata.RelMetadataProvider;
 import org.apache.calcite.rel.metadata.RelMetadataQuery;
@@ -46,13 +47,20 @@ import org.apache.calcite.sql.fun.SqlStdOperatorTable;
 import org.apache.calcite.util.BuiltInMethod;
 import org.apache.calcite.util.ImmutableBitSet;
 import org.apache.calcite.util.Pair;
+import org.apache.hadoop.hive.ql.metadata.ForeignKeyInfo;
+import org.apache.hadoop.hive.ql.metadata.Hive;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil.JoinLeafPredicateInfo;
+import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil.JoinPredicateInfo;
+import org.apache.hadoop.hive.ql.optimizer.calcite.RelOptHiveTable;
+import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveJoin;
+import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan;
 
 public class HiveRelMdRowCount extends RelMdRowCount {
 
-  protected static final Logger LOG  = LoggerFactory.getLogger(HiveRelMdRowCount.class.getName());
+  protected static final Logger LOG  = LoggerFactory.getLogger(HiveRelMdRowCount.class);
 
 
   public static final RelMetadataProvider SOURCE = ReflectiveRelMetadataProvider
@@ -63,6 +71,15 @@ public class HiveRelMdRowCount extends RelMdRowCount {
   }
 
   public Double getRowCount(Join join, RelMetadataQuery mq) {
+    // First check if the pkfk relationship was explicitly defined
+    final Double pkFkEstimate = getPkFkEstimate(join, mq);
+    if (pkFkEstimate != null) {
+      if (LOG.isDebugEnabled()) {
+        LOG.debug("Explicit Primary - Foreign Key relationship: {}",RelOptUtil.toString(join));
+      }
+      return pkFkEstimate;
+    }
+    // Otherwise, analyze
     PKFKRelationInfo pkfk = analyzeJoinForPKFK(join, mq);
     if (pkfk != null) {
       double selectivity = (pkfk.pkInfo.selectivity * pkfk.ndvScalingFactor);
@@ -73,6 +90,113 @@ public class HiveRelMdRowCount extends RelMdRowCount {
       return pkfk.fkInfo.rowCount * selectivity;
     }
     return join.getRows();
+  }
+
+  /* If join is on tables that keep a PK-FK relationship,
+   * return the estimated selectivity.
+   * Otherwise, return null */
+  private Double getPkFkEstimate(Join j, RelMetadataQuery mq) {
+    JoinPredicateInfo jpi;
+    if (j instanceof HiveJoin) {
+      jpi = ((HiveJoin) j).getJoinPredicateInfo();
+    } else {
+      return null;
+    }
+    if (jpi.getNonEquiJoinPredicateElements().size() != 0) {
+      // Contains non-equality expressions, bail out
+      return null;
+    }
+    // Currently we only consider relationship going in one direction, either
+    // * left (fk) -> right (pk), or
+    // * right (fk) -> left (pk)
+    boolean prevLeftPKRightFK = false;
+    boolean prevRightPKLeftFK = false;
+    for (JoinLeafPredicateInfo jlpi : jpi.getEquiJoinPredicateElements()) {
+      // Left input
+      if (jlpi.getJoinExprs(0).size() != 1 ||
+              !(jlpi.getJoinExprs(0).get(0) instanceof RexInputRef)) {
+        // Contains more than one expression or it is not a reference, bail out
+        return null;
+      }
+      final RexInputRef leftRef = (RexInputRef) jlpi.getJoinExprs(0).get(0);
+      final RelColumnOrigin leftColOrigin = mq.getColumnOrigin(j.getLeft(), leftRef.getIndex());
+      if (leftColOrigin == null) {
+        // Derived column, bail out
+        return null;
+      }
+      // Right input
+      if (jlpi.getJoinExprs(1).size() != 1 ||
+              !(jlpi.getJoinExprs(1).get(0) instanceof RexInputRef)) {
+        // Contains more than one expression or it is not a reference, bail out
+        return null;
+      }
+      final RexInputRef rightRef = (RexInputRef) jlpi.getJoinExprs(1).get(0);
+      final RelColumnOrigin rightColOrigin = mq.getColumnOrigin(j.getRight(), rightRef.getIndex());
+      if (rightColOrigin == null) {
+        // Derived column, bail out
+        return null;
+      }
+      final RelOptHiveTable leftTable = (RelOptHiveTable) leftColOrigin.getOriginTable();
+      final int leftOrd = leftColOrigin.getOriginColumnOrdinal();
+      final RelOptHiveTable rightTable = (RelOptHiveTable) rightColOrigin.getOriginTable();
+      final int rightOrd = rightColOrigin.getOriginColumnOrdinal();
+      final ForeignKeyInfo fkiLeft;
+      final ForeignKeyInfo fkiRight;
+      try {
+        fkiLeft = Hive.get().getForeignKeys(leftTable.getHiveTableMD().getDbName(),
+                leftTable.getHiveTableMD().getTableName());
+        fkiRight = Hive.get().getForeignKeys(rightTable.getHiveTableMD().getDbName(),
+                rightTable.getHiveTableMD().getTableName());
+      } catch (HiveException e) {
+        throw new RuntimeException(e);
+      }
+
+      final boolean leftPKRightFK = fkiLeft.containsPrimaryKey(
+          leftTable.getHiveTableMD().getCols().get(leftOrd).getName(),
+          rightTable.getHiveTableMD().getDbName(),
+          rightTable.getHiveTableMD().getTableName(),
+          rightTable.getHiveTableMD().getCols().get(rightOrd).getName());
+      final boolean rightPKLeftFK = fkiRight.containsPrimaryKey(
+          rightTable.getHiveTableMD().getCols().get(rightOrd).getName(),
+          leftTable.getHiveTableMD().getDbName(),
+          leftTable.getHiveTableMD().getTableName(),
+          leftTable.getHiveTableMD().getCols().get(leftOrd).getName());
+      if (leftPKRightFK == rightPKLeftFK) {
+        // No relationship, bail out
+        return null;
+      }
+      if (!prevLeftPKRightFK && !prevRightPKLeftFK) {
+        // First element, no need to check further
+        prevLeftPKRightFK = leftPKRightFK;
+        prevRightPKLeftFK = rightPKLeftFK;
+      } else {
+        if (leftPKRightFK) {
+          if (!prevLeftPKRightFK) {
+            // Multiple directions
+            // input1(PK) -> input2(FK), input1(FK) -> input2(PK)
+            // Bail out
+            return null;
+          }
+        } else if (rightPKLeftFK) {
+          if (!prevRightPKLeftFK) {
+            // Multiple directions
+            // input1(PK) -> input2(FK), input1(FK) -> input2(PK)
+            // Bail out
+            return null;
+          }
+        }
+      }
+    }
+    if (prevLeftPKRightFK == prevRightPKLeftFK) {
+      // Cartesian product
+      return null;
+    }
+    if (prevLeftPKRightFK) {
+      // Right input is the FK, thus its cardinality is the number of output records
+      return mq.getRowCount(j.getRight());
+    }
+    // Left input is the FK, thus its cardinality is the number of output records
+    return mq.getRowCount(j.getLeft());
   }
 
   @Override
@@ -303,7 +427,7 @@ public class HiveRelMdRowCount extends RelMdRowCount {
           joinRel.getJoinType().generatesNullsOnLeft() ? 1.0 :
             pkSelectivity);
 
-      return new PKFKRelationInfo(1, fkInfo, pkInfo, ndvScalingFactor, isPKSideSimpleTree);
+      return new PKFKRelationInfo(0, fkInfo, pkInfo, ndvScalingFactor, isPKSideSimpleTree);
     }
 
     return null;
