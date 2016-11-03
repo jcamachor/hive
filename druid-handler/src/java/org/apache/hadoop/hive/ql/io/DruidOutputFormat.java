@@ -328,9 +328,9 @@ public class DruidOutputFormat<K, V> implements HiveOutputFormat<K, DruidWritabl
     final String dataSource = tableProperties.getProperty(Constants.DRUID_DATA_SOURCE);
 
     // Parse the configuration parameters
-    final String columnNameProperty = jc.get(serdeConstants.LIST_COLUMNS);
-    final String columnTypeProperty = jc.get(serdeConstants.LIST_COLUMNS);
-    if (StringUtils.isEmpty(columnNameProperty) || StringUtils.isEmpty(jc.get(columnTypeProperty))) {
+    final String columnNameProperty = tableProperties.getProperty(serdeConstants.LIST_COLUMNS);
+    final String columnTypeProperty = tableProperties.getProperty(serdeConstants.LIST_COLUMN_TYPES);
+    if (StringUtils.isEmpty(columnNameProperty) || StringUtils.isEmpty(columnTypeProperty)) {
       throw new IOException("List of columns not present");
     }
     ArrayList<String> columnNames = new ArrayList<String>();
@@ -340,7 +340,7 @@ public class DruidOutputFormat<K, V> implements HiveOutputFormat<K, DruidWritabl
     if (!columnNames.contains(DruidTable.DEFAULT_TIMESTAMP_COLUMN)) {
       throw new IOException("Timestamp column (' " + DruidTable.DEFAULT_TIMESTAMP_COLUMN +
               "') not specified in create table; list of columns is : " +
-              jc.get(serdeConstants.LIST_COLUMNS));
+              tableProperties.getProperty(serdeConstants.LIST_COLUMNS));
     }
     ArrayList<TypeInfo> columnTypes = TypeInfoUtils.getTypeInfosFromTypeString(columnTypeProperty);
 

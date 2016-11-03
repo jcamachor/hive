@@ -1903,8 +1903,8 @@ public class HiveConf extends Configuration {
       new TimeValidator(TimeUnit.MILLISECONDS), "Frequency of WriteSet reaper runs"),
 
     // For Druid storage handler
-    HIVE_DRUID_INDEXING_GRANULARITY("hive.druid.indexer.segments.granularity", "day",
-        new PatternSet("year", "month", "week", "day", "hour", "minute", "second"),
+    HIVE_DRUID_INDEXING_GRANULARITY("hive.druid.indexer.segments.granularity", "DAY",
+        new PatternSet("YEAR", "MONTH", "WEEK", "DAY", "HOUR", "MINUTE", "SECOND"),
         "Granularity for the segments created by the Druid storage handler"),
     HIVE_DRUID_MAX_PARTITION_SIZE("hive.druid.indexer.partition.size.max", 5000000,
         "Maximum number of records per segment partition"),
