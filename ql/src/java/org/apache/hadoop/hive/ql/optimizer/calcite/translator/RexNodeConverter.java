@@ -23,9 +23,9 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.GregorianCalendar;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 import org.apache.calcite.avatica.util.TimeUnit;
@@ -38,8 +38,8 @@ import org.apache.calcite.rel.type.RelDataTypeFactory;
 import org.apache.calcite.rex.RexBuilder;
 import org.apache.calcite.rex.RexCall;
 import org.apache.calcite.rex.RexNode;
-import org.apache.calcite.rex.RexUtil;
 import org.apache.calcite.rex.RexSubQuery;
+import org.apache.calcite.rex.RexUtil;
 import org.apache.calcite.sql.SqlCollation;
 import org.apache.calcite.sql.SqlIntervalQualifier;
 import org.apache.calcite.sql.SqlKind;
@@ -96,6 +96,8 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectIn
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
+import org.joda.time.DateTime;
+import org.joda.time.DateTimeZone;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableList.Builder;
@@ -634,19 +636,21 @@ public class RexNodeConverter {
       calciteLiteral = rexBuilder.makeCharLiteral(asUnicodeString((String) value));
       break;
     case DATE:
-      Calendar cal = new GregorianCalendar();
-      cal.setTime((Date) value);
-      calciteLiteral = rexBuilder.makeDateLiteral(cal);
+      final DateTime cal = new DateTime((Date) value);
+      calciteLiteral = rexBuilder.makeDateLiteral(
+              cal.withZoneRetainFields(DateTimeZone.UTC).toCalendar(Locale.getDefault()));
       break;
     case TIMESTAMP:
-      Calendar c = null;
+      final DateTime dt;
       if (value instanceof Calendar) {
-        c = (Calendar)value;
+        Calendar c = (Calendar) value;
+        dt = new DateTime(c.getTimeInMillis(), DateTimeZone.forTimeZone(c.getTimeZone()));
       } else {
-        c = Calendar.getInstance();
-        c.setTimeInMillis(((Timestamp)value).getTime());
+        dt = new DateTime(((Timestamp)value).getTime());
       }
-      calciteLiteral = rexBuilder.makeTimestampLiteral(c, RelDataType.PRECISION_NOT_SPECIFIED);
+      calciteLiteral = rexBuilder.makeTimestampLiteral(
+              dt.withZoneRetainFields(DateTimeZone.UTC).toCalendar(Locale.getDefault()),
+              RelDataType.PRECISION_NOT_SPECIFIED);
       break;
     case INTERVAL_YEAR_MONTH:
       // Calcite year-month literal value is months as BigDecimal
