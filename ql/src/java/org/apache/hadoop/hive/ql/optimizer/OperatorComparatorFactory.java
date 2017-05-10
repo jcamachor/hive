@@ -166,7 +166,9 @@ public class OperatorComparatorFactory {
       TableScanDesc op1Conf = op1.getConf();
       TableScanDesc op2Conf = op2.getConf();
 
-      if (compareString(op1Conf.getAlias(), op2Conf.getAlias()) &&
+      if (compareString(
+              op1Conf.getTableMetadata().getTableName(),
+              op2Conf.getTableMetadata().getTableName()) &&
         compareExprNodeDesc(op1Conf.getFilterExpr(), op2Conf.getFilterExpr()) &&
         op1Conf.getRowLimit() == op2Conf.getRowLimit() &&
         op1Conf.isGatherStats() == op2Conf.isGatherStats()) {

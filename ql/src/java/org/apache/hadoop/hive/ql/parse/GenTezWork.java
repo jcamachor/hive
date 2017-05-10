@@ -291,6 +291,9 @@ public class GenTezWork implements NodeProcessor {
               // of the downstream work
               for (ReduceSinkOperator r:
                      context.linkWorkWithReduceSinkMap.get(parentWork)) {
+                if (!context.mapJoinParentMap.get(mj).contains(r)) {
+                  continue;
+                }
                 if (r.getConf().getOutputName() != null) {
                   LOG.debug("Cloning reduce sink for multi-child broadcast edge");
                   // we've already set this one up. Need to clone for the next work.

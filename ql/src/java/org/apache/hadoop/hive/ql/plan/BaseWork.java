@@ -445,4 +445,9 @@ public abstract class BaseWork extends AbstractOperatorDesc {
           String workName, RuntimeValuesInfo runtimeValuesInfo) {
     inputSourceToRuntimeValuesInfo.put(workName, runtimeValuesInfo);
   }
+
+  @Override
+  public String toString() {
+    return name;
+  }
 }
