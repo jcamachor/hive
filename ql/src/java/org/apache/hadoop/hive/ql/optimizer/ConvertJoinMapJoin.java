@@ -21,8 +21,10 @@ package org.apache.hadoop.hive.ql.optimizer;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.Stack;
 
@@ -30,6 +32,7 @@ import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.exec.AppMasterEventOperator;
+import org.apache.hadoop.hive.ql.exec.ColumnInfo;
 import org.apache.hadoop.hive.ql.exec.CommonJoinOperator;
 import org.apache.hadoop.hive.ql.exec.CommonMergeJoinOperator;
 import org.apache.hadoop.hive.ql.exec.DummyStoreOperator;
@@ -43,12 +46,16 @@ import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.OperatorFactory;
 import org.apache.hadoop.hive.ql.exec.OperatorUtils;
 import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
+import org.apache.hadoop.hive.ql.exec.RowSchema;
 import org.apache.hadoop.hive.ql.exec.SelectOperator;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.exec.TezDummyStoreOperator;
 import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.ql.lib.NodeProcessor;
 import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
+import org.apache.hadoop.hive.ql.optimizer.correlation.CorrelationUtilities;
+import org.apache.hadoop.hive.ql.optimizer.correlation.ReduceSinkDeDuplicationUtils;
+import org.apache.hadoop.hive.ql.optimizer.metainfo.annotation.OpTraitsRulesProcFactory;
 import org.apache.hadoop.hive.ql.optimizer.physical.LlapClusterStateForCompile;
 import org.apache.hadoop.hive.ql.parse.GenTezUtils;
 import org.apache.hadoop.hive.ql.parse.OptimizeTezProcContext;
@@ -64,6 +71,7 @@ import org.apache.hadoop.hive.ql.plan.JoinDesc;
 import org.apache.hadoop.hive.ql.plan.MapJoinDesc;
 import org.apache.hadoop.hive.ql.plan.OpTraits;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
+import org.apache.hadoop.hive.ql.plan.SelectDesc;
 import org.apache.hadoop.hive.ql.plan.Statistics;
 import org.apache.hadoop.hive.ql.stats.StatsUtils;
 import org.apache.hadoop.util.ReflectionUtils;
@@ -272,25 +280,57 @@ public class ConvertJoinMapJoin implements NodeProcessor {
       int mapJoinConversionPos, int numBuckets, boolean adjustParentsChildren)
       throws SemanticException {
     MapJoinDesc mapJoinDesc = null;
+    int partialSMBJoin = -1;
     if (adjustParentsChildren) {
       mapJoinDesc = MapJoinProcessor.getMapJoinDesc(context.conf,
             joinOp, joinOp.getConf().isLeftInputJoin(), joinOp.getConf().getBaseSrc(),
             joinOp.getConf().getMapAliases(), mapJoinConversionPos, true);
     } else {
-      JoinDesc joinDesc = joinOp.getConf();
-      // retain the original join desc in the map join.
-      mapJoinDesc =
-          new MapJoinDesc(
-                  MapJoinProcessor.getKeys(joinOp.getConf().isLeftInputJoin(),
-                  joinOp.getConf().getBaseSrc(), joinOp).getSecond(),
-                  null, joinDesc.getExprs(), null, null,
-                  joinDesc.getOutputColumnNames(), mapJoinConversionPos, joinDesc.getConds(),
-                  joinDesc.getFilters(), joinDesc.getNoOuterJoin(), null,
-                  joinDesc.getMemoryMonitorInfo(), joinDesc.getInMemoryDataSize());
-      mapJoinDesc.setNullSafes(joinDesc.getNullSafes());
-      mapJoinDesc.setFilterMap(joinDesc.getFilterMap());
-      mapJoinDesc.setResidualFilterExprs(joinDesc.getResidualFilterExprs());
-      mapJoinDesc.resetOrder();
+      // Try partial sort-merge join
+//      for (int i = 0; i < joinOp.getParentOperators().size(); i++) {
+//        if (!(joinOp.getParentOperators().get(i) instanceof ReduceSinkOperator)) {
+//          // We will not try partial SMB, all inputs should be RS
+//          partialSMBJoin = -1;
+//          break;
+//        }
+//        ReduceSinkOperator cRS = (ReduceSinkOperator) joinOp.getParentOperators().get(i);
+//        if (cRS.getConf().getKeyCols().isEmpty() || cRS.getNumChild() != 1) {
+//          // Cross product or multiple children
+//          partialSMBJoin = -1;
+//          break;
+//        }
+//        if (partialSMBJoin == -1) {
+//          ReduceSinkOperator pRS =
+//              CorrelationUtilities.findPossibleParent(
+//                  cRS, ReduceSinkOperator.class,
+//                  context.conf.getBoolVar(HiveConf.ConfVars.HIVESCRIPTOPERATORTRUST));
+//          if (pRS != null && ReduceSinkDeDuplicationUtils.merge(cRS, pRS,
+//              context.conf.getIntVar(HiveConf.ConfVars.HIVEOPTREDUCEDEDUPLICATIONMINREDUCER))) {
+//            // Deduplication is possible
+//            mapJoinDesc = MapJoinProcessor.getMapJoinDesc(context.conf,
+//                  joinOp, joinOp.getConf().isLeftInputJoin(), joinOp.getConf().getBaseSrc(),
+//                  joinOp.getConf().getMapAliases(), mapJoinConversionPos, true);
+//            partialSMBJoin = i;
+//          }
+//        }
+//      }
+
+      if (partialSMBJoin == -1) {
+        JoinDesc joinDesc = joinOp.getConf();
+        // retain the original join desc in the map join.
+        mapJoinDesc =
+            new MapJoinDesc(
+                    MapJoinProcessor.getKeys(joinOp.getConf().isLeftInputJoin(),
+                        joinDesc.getBaseSrc(), joinOp).getSecond(),
+                    null, joinDesc.getExprs(), null, null,
+                    joinDesc.getOutputColumnNames(), mapJoinConversionPos, joinDesc.getConds(),
+                    joinDesc.getFilters(), joinDesc.getNoOuterJoin(), null,
+                    joinDesc.getMemoryMonitorInfo(), joinDesc.getInMemoryDataSize());
+        mapJoinDesc.setNullSafes(joinDesc.getNullSafes());
+        mapJoinDesc.setFilterMap(joinDesc.getFilterMap());
+        mapJoinDesc.setResidualFilterExprs(joinDesc.getResidualFilterExprs());
+        mapJoinDesc.resetOrder();
+      }
     }
 
     CommonMergeJoinOperator mergeJoinOp =
@@ -356,6 +396,79 @@ public class ConvertJoinMapJoin implements NodeProcessor {
         dummyStoreOp.getParentOperators().add(parentOp);
         mergeJoinOp.getParentOperators().remove(parentIndex);
         mergeJoinOp.getParentOperators().add(parentIndex, dummyStoreOp);
+      }
+    } else if (partialSMBJoin != -1) {
+      mergeJoinOp.getConf().setGenJoinKeys(true);
+      // Rewrite all the parents of the join.
+      // 1) Remove the cRS.
+      // 2) Rewrite rest of parents to introduce a DUMMYSTORE operator.
+      // For instance, consider iRS-MERGEJOIN, we will create a chain of operators:
+      // iRS-SEL-DUMMYSTORE-MERGEJOIN
+      // This will preserve the shuffle operation, while:
+      // * SEL is a backtrack Select operator which will create records with the same
+      //   schema as the input to iRS.
+      // * DUMMYSTORE is a forward operator needed to aid the translation.
+      for (int i = 0; i < mergeJoinOp.getParentOperators().size(); i++) {
+        ReduceSinkOperator iRS = (ReduceSinkOperator) mergeJoinOp.getParentOperators().get(i);
+        Operator<?> iRSParent = CorrelationUtilities.getSingleParent(iRS);
+        Operator<?> cursor;
+        if (i == partialSMBJoin) {
+          // Remove iRS
+          CorrelationUtilities.removeOperator(iRS, mergeJoinOp, iRSParent, context.parseContext);
+          // Cursor is now RS parent
+          cursor = iRSParent;
+        } else {
+          Map<String, ExprNodeDesc> descriptors = buildBacktrackFromReduceSink(
+              iRS, iRSParent);
+          SelectDesc selectDesc = new SelectDesc(
+              new ArrayList<ExprNodeDesc>(descriptors.values()),
+              new ArrayList<String>(descriptors.keySet()));
+          ArrayList<ColumnInfo> cInfoLst = new ArrayList<ColumnInfo>();
+          for (ColumnInfo ci : iRSParent.getSchema().getSignature()) {
+            cInfoLst.add(new ColumnInfo(ci));
+          }
+          SelectOperator selectOp = (SelectOperator) OperatorFactory.get(
+              iRS.getCompilationOpContext(), selectDesc);
+          selectOp.setConf(selectDesc);
+          selectOp.setSchema(new RowSchema(cInfoLst));
+          selectOp.setColumnExprMap(descriptors);
+          // Link
+          selectOp.getParentOperators().add(iRS);
+          int index = iRS.getChildOperators().indexOf(mergeJoinOp);
+          iRS.getChildOperators().remove(index);
+          iRS.getChildOperators().add(index, selectOp);
+          iRS.getConf().setTag(0); // remove the tag
+          // Traits
+          OpTraitsRulesProcFactory.SelectRule.setSelectOpTraits(selectOp);
+          // Cursor is now SELECT
+          cursor = selectOp;
+        }
+        if (i != mapJoinConversionPos) {
+          // Insert DUMMYSTORE
+          DummyStoreOperator dummyStoreOp = new TezDummyStoreOperator(
+              mergeJoinOp.getCompilationOpContext());
+          // Link
+          dummyStoreOp.setParentOperators(new ArrayList<Operator<? extends OperatorDesc>>());
+          dummyStoreOp.getParentOperators().add(cursor);
+          int index = cursor.getChildOperators().indexOf(mergeJoinOp);
+          if (index == -1) {
+            cursor.setChildOperators(new ArrayList<Operator<? extends OperatorDesc>>());
+            cursor.getChildOperators().add(dummyStoreOp);
+          } else {
+            cursor.getChildOperators().remove(index);
+            cursor.getChildOperators().add(index, dummyStoreOp);
+          }
+          // Cursor is now DUMMYSTORE
+          cursor = dummyStoreOp;
+        }
+        // Link last operator to MERGEJOIN
+        if (cursor.getChildOperators() == null ||
+                !cursor.getChildOperators().contains(mergeJoinOp)) {
+          cursor.setChildOperators(new ArrayList<Operator<? extends OperatorDesc>>());
+          cursor.getChildOperators().add(mergeJoinOp);
+        }
+        mergeJoinOp.getParentOperators().remove(i);
+        mergeJoinOp.getParentOperators().add(i, cursor);
       }
     }
     mergeJoinOp.cloneOriginalParentsList(mergeJoinOp.getParentOperators());
@@ -1002,7 +1115,7 @@ public class ConvertJoinMapJoin implements NodeProcessor {
     // Since we don't have big table index yet, must start with estimate of numReducers
     int numReducers = estimateNumBuckets(joinOp, false);
     LOG.info("Try dynamic partitioned hash join with estimated " + numReducers + " reducers");
-    int bigTablePos = getMapJoinConversionPos(joinOp, context, numReducers, false, maxSize,false);
+    int bigTablePos = getMapJoinConversionPos(joinOp, context, numReducers, false, maxSize, false);
     if (bigTablePos >= 0) {
       // Now that we have the big table index, get real numReducers value based on big table RS
       ReduceSinkOperator bigTableParentRS =
@@ -1029,6 +1142,40 @@ public class ConvertJoinMapJoin implements NodeProcessor {
         // propagate this change till the next RS
         for (Operator<? extends OperatorDesc> childOp : mapJoinOp.getChildOperators()) {
           setAllChildrenTraits(childOp, mapJoinOp.getOpTraits());
+        }
+        // We are going to try to be more ambitious: if any of the inputs do not need
+        // to be partitioned again, i.e., it is already partitioned, we try to remove
+        // the additional shuffling. This adds memory pressure, so it might not be
+        // always possible even if the input is already partitioned.
+        boolean replaced = false;
+        LOG.info("Jesus - bigTableParentRS: " + bigTableParentRS);
+        ReduceSinkOperator pRS =
+            CorrelationUtilities.findPossibleParent(
+                bigTableParentRS, ReduceSinkOperator.class,
+                context.conf.getBoolVar(HiveConf.ConfVars.HIVESCRIPTOPERATORTRUST));
+        if (pRS != null && ReduceSinkDeDuplicationUtils.merge(bigTableParentRS, pRS,
+            context.conf.getIntVar(HiveConf.ConfVars.HIVEOPTREDUCEDEDUPLICATIONMINREDUCER))) {
+          // Removing shuffle is possible
+          CorrelationUtilities.replaceReduceSinkWithSelectOperator(bigTableParentRS);
+          LOG.info("Jesus - Could replace it! I am going to fail so badly...");
+          replaced = true;
+        }
+        for (int i = 0; i < mapJoinOp.getParentOperators().size() && !replaced; i++) {
+          ReduceSinkOperator iRS = (ReduceSinkOperator) mapJoinOp.getParentOperators().get(i);
+          if (iRS == bigTableParentRS) {
+            continue;
+          }
+          LOG.info("Jesus - iRS: " + iRS);
+          pRS = CorrelationUtilities.findPossibleParent(
+              iRS, ReduceSinkOperator.class,
+              context.conf.getBoolVar(HiveConf.ConfVars.HIVESCRIPTOPERATORTRUST));
+          if (pRS != null && ReduceSinkDeDuplicationUtils.merge(iRS, pRS,
+              context.conf.getIntVar(HiveConf.ConfVars.HIVEOPTREDUCEDEDUPLICATIONMINREDUCER))) {
+            // Removing shuffle is possible
+            CorrelationUtilities.replaceReduceSinkWithSelectOperator(iRS);
+            LOG.info("Jesus - Could replace it! I am going to fail so badly...");
+            replaced = true;
+          }
         }
         return true;
       }
@@ -1123,5 +1270,31 @@ public class ConvertJoinMapJoin implements NodeProcessor {
     // Cap at fact-row-count, because numerical artifacts can cause it
     // to go a few % over.
     return Math.min(Math.round(v), numRows);
+  }
+
+  private static Map<String, ExprNodeDesc> buildBacktrackFromReduceSink(
+      Operator<?> op, Operator<?> parentOp) throws SemanticException {
+    List<ColumnInfo> inputRS = parentOp.getSchema().getSignature();
+    Map<String, ExprNodeDesc> columnDescriptors = new LinkedHashMap<String, ExprNodeDesc>();
+    for (int i = 0; i < inputRS.size(); i++) {
+      ColumnInfo info = new ColumnInfo(inputRS.get(i));
+      String field = null;
+      for (Entry<String, ExprNodeDesc> entry : op.getColumnExprMap().entrySet()) {
+        ExprNodeDesc exprNode = entry.getValue();
+        if (exprNode instanceof ExprNodeColumnDesc &&
+            ((ExprNodeColumnDesc) exprNode).getColumn().equals(info.getInternalName())) {
+          field = entry.getKey();
+          break;
+        }
+      }
+      if (field == null) {
+        throw new SemanticException("Join algorithm selection: "
+                + "Could not find input expression in RS for join");
+      }
+      ExprNodeColumnDesc desc = new ExprNodeColumnDesc(info.getType(), field, info.getTabAlias(),
+          info.getIsVirtualCol());
+      columnDescriptors.put(info.getInternalName(), desc);
+    }
+    return columnDescriptors;
   }
 }

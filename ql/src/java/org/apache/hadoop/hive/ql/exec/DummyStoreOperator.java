@@ -92,7 +92,8 @@ public class DummyStoreOperator extends Operator<DummyStoreDesc> implements Seri
      * however necessitates a change in the object inspector that can be used in processing the
      * row downstream.
      */
-    outputObjInspector = ObjectInspectorUtils.getStandardObjectInspector(inputObjInspectors[0]);
+    outputObjInspector = ObjectInspectorUtils.getStandardObjectInspector(inputObjInspectors[0],
+            ObjectInspectorCopyOption.WRITABLE);
     result = new InspectableObject(null, outputObjInspector);
   }
 

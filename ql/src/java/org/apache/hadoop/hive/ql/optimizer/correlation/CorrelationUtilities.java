@@ -119,7 +119,7 @@ public final class CorrelationUtilities {
     return null;
   }
 
-  protected static Operator<?> getSingleParent(Operator<?> operator) throws SemanticException {
+  public static Operator<?> getSingleParent(Operator<?> operator) throws SemanticException {
     return getSingleParent(operator, false);
   }
 
@@ -215,7 +215,7 @@ public final class CorrelationUtilities {
     return -1;
   }
 
-  protected static <T extends Operator<?>> T findPossibleParent(Operator<?> start, Class<T> target,
+  public static <T extends Operator<?>> T findPossibleParent(Operator<?> start, Class<T> target,
       boolean trustScript) throws SemanticException {
     T[] parents = findPossibleParents(start, target, trustScript);
     return parents != null && parents.length == 1 ? parents[0] : null;
@@ -336,8 +336,7 @@ public final class CorrelationUtilities {
   }
 
   // replace the cRS to SEL operator
-  protected static SelectOperator replaceReduceSinkWithSelectOperator(ReduceSinkOperator childRS,
-      ParseContext context, AbstractCorrelationProcCtx procCtx) throws SemanticException {
+  public static SelectOperator replaceReduceSinkWithSelectOperator(ReduceSinkOperator childRS) throws SemanticException {
     RowSchema inputRS = childRS.getSchema();
     SelectDesc select = new SelectDesc(childRS.getConf().getValueCols(), childRS.getConf().getOutputValueColumnNames());
 
@@ -356,6 +355,12 @@ public final class CorrelationUtilities {
 
     childRS.setChildOperators(null);
     childRS.setParentOperators(null);
+    return sel;
+  }
+
+  protected static SelectOperator replaceReduceSinkWithSelectOperator(ReduceSinkOperator childRS,
+      ParseContext context, AbstractCorrelationProcCtx procCtx) throws SemanticException {
+    SelectOperator sel = replaceReduceSinkWithSelectOperator(childRS);
     procCtx.addRemovedOperator(childRS);
     return sel;
   }
@@ -466,7 +471,7 @@ public final class CorrelationUtilities {
         target.getChildOperators().get(0), target.getParentOperators().get(0), context);
   }
 
-  protected static void removeOperator(Operator<?> target, Operator<?> child, Operator<?> parent,
+  public static void removeOperator(Operator<?> target, Operator<?> child, Operator<?> parent,
       ParseContext context) {
     for (Operator<?> aparent : target.getParentOperators()) {
       aparent.replaceChild(target, child);

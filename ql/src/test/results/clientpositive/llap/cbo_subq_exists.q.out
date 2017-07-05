@@ -137,6 +137,10 @@ POSTHOOK: Input: default@src_cbo
 199	val_199
 199	val_199
 2	val_2
+97	val_97
+97	val_97
+98	val_98
+98	val_98
 PREHOOK: query: select * 
 from src_cbo b 
 group by key, value

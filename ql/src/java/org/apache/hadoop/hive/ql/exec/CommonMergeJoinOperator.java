@@ -675,6 +675,7 @@ public class CommonMergeJoinOperator extends AbstractMapJoinOperator<CommonMerge
   }
 
   public void cloneOriginalParentsList(List<Operator<? extends OperatorDesc>> opList) {
+    originalParents.clear();
     originalParents.addAll(opList);
   }
 }

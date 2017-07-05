@@ -135,6 +135,8 @@ POSTHOOK: Input: default@src_cbo
 199	val_199
 199	val_199
 2	val_2
+98	val_98
+98	val_98
 PREHOOK: query: select p_mfgr, b.p_name, p_size 
 from part b 
 where b.p_name not in 
@@ -170,6 +172,8 @@ Manufacturer#4	almond antique gainsboro frosted violet	10
 Manufacturer#4	almond azure aquamarine papaya violet	12
 Manufacturer#4	almond aquamarine floral ivory bisque	27
 Manufacturer#4	almond antique violet mint lemon	39
+Manufacturer#5	almond antique sky peru orange	2
+Manufacturer#5	almond antique medium spring khaki	6
 Manufacturer#5	almond azure blanched chiffon midnight	23
 Manufacturer#5	almond antique blue firebrick mint	31
 Manufacturer#5	almond aquamarine dodger light gainsboro	46
@@ -239,6 +243,7 @@ POSTHOOK: Input: default@lineitem
 7068	1
 21636	1
 22630	1
+40216	1
 59694	1
 61931	1
 85951	1
@@ -277,6 +282,7 @@ POSTHOOK: Input: default@part
 #### A masked pattern was here ####
 Manufacturer#1	1173.15
 Manufacturer#2	1690.68
+Manufacturer#4	1206.26
 PREHOOK: query: select b.p_mfgr, min(p_retailprice) 
 from part b 
 group by b.p_mfgr
@@ -305,3 +311,4 @@ POSTHOOK: Input: default@part
 #### A masked pattern was here ####
 Manufacturer#1	1173.15
 Manufacturer#2	1690.68
+Manufacturer#5	1018.1

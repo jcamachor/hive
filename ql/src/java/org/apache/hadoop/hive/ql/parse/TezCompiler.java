@@ -400,6 +400,8 @@ public class TezCompiler extends TaskCompiler {
   private void runStatsDependentOptimizations(OptimizeTezProcContext procCtx,
       Set<ReadEntity> inputs, Set<WriteEntity> outputs) throws SemanticException {
 
+    LOG.info("Jesus - before: " + Operator.toString(procCtx.parseContext.getTopOps().values()));
+
     // Sequence of TableScan operators to be walked
     Deque<Operator<?>> deque = new LinkedList<Operator<?>>();
     deque.addAll(procCtx.parseContext.getTopOps().values());
@@ -426,6 +428,8 @@ public class TezCompiler extends TaskCompiler {
     topNodes.addAll(procCtx.parseContext.getTopOps().values());
     GraphWalker ogw = new ForwardWalker(disp);
     ogw.startWalking(topNodes, null);
+
+    LOG.info("Jesus - after: " + Operator.toString(procCtx.parseContext.getTopOps().values()));
   }
 
   private void runDynamicPartitionPruning(OptimizeTezProcContext procCtx, Set<ReadEntity> inputs,

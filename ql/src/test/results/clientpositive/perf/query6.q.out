@@ -1,4 +1,3 @@
-Warning: Shuffle Join MERGEJOIN[111][tables = [$hdt$_5, $hdt$_6]] in Stage 'Reducer 16' is a cross product
 PREHOOK: query: explain
 select  a.ca_state state, count(*) cnt
  from customer_address a
@@ -53,15 +52,14 @@ Plan optimized by CBO.
 
 Vertex dependency in root stage
 Reducer 12 <- Map 11 (SIMPLE_EDGE), Map 13 (SIMPLE_EDGE)
-Reducer 15 <- Map 14 (SIMPLE_EDGE)
-Reducer 16 <- Reducer 15 (CUSTOM_SIMPLE_EDGE), Reducer 19 (CUSTOM_SIMPLE_EDGE)
-Reducer 17 <- Map 20 (SIMPLE_EDGE), Reducer 16 (SIMPLE_EDGE)
-Reducer 18 <- Map 14 (SIMPLE_EDGE)
-Reducer 19 <- Reducer 18 (CUSTOM_SIMPLE_EDGE)
+Reducer 16 <- Map 14 (SIMPLE_EDGE)
+Reducer 17 <- Reducer 16 (CUSTOM_SIMPLE_EDGE)
+Reducer 18 <- Map 14 (SIMPLE_EDGE), Reducer 17 (CUSTOM_SIMPLE_EDGE)
+Reducer 19 <- Map 20 (SIMPLE_EDGE), Reducer 18 (SIMPLE_EDGE)
 Reducer 2 <- Map 1 (SIMPLE_EDGE), Reducer 9 (SIMPLE_EDGE)
 Reducer 3 <- Map 10 (SIMPLE_EDGE), Reducer 2 (SIMPLE_EDGE)
 Reducer 4 <- Reducer 12 (SIMPLE_EDGE), Reducer 3 (SIMPLE_EDGE)
-Reducer 5 <- Reducer 17 (SIMPLE_EDGE), Reducer 4 (SIMPLE_EDGE)
+Reducer 5 <- Reducer 19 (SIMPLE_EDGE), Reducer 4 (SIMPLE_EDGE)
 Reducer 6 <- Reducer 5 (SIMPLE_EDGE)
 Reducer 7 <- Reducer 6 (SIMPLE_EDGE)
 Reducer 9 <- Map 8 (SIMPLE_EDGE)
@@ -93,14 +91,14 @@ Stage-0
                           predicate:(_col10 > (1.2 * CASE WHEN (_col15 is null) THEN (null) ELSE (_col14) END))
                           Select Operator [SEL_66] (rows=766650239 width=88)
                             Output:["_col1","_col10","_col14","_col15"]
-                            Merge Join Operator [MERGEJOIN_114] (rows=766650239 width=88)
+                            Merge Join Operator [MERGEJOIN_116] (rows=766650239 width=88)
                               Conds:RS_63._col6=RS_64._col0(Inner),Output:["_col1","_col3","_col4","_col12"]
-                            <-Reducer 17 [SIMPLE_EDGE]
+                            <-Reducer 19 [SIMPLE_EDGE]
                               SHUFFLE [RS_64]
                                 PartitionCols:_col0
                                 Select Operator [SEL_53] (rows=80353 width=1119)
                                   Output:["_col0"]
-                                  Merge Join Operator [MERGEJOIN_112] (rows=80353 width=1119)
+                                  Merge Join Operator [MERGEJOIN_114] (rows=80353 width=1119)
                                     Conds:RS_50._col0=RS_51._col1(Inner),Output:["_col2"]
                                   <-Map 20 [SIMPLE_EDGE]
                                     SHUFFLE [RS_51]
@@ -111,54 +109,51 @@ Stage-0
                                           predicate:(d_date_sk is not null and d_month_seq is not null)
                                           TableScan [TS_44] (rows=73049 width=1119)
                                             default@date_dim,d,Tbl:COMPLETE,Col:NONE,Output:["d_date_sk","d_month_seq"]
-                                  <-Reducer 16 [SIMPLE_EDGE]
+                                  <-Reducer 18 [SIMPLE_EDGE]
                                     SHUFFLE [RS_50]
                                       PartitionCols:_col0
                                       Merge Join Operator [MERGEJOIN_111] (rows=9131 width=1128)
                                         Conds:(Inner),Output:["_col0"]
-                                      <-Reducer 15 [CUSTOM_SIMPLE_EDGE]
-                                        PARTITION_ONLY_SHUFFLE [RS_47]
-                                          Group By Operator [GBY_28] (rows=9131 width=1119)
-                                            Output:["_col0"],keys:KEY._col0
-                                          <-Map 14 [SIMPLE_EDGE]
-                                            SHUFFLE [RS_27]
-                                              PartitionCols:_col0
-                                              Group By Operator [GBY_26] (rows=18262 width=1119)
-                                                Output:["_col0"],keys:d_month_seq
-                                                Select Operator [SEL_25] (rows=18262 width=1119)
-                                                  Output:["d_month_seq"]
-                                                  Filter Operator [FIL_105] (rows=18262 width=1119)
-                                                    predicate:((d_year = 2000) and (d_moy = 2) and d_month_seq is not null)
-                                                    TableScan [TS_23] (rows=73049 width=1119)
-                                                      default@date_dim,date_dim,Tbl:COMPLETE,Col:NONE,Output:["d_month_seq","d_year","d_moy"]
-                                      <-Reducer 19 [CUSTOM_SIMPLE_EDGE]
-                                        PARTITION_ONLY_SHUFFLE [RS_48]
-                                          Select Operator [SEL_43] (rows=1 width=8)
-                                            Filter Operator [FIL_42] (rows=1 width=8)
-                                              predicate:(sq_count_check(_col0) <= 1)
-                                              Group By Operator [GBY_40] (rows=1 width=8)
-                                                Output:["_col0"],aggregations:["count(VALUE._col0)"]
-                                              <-Reducer 18 [CUSTOM_SIMPLE_EDGE]
-                                                PARTITION_ONLY_SHUFFLE [RS_39]
-                                                  Group By Operator [GBY_38] (rows=1 width=8)
-                                                    Output:["_col0"],aggregations:["count()"]
-                                                    Select Operator [SEL_36] (rows=9131 width=1119)
-                                                      Group By Operator [GBY_35] (rows=9131 width=1119)
-                                                        Output:["_col0"],keys:KEY._col0
-                                                      <-Map 14 [SIMPLE_EDGE]
-                                                        SHUFFLE [RS_34]
-                                                          PartitionCols:_col0
-                                                          Group By Operator [GBY_33] (rows=18262 width=1119)
-                                                            Output:["_col0"],keys:d_month_seq
-                                                            Select Operator [SEL_32] (rows=18262 width=1119)
-                                                              Output:["d_month_seq"]
-                                                              Filter Operator [FIL_106] (rows=18262 width=1119)
-                                                                predicate:((d_year = 2000) and (d_moy = 2))
-                                                                 Please refer to the previous TableScan [TS_23]
+                                      <-Select Operator [SEL_113]
+                                        <-Map 14 [SIMPLE_EDGE]
+                                          SHUFFLE [RS_27]
+                                            PartitionCols:_col0
+                                            Group By Operator [GBY_26] (rows=18262 width=1119)
+                                              Output:["_col0"],keys:d_month_seq
+                                              Select Operator [SEL_25] (rows=18262 width=1119)
+                                                Output:["d_month_seq"]
+                                                Filter Operator [FIL_105] (rows=18262 width=1119)
+                                                  predicate:((d_year = 2000) and (d_moy = 2) and d_month_seq is not null)
+                                                  TableScan [TS_23] (rows=73049 width=1119)
+                                                    default@date_dim,date_dim,Tbl:COMPLETE,Col:NONE,Output:["d_month_seq","d_year","d_moy"]
+                                        <-Reducer 17 [CUSTOM_SIMPLE_EDGE]
+                                          PARTITION_ONLY_SHUFFLE [RS_48]
+                                            Select Operator [SEL_43] (rows=1 width=8)
+                                              Filter Operator [FIL_42] (rows=1 width=8)
+                                                predicate:(sq_count_check(_col0) <= 1)
+                                                Group By Operator [GBY_40] (rows=1 width=8)
+                                                  Output:["_col0"],aggregations:["count(VALUE._col0)"]
+                                                <-Reducer 16 [CUSTOM_SIMPLE_EDGE]
+                                                  PARTITION_ONLY_SHUFFLE [RS_39]
+                                                    Group By Operator [GBY_38] (rows=1 width=8)
+                                                      Output:["_col0"],aggregations:["count()"]
+                                                      Select Operator [SEL_36] (rows=9131 width=1119)
+                                                        Group By Operator [GBY_35] (rows=9131 width=1119)
+                                                          Output:["_col0"],keys:KEY._col0
+                                                        <-Map 14 [SIMPLE_EDGE]
+                                                          SHUFFLE [RS_34]
+                                                            PartitionCols:_col0
+                                                            Group By Operator [GBY_33] (rows=18262 width=1119)
+                                                              Output:["_col0"],keys:d_month_seq
+                                                              Select Operator [SEL_32] (rows=18262 width=1119)
+                                                                Output:["d_month_seq"]
+                                                                Filter Operator [FIL_106] (rows=18262 width=1119)
+                                                                  predicate:((d_year = 2000) and (d_moy = 2))
+                                                                   Please refer to the previous TableScan [TS_23]
                             <-Reducer 4 [SIMPLE_EDGE]
                               SHUFFLE [RS_63]
                                 PartitionCols:_col6
-                                Merge Join Operator [MERGEJOIN_113] (rows=696954748 width=88)
+                                Merge Join Operator [MERGEJOIN_115] (rows=696954748 width=88)
                                   Conds:RS_60._col8=RS_61._col0(Inner),Output:["_col1","_col3","_col4","_col6","_col12"]
                                 <-Reducer 12 [SIMPLE_EDGE]
                                   SHUFFLE [RS_61]

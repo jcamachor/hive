@@ -228,7 +228,7 @@ public class OpTraitsRulesProcFactory {
 
   public static class SelectRule implements NodeProcessor {
 
-    public List<List<String>> getConvertedColNames(
+    private static List<List<String>> getConvertedColNames(
         List<List<String>> parentColNames, SelectOperator selOp) {
       List<List<String>> listBucketCols = new ArrayList<List<String>>();
       if (selOp.getColumnExprMap() != null) {
@@ -256,6 +256,11 @@ public class OpTraitsRulesProcFactory {
     public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
         Object... nodeOutputs) throws SemanticException {
       SelectOperator selOp = (SelectOperator) nd;
+      setSelectOpTraits(selOp);
+      return null;
+    }
+
+    public static void setSelectOpTraits(SelectOperator selOp) {
       List<List<String>> parentBucketColNames =
           selOp.getParentOperators().get(0).getOpTraits().getBucketColNames();
 
@@ -281,7 +286,6 @@ public class OpTraitsRulesProcFactory {
       }
       OpTraits opTraits = new OpTraits(listBucketCols, numBuckets, listSortCols, numReduceSinks);
       selOp.setOpTraits(opTraits);
-      return null;
     }
   }
 
