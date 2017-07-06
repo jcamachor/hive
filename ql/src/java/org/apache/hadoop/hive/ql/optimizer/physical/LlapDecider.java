@@ -434,7 +434,8 @@ public class LlapDecider implements PhysicalPlanResolver {
               public Object process(Node n, Stack<Node> s, NodeProcessorCtx c, Object... os) {
                 MapJoinOperator mapJoinOp = (MapJoinOperator) n;
                 if (mapJoinOp.getConf().isHybridHashJoin()
-                    && !(mapJoinOp.getConf().isDynamicPartitionHashJoin())) {
+                    && !(mapJoinOp.getConf().isDynamicPartitionHashJoin())
+                    && !(mapJoinOp.getConf().isPartialDynamicPartitionHashJoin())) {
                   mapJoinOpList.add((MapJoinOperator) n);
                 }
                 return new Boolean(true);

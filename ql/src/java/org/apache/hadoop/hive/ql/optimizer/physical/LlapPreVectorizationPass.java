@@ -108,7 +108,8 @@ public class LlapPreVectorizationPass implements PhysicalPlanResolver {
               public Object process(Node n, Stack<Node> s, NodeProcessorCtx c, Object... os) {
                 MapJoinOperator mapJoinOp = (MapJoinOperator) n;
                 if (mapJoinOp.getConf().isHybridHashJoin()
-                    && !(mapJoinOp.getConf().isDynamicPartitionHashJoin())) {
+                    && !(mapJoinOp.getConf().isDynamicPartitionHashJoin())
+                    && !(mapJoinOp.getConf().isPartialDynamicPartitionHashJoin())) {
                   mapJoinOp.getConf().setHybridHashJoin(false);
                 }
                 return new Boolean(true);

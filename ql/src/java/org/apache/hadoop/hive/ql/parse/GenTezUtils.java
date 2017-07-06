@@ -510,7 +510,8 @@ public class GenTezUtils {
       ReduceWork reduceWork = (ReduceWork) followingWork;
       if (reduceWork.getReducer() instanceof MapJoinOperator) {
         MapJoinOperator joinOp = (MapJoinOperator) reduceWork.getReducer();
-        if (joinOp.getConf().isDynamicPartitionHashJoin()) {
+        if (joinOp.getConf().isDynamicPartitionHashJoin() ||
+                joinOp.getConf().isPartialDynamicPartitionHashJoin()) {
           return EdgeType.CUSTOM_SIMPLE_EDGE;
         }
       }

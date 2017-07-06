@@ -1158,6 +1158,8 @@ public class ConvertJoinMapJoin implements NodeProcessor {
           // Removing shuffle is possible
           CorrelationUtilities.replaceReduceSinkWithSelectOperator(bigTableParentRS);
           LOG.info("Jesus - Could replace it! I am going to fail so badly...");
+          mapJoinOp.getConf().setDynamicPartitionHashJoin(false);
+          mapJoinOp.getConf().setPartialDynamicPartitionHashJoin(true);
           replaced = true;
         }
         for (int i = 0; i < mapJoinOp.getParentOperators().size() && !replaced; i++) {
@@ -1174,6 +1176,8 @@ public class ConvertJoinMapJoin implements NodeProcessor {
             // Removing shuffle is possible
             CorrelationUtilities.replaceReduceSinkWithSelectOperator(iRS);
             LOG.info("Jesus - Could replace it! I am going to fail so badly...");
+            mapJoinOp.getConf().setDynamicPartitionHashJoin(false);
+            mapJoinOp.getConf().setPartialDynamicPartitionHashJoin(true);
             replaced = true;
           }
         }

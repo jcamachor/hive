@@ -80,6 +80,7 @@ public class MapJoinDesc extends JoinDesc implements Serializable {
 
   private boolean isHybridHashJoin;
   private boolean isDynamicPartitionHashJoin = false;
+  private boolean isPartialDynamicPartitionHashJoin = false;
 
   public MapJoinDesc() {
     vectorDesc = null;
@@ -388,6 +389,14 @@ public class MapJoinDesc extends JoinDesc implements Serializable {
 
   public void setDynamicPartitionHashJoin(boolean isDistributedHashJoin) {
     this.isDynamicPartitionHashJoin = isDistributedHashJoin;
+  }
+
+  public boolean isPartialDynamicPartitionHashJoin() {
+    return isPartialDynamicPartitionHashJoin;
+  }
+
+  public void setPartialDynamicPartitionHashJoin(boolean isPartialDistributedHashJoin) {
+    this.isPartialDynamicPartitionHashJoin = isPartialDistributedHashJoin;
   }
 
   // Use LinkedHashSet to give predictable display order.

@@ -206,7 +206,7 @@ public class ReduceSinkMapJoinProc implements NodeProcessor {
           keyCount /= bucketCount;
           tableSize /= bucketCount;
         }
-      } else if (joinConf.isDynamicPartitionHashJoin()) {
+      } else if (joinConf.isDynamicPartitionHashJoin() || joinConf.isPartialDynamicPartitionHashJoin()) {
         // For dynamic partitioned hash join, assuming table is split evenly among the reduce tasks.
         bucketCount = parentRS.getConf().getNumReducers();
         keyCount /= bucketCount;
@@ -269,7 +269,8 @@ public class ReduceSinkMapJoinProc implements NodeProcessor {
           edgeType = EdgeType.CUSTOM_SIMPLE_EDGE;
         }
       }
-    } else if (mapJoinOp.getConf().isDynamicPartitionHashJoin()) {
+    } else if (mapJoinOp.getConf().isDynamicPartitionHashJoin() ||
+            mapJoinOp.getConf().isPartialDynamicPartitionHashJoin()) {
       edgeType = EdgeType.CUSTOM_SIMPLE_EDGE;
     }
     if (edgeType == EdgeType.CUSTOM_EDGE) {
