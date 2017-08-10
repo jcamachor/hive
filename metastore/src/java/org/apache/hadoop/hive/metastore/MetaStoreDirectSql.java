@@ -945,14 +945,14 @@ class MetaStoreDirectSql {
     }
   }
 
-  static String extractSqlBlob(Object value) throws MetaException {
+  static byte[] extractSqlBlob(Object value) throws MetaException {
     if (value == null)
       return null;
     if (value instanceof Blob) {
       try {
         // getBytes function says: pos the ordinal position of the first byte in
         // the BLOB value to be extracted; the first byte is at position 1
-        return new String(((Blob) value).getBytes(1, (int) ((Blob) value).length()));
+        return ((Blob) value).getBytes(1, (int) ((Blob) value).length());
       } catch (SQLException e) {
         throw new MetaException("Encounter error while processing blob.");
       }

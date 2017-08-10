@@ -65,7 +65,7 @@ public class DoubleColumnStatsAggregator extends ColumnStatsAggregator implement
             .getStatsData().getSetField());
       }
       if (!cso.getStatsData().getDoubleStats().isSetBitVectors()
-          || cso.getStatsData().getDoubleStats().getBitVectors().length() == 0) {
+          || cso.getStatsData().getDoubleStats().getBitVectors().length == 0) {
         ndvEstimator = null;
         break;
       } else {

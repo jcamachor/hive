@@ -66,7 +66,7 @@ public class DateColumnStatsAggregator extends ColumnStatsAggregator implements
             .getStatsData().getSetField());
       }
       if (!cso.getStatsData().getDateStats().isSetBitVectors()
-          || cso.getStatsData().getDateStats().getBitVectors().length() == 0) {
+          || cso.getStatsData().getDateStats().getBitVectors().length == 0) {
         ndvEstimator = null;
         break;
       } else {

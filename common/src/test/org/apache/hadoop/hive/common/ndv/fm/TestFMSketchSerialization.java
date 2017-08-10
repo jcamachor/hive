@@ -86,12 +86,12 @@ public class TestFMSketchSerialization {
       sketch.setBitVector(fastBitSet[i], i);
     }
     assertEquals(sketch.estimateNumDistinctValues(), 3);
-    String s = sketch.serialize();
+    byte[] buf = sketch.serialize();
     FMSketch newSketch = (FMSketch) NumDistinctValueEstimatorFactory
-        .getNumDistinctValueEstimator(s);
+        .getNumDistinctValueEstimator(buf);
     sketch.equals(newSketch);
     assertEquals(newSketch.estimateNumDistinctValues(), 3);
-    assertEquals(newSketch.serialize(), s);
+    assertEquals(newSketch.serialize(), buf);
   }
 
 }

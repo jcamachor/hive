@@ -24,10 +24,7 @@ import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
-import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.BinaryColumnStatsData;
@@ -63,6 +60,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.BinaryObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.DateObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.DoubleObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.HiveDecimalObjectInspector;
@@ -70,6 +68,8 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.LongObjectInspect
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.StringObjectInspector;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.util.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * ColumnStatsTask implementation.
@@ -136,8 +136,8 @@ public class ColumnStatsTask extends Task<ColumnStatsWork> implements Serializab
       statsObj.getStatsData().getDoubleStats().setLowValue(d);
     } else if (fName.equals("ndvbitvector")) {
       PrimitiveObjectInspector poi = (PrimitiveObjectInspector) oi;
-      String v = ((StringObjectInspector) poi).getPrimitiveJavaObject(o);
-      statsObj.getStatsData().getDoubleStats().setBitVectors(v);;
+      byte[] buf = ((BinaryObjectInspector) poi).getPrimitiveJavaObject(o);
+      statsObj.getStatsData().getDoubleStats().setBitVectors(buf);
     }
   }
 
@@ -157,8 +157,8 @@ public class ColumnStatsTask extends Task<ColumnStatsWork> implements Serializab
       statsObj.getStatsData().getDecimalStats().setLowValue(convertToThriftDecimal(d));
     } else if (fName.equals("ndvbitvector")) {
       PrimitiveObjectInspector poi = (PrimitiveObjectInspector) oi;
-      String v = ((StringObjectInspector) poi).getPrimitiveJavaObject(o);
-      statsObj.getStatsData().getDecimalStats().setBitVectors(v);;
+      byte[] buf = ((BinaryObjectInspector) poi).getPrimitiveJavaObject(o);
+      statsObj.getStatsData().getDecimalStats().setBitVectors(buf);
     }
   }
 
@@ -182,8 +182,8 @@ public class ColumnStatsTask extends Task<ColumnStatsWork> implements Serializab
       statsObj.getStatsData().getLongStats().setLowValue(v);
     } else if (fName.equals("ndvbitvector")) {
       PrimitiveObjectInspector poi = (PrimitiveObjectInspector) oi;
-      String v = ((StringObjectInspector) poi).getPrimitiveJavaObject(o);
-      statsObj.getStatsData().getLongStats().setBitVectors(v);;
+      byte[] buf = ((BinaryObjectInspector) poi).getPrimitiveJavaObject(o);
+      statsObj.getStatsData().getLongStats().setBitVectors(buf);
     }
   }
 
@@ -203,8 +203,8 @@ public class ColumnStatsTask extends Task<ColumnStatsWork> implements Serializab
       statsObj.getStatsData().getStringStats().setMaxColLen(v);
     } else if (fName.equals("ndvbitvector")) {
       PrimitiveObjectInspector poi = (PrimitiveObjectInspector) oi;
-      String v = ((StringObjectInspector) poi).getPrimitiveJavaObject(o);
-      statsObj.getStatsData().getStringStats().setBitVectors(v);;
+      byte[] buf = ((BinaryObjectInspector) poi).getPrimitiveJavaObject(o);
+      statsObj.getStatsData().getStringStats().setBitVectors(buf);
     }
   }
 
@@ -238,8 +238,8 @@ public class ColumnStatsTask extends Task<ColumnStatsWork> implements Serializab
       statsObj.getStatsData().getDateStats().setLowValue(new Date(v.getDays()));
     } else if (fName.equals("ndvbitvector")) {
       PrimitiveObjectInspector poi = (PrimitiveObjectInspector) oi;
-      String v = ((StringObjectInspector) poi).getPrimitiveJavaObject(o);
-      statsObj.getStatsData().getDateStats().setBitVectors(v);;
+      byte[] buf = ((BinaryObjectInspector) poi).getPrimitiveJavaObject(o);
+      statsObj.getStatsData().getDateStats().setBitVectors(buf);
     }
   }
 

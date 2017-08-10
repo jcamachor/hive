@@ -27,7 +27,6 @@ import java.nio.charset.Charset;
 import java.util.Map;
 import java.util.TreeMap;
 
-import org.apache.commons.codec.binary.Base64;
 import org.apache.hadoop.hive.common.ndv.NumDistinctValueEstimator;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.ql.util.JavaDataModel;
@@ -59,7 +58,7 @@ import org.apache.hive.common.util.Murmur3;
  * 
  * </pre>
  */
-public class HyperLogLog implements NumDistinctValueEstimator{
+public class HyperLogLog implements NumDistinctValueEstimator {
   private final static int DEFAULT_HASH_BITS = 64;
   private final static long HASH64_ZERO = Murmur3.hash64(new byte[] {0});
   private final static long HASH64_ONE = Murmur3.hash64(new byte[] {1});
@@ -571,20 +570,22 @@ public class HyperLogLog implements NumDistinctValueEstimator{
   }
 
   @Override
-  public String serialize() {
+  public byte[] serialize() {
     ByteArrayOutputStream bos = new ByteArrayOutputStream();
     // write bytes to bos ...
     try {
       HyperLogLogUtils.serializeHLL(bos, this);
+      byte[] result = bos.toByteArray();
+      bos.close();
+      return result;
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
-    return Base64.encodeBase64String(bos.toByteArray());
   }
-  
+
   @Override
-  public NumDistinctValueEstimator deserialize(String s) {
-    InputStream is = new ByteArrayInputStream(Base64.decodeBase64(s));
+  public NumDistinctValueEstimator deserialize(byte[] buf) {
+    InputStream is = new ByteArrayInputStream(buf);
     try {
       return HyperLogLogUtils.deserializeHLL(is);
     } catch (IOException e) {

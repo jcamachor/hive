@@ -32,8 +32,8 @@ public class LongColumnStatsMerger extends ColumnStatsMerger {
     aggregateData.setLowValue(Math.min(aggregateData.getLowValue(), newData.getLowValue()));
     aggregateData.setHighValue(Math.max(aggregateData.getHighValue(), newData.getHighValue()));
     aggregateData.setNumNulls(aggregateData.getNumNulls() + newData.getNumNulls());
-    if (!aggregateData.isSetBitVectors() || aggregateData.getBitVectors().length() == 0
-        || !newData.isSetBitVectors() || newData.getBitVectors().length() == 0) {
+    if (!aggregateData.isSetBitVectors() || aggregateData.getBitVectors().length == 0
+        || !newData.isSetBitVectors() || newData.getBitVectors().length == 0) {
       aggregateData.setNumDVs(Math.max(aggregateData.getNumDVs(), newData.getNumDVs()));
     } else {
       NumDistinctValueEstimator oldEst = NumDistinctValueEstimatorFactory

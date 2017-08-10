@@ -32,8 +32,8 @@ public class StringColumnStatsMerger extends ColumnStatsMerger {
     aggregateData.setMaxColLen(Math.max(aggregateData.getMaxColLen(), newData.getMaxColLen()));
     aggregateData.setAvgColLen(Math.max(aggregateData.getAvgColLen(), newData.getAvgColLen()));
     aggregateData.setNumNulls(aggregateData.getNumNulls() + newData.getNumNulls());
-    if (!aggregateData.isSetBitVectors() || aggregateData.getBitVectors().length() == 0
-        || !newData.isSetBitVectors() || newData.getBitVectors().length() == 0) {
+    if (!aggregateData.isSetBitVectors() || aggregateData.getBitVectors().length == 0
+        || !newData.isSetBitVectors() || newData.getBitVectors().length == 0) {
       aggregateData.setNumDVs(Math.max(aggregateData.getNumDVs(), newData.getNumDVs()));
     } else {
       NumDistinctValueEstimator oldEst = NumDistinctValueEstimatorFactory

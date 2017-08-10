@@ -67,7 +67,7 @@ public class DecimalColumnStatsAggregator extends ColumnStatsAggregator implemen
             .getStatsData().getSetField());
       }
       if (!cso.getStatsData().getDecimalStats().isSetBitVectors()
-          || cso.getStatsData().getDecimalStats().getBitVectors().length() == 0) {
+          || cso.getStatsData().getDecimalStats().getBitVectors().length == 0) {
         ndvEstimator = null;
         break;
       } else {

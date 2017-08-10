@@ -65,7 +65,7 @@ public class LongColumnStatsAggregator extends ColumnStatsAggregator implements
             .getStatsData().getSetField());
       }
       if (!cso.getStatsData().getLongStats().isSetBitVectors()
-          || cso.getStatsData().getLongStats().getBitVectors().length() == 0) {
+          || cso.getStatsData().getLongStats().getBitVectors().length == 0) {
         ndvEstimator = null;
         break;
       } else {

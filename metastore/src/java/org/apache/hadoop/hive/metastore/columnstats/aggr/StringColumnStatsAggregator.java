@@ -66,7 +66,7 @@ public class StringColumnStatsAggregator extends ColumnStatsAggregator implement
             .getStatsData().getSetField());
       }
       if (!cso.getStatsData().getStringStats().isSetBitVectors()
-          || cso.getStatsData().getStringStats().getBitVectors().length() == 0) {
+          || cso.getStatsData().getStringStats().getBitVectors().length == 0) {
         ndvEstimator = null;
         break;
       } else {
