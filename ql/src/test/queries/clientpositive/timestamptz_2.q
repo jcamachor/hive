@@ -1,4 +1,5 @@
 set hive.fetch.task.conversion=more;
+set time zone UTC;
 
 drop table tstz2;
 

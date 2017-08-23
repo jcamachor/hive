@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.serde2.objectinspector.primitive;
 
 import java.sql.Date;
 import java.sql.Timestamp;
+import java.time.ZoneId;
 
 import org.apache.hadoop.hive.common.type.HiveChar;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
@@ -28,12 +29,11 @@ import org.apache.hadoop.hive.common.type.HiveIntervalDayTime;
 import org.apache.hadoop.hive.common.type.HiveVarchar;
 import org.apache.hadoop.hive.common.type.TimestampTZ;
 import org.apache.hadoop.hive.serde2.ByteStream;
-import org.apache.hadoop.hive.serde2.io.HiveCharWritable;
-import org.apache.hadoop.hive.serde2.io.HiveVarcharWritable;
 import org.apache.hadoop.hive.serde2.lazy.LazyInteger;
 import org.apache.hadoop.hive.serde2.lazy.LazyLong;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorConverters.Converter;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
+import org.apache.hadoop.hive.serde2.typeinfo.TimestampTZTypeInfo;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.Text;
 
@@ -297,12 +297,15 @@ public class PrimitiveObjectInspectorConverter {
     final PrimitiveObjectInspector inputOI;
     final SettableTimestampTZObjectInspector outputOI;
     final Object r;
+    final ZoneId timeZone;
 
-    public TimestampTZConverter(PrimitiveObjectInspector inputOI,
+    public TimestampTZConverter(
+        PrimitiveObjectInspector inputOI,
         SettableTimestampTZObjectInspector outputOI) {
       this.inputOI = inputOI;
       this.outputOI = outputOI;
-      r = outputOI.create(new TimestampTZ());
+      this.r = outputOI.create(new TimestampTZ());
+      this.timeZone = ((TimestampTZTypeInfo) outputOI.getTypeInfo()).timeZone();
     }
 
     @Override
@@ -311,7 +314,7 @@ public class PrimitiveObjectInspectorConverter {
         return null;
       }
 
-      return outputOI.set(r, PrimitiveObjectInspectorUtils.getTimestampTZ(input, inputOI));
+      return outputOI.set(r, PrimitiveObjectInspectorUtils.getTimestampTZ(input, inputOI, timeZone));
     }
   }
 

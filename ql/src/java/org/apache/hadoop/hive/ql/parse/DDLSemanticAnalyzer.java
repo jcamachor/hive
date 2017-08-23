@@ -144,6 +144,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorConverters.C
 import org.apache.hadoop.hive.serde2.typeinfo.CharTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.DecimalTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.TimestampTZTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.hadoop.hive.serde2.typeinfo.VarcharTypeInfo;
@@ -222,10 +223,21 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
       VarcharTypeInfo varcharTypeInfo = ParseUtils.getVarcharTypeInfo(node);
       typeName = varcharTypeInfo.getQualifiedName();
       break;
+    case HiveParser.TOK_TIMESTAMPTZ:
+      HiveConf conf;
+      try {
+        conf = Hive.get().getConf();
+      } catch (HiveException e) {
+        throw new SemanticException(e);
+      }
+      TimestampTZTypeInfo timestampTZTypeInfo = TypeInfoFactory.getTimestampTZTypeInfo(
+          conf.getLocalTimeZone());
+      typeName = timestampTZTypeInfo.getQualifiedName();
+      break;
     case HiveParser.TOK_DECIMAL:
-        DecimalTypeInfo decTypeInfo = ParseUtils.getDecimalTypeTypeInfo(node);
-        typeName = decTypeInfo.getQualifiedName();
-        break;
+      DecimalTypeInfo decTypeInfo = ParseUtils.getDecimalTypeTypeInfo(node);
+      typeName = decTypeInfo.getQualifiedName();
+      break;
     default:
       typeName = TokenToTypeName.get(token);
     }

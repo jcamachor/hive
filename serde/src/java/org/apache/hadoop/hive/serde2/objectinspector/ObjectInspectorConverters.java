@@ -45,7 +45,6 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.SettableTimestamp
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.SettableTimestampTZObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.VoidObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.WritableStringObjectInspector;
-import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 
 /**
  * ObjectInspectorConverters.
@@ -129,7 +128,8 @@ public final class ObjectInspectorConverters {
           inputOI,
           (SettableTimestampObjectInspector) outputOI);
     case TIMESTAMPTZ:
-      return new PrimitiveObjectInspectorConverter.TimestampTZConverter(inputOI,
+      return new PrimitiveObjectInspectorConverter.TimestampTZConverter(
+          inputOI,
           (SettableTimestampTZObjectInspector) outputOI);
     case INTERVAL_YEAR_MONTH:
       return new PrimitiveObjectInspectorConverter.HiveIntervalYearMonthConverter(

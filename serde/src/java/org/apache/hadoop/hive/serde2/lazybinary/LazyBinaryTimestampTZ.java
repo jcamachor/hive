@@ -17,20 +17,27 @@
  */
 package org.apache.hadoop.hive.serde2.lazybinary;
 
+import java.time.ZoneId;
+
 import org.apache.hadoop.hive.serde2.io.TimestampTZWritable;
 import org.apache.hadoop.hive.serde2.lazy.ByteArrayRef;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.WritableTimestampTZObjectInspector;
+import org.apache.hadoop.hive.serde2.typeinfo.TimestampTZTypeInfo;
 
 public class LazyBinaryTimestampTZ extends
     LazyBinaryPrimitive<WritableTimestampTZObjectInspector, TimestampTZWritable> {
 
+  private ZoneId timeZone;
+
   public LazyBinaryTimestampTZ(WritableTimestampTZObjectInspector oi) {
     super(oi);
-    data = new TimestampTZWritable();
+    TimestampTZTypeInfo typeInfo = (TimestampTZTypeInfo) oi.getTypeInfo();
+    this.timeZone = typeInfo.timeZone();
+    this.data = new TimestampTZWritable();
   }
 
   @Override
   public void init(ByteArrayRef bytes, int start, int length) {
-    data.set(bytes.getData(), start);
+    data.set(bytes.getData(), start, timeZone);
   }
 }

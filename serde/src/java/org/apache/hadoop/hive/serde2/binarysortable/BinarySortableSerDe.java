@@ -83,6 +83,7 @@ import org.apache.hadoop.hive.serde2.typeinfo.ListTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.MapTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.StructTypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.TimestampTZTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
@@ -429,7 +430,9 @@ public class BinarySortableSerDe extends AbstractSerDe {
         for (int i = 0; i < data.length; i++) {
           data[i] = buffer.read(invert);
         }
-        tstz.fromBinarySortable(data, 0);
+        // Across MR process boundary tz is normalized and stored in type
+        // and is not carried in data for each row.
+        tstz.fromBinarySortable(data, 0, ((TimestampTZTypeInfo) type).timeZone());
         return tstz;
       case INTERVAL_YEAR_MONTH: {
         HiveIntervalYearMonthWritable i = reuse == null ? new HiveIntervalYearMonthWritable()

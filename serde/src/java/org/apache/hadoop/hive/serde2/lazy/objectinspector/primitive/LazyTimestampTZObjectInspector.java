@@ -21,19 +21,28 @@ import org.apache.hadoop.hive.common.type.TimestampTZ;
 import org.apache.hadoop.hive.serde2.io.TimestampTZWritable;
 import org.apache.hadoop.hive.serde2.lazy.LazyTimestampTZ;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.TimestampTZObjectInspector;
-import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
+import org.apache.hadoop.hive.serde2.typeinfo.TimestampTZTypeInfo;
 
 public class LazyTimestampTZObjectInspector
     extends AbstractPrimitiveLazyObjectInspector<TimestampTZWritable>
     implements TimestampTZObjectInspector {
 
-  public LazyTimestampTZObjectInspector() {
-    super(TypeInfoFactory.timestampTZTypeInfo);
+  protected LazyTimestampTZObjectInspector(TimestampTZTypeInfo typeInfo) {
+    super(typeInfo);
   }
 
   @Override
   public TimestampTZ getPrimitiveJavaObject(Object o) {
-    return o == null ? null : ((LazyTimestampTZ) o).getWritableObject().getTimestampTZ();
+    if (o == null) {
+      return null;
+    }
+
+    TimestampTZ t = ((LazyTimestampTZ) o).getWritableObject().getTimestampTZ();
+    TimestampTZTypeInfo timestampTZTypeInfo = (TimestampTZTypeInfo) typeInfo;
+    if (!t.getZonedDateTime().getZone().equals(timestampTZTypeInfo.timeZone())) {
+      t.setZonedDateTime(t.getZonedDateTime().withZoneSameInstant(timestampTZTypeInfo.timeZone()));
+    }
+    return t;
   }
 
   @Override

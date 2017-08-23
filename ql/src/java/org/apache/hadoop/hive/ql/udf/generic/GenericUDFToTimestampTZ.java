@@ -21,10 +21,15 @@ import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentLengthException;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.udf.SettableUDF;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorConverter;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.SettableTimestampTZObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorConverter.TimestampTZConverter;
+import org.apache.hadoop.hive.serde2.typeinfo.TimestampTZTypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 
 /**
  * Convert from string to TIMESTAMP WITH TIME ZONE.
@@ -36,11 +41,12 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectIn
         "Examples of ZoneId and ZoneOffset are Asia/Shanghai and GMT+08:00. " +
         "The time and zone parts are optional. If time is absent, '00:00:00.0' will be used. " +
         "If zone is absent, the system time zone will be used.")
-public class GenericUDFToTimestampTZ extends GenericUDF {
+public class GenericUDFToTimestampTZ extends GenericUDF implements SettableUDF {
 
   private transient PrimitiveObjectInspector argumentOI;
   private transient PrimitiveObjectInspectorConverter.TimestampTZConverter converter;
 
+  private TimestampTZTypeInfo typeInfo;
 
   @Override
   public ObjectInspector initialize(ObjectInspector[] arguments) throws UDFArgumentException {
@@ -67,9 +73,10 @@ public class GenericUDFToTimestampTZ extends GenericUDF {
       throw new UDFArgumentException(
           "The function CAST as TIMESTAMP WITH TIME ZONE takes only primitive types");
     }
-    converter = new PrimitiveObjectInspectorConverter.TimestampTZConverter(argumentOI,
-        PrimitiveObjectInspectorFactory.writableTimestampTZObjectInspector);
-    return PrimitiveObjectInspectorFactory.writableTimestampTZObjectInspector;
+    SettableTimestampTZObjectInspector outputOI = (SettableTimestampTZObjectInspector)
+          PrimitiveObjectInspectorFactory.getPrimitiveWritableObjectInspector(typeInfo);
+    converter = new TimestampTZConverter(argumentOI, outputOI);
+    return outputOI;
   }
 
   @Override
@@ -84,6 +91,23 @@ public class GenericUDFToTimestampTZ extends GenericUDF {
   @Override
   public String getDisplayString(String[] children) {
     assert (children.length == 1);
-    return "CAST(" + children[0] + " AS TIMESTAMP WITH TIME ZONE)";
+    StringBuilder sb = new StringBuilder();
+    sb.append("CAST( ");
+    sb.append(children[0]);
+    sb.append(" AS ");
+    sb.append(typeInfo.getTypeName());
+    sb.append(")");
+    return sb.toString();
   }
+
+  @Override
+  public TypeInfo getTypeInfo() {
+    return typeInfo;
+  }
+
+  @Override
+  public void setTypeInfo(TypeInfo typeInfo) throws UDFArgumentException {
+    this.typeInfo = (TimestampTZTypeInfo) typeInfo;
+  }
+
 }

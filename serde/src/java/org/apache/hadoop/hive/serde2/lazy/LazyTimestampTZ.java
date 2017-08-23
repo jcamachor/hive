@@ -17,17 +17,20 @@
  */
 package org.apache.hadoop.hive.serde2.lazy;
 
-import org.apache.hadoop.hive.common.type.TimestampTZ;
-import org.apache.hadoop.hive.serde.serdeConstants;
-import org.apache.hadoop.hive.serde2.io.TimestampTZWritable;
-import org.apache.hadoop.hive.serde2.lazy.objectinspector.primitive.LazyTimestampTZObjectInspector;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
+import java.time.ZoneId;
 import java.time.format.DateTimeParseException;
+
+import org.apache.hadoop.hive.common.type.TimestampTZ;
+import org.apache.hadoop.hive.common.type.TimestampTZUtil;
+import org.apache.hadoop.hive.serde.serdeConstants;
+import org.apache.hadoop.hive.serde2.io.TimestampTZWritable;
+import org.apache.hadoop.hive.serde2.lazy.objectinspector.primitive.LazyTimestampTZObjectInspector;
+import org.apache.hadoop.hive.serde2.typeinfo.TimestampTZTypeInfo;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * LazyPrimitive for TimestampTZ. Similar to LazyTimestamp.
@@ -37,13 +40,21 @@ public class LazyTimestampTZ extends
 
   private static final Logger LOG = LoggerFactory.getLogger(LazyTimestampTZ.class);
 
+  private ZoneId timeZone;
+
   public LazyTimestampTZ(LazyTimestampTZObjectInspector lazyTimestampTZObjectInspector) {
     super(lazyTimestampTZObjectInspector);
+    TimestampTZTypeInfo typeInfo = (TimestampTZTypeInfo) oi.getTypeInfo();
+    if (typeInfo == null) {
+      throw new RuntimeException("TimestampTZ type used without type params");
+    }
+    timeZone = typeInfo.timeZone();
     data = new TimestampTZWritable();
   }
 
   public LazyTimestampTZ(LazyTimestampTZ copy) {
     super(copy);
+    timeZone = copy.timeZone;
     data = new TimestampTZWritable(copy.data);
   }
 
@@ -63,7 +74,7 @@ public class LazyTimestampTZ extends
         logExceptionMessage(bytes, start, length,
             serdeConstants.TIMESTAMPTZ_TYPE_NAME.toUpperCase());
       } else {
-        t = TimestampTZ.parse(s);
+        t = TimestampTZUtil.parse(s, timeZone);
         isNull = false;
       }
     } catch (UnsupportedEncodingException e) {

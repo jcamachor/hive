@@ -24,14 +24,15 @@ import java.io.IOException;
 import java.nio.charset.CharacterCodingException;
 import java.sql.Date;
 import java.sql.Timestamp;
+import java.time.DateTimeException;
+import java.time.ZoneId;
 import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.hadoop.hive.common.type.TimestampTZ;
+import org.apache.hadoop.hive.common.type.TimestampTZUtil;
 import org.apache.hadoop.hive.ql.util.TimestampUtils;
 import org.apache.hadoop.hive.serde2.io.TimestampTZWritable;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.common.type.HiveChar;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.common.type.HiveIntervalYearMonth;
@@ -72,7 +73,6 @@ import org.apache.hadoop.io.WritableUtils;
  * ObjectInspector to return to the caller of SerDe2.getObjectInspector().
  */
 public final class PrimitiveObjectInspectorUtils {
-  private static final Logger LOG = LoggerFactory.getLogger(PrimitiveObjectInspectorUtils.class);
 
   /**
    * TypeEntry stores information about a Hive Primitive TypeInfo.
@@ -1051,16 +1051,26 @@ public final class PrimitiveObjectInspectorUtils {
       try {
         result = Date.valueOf(s);
       } catch (IllegalArgumentException e) {
-        result = null;
+        Timestamp ts = getTimestampFromString(s);
+        if (ts != null) {
+          result = new Date(ts.getTime());
+        } else {
+          result = null;
+        }
       }
       break;
     case CHAR:
     case VARCHAR: {
+      String val = getString(o, oi).trim();
       try {
-        String val = getString(o, oi).trim();
         result = Date.valueOf(val);
       } catch (IllegalArgumentException e) {
-        result = null;
+        Timestamp ts = getTimestampFromString(val);
+        if (ts != null) {
+          result = new Date(ts.getTime());
+        } else {
+          result = null;
+        }
       }
       break;
     }
@@ -1164,7 +1174,44 @@ public final class PrimitiveObjectInspectorUtils {
     return result;
   }
 
-  public static TimestampTZ getTimestampTZ(Object o, PrimitiveObjectInspector oi) {
+  static Timestamp getTimestampFromString(String s) {
+    Timestamp result;
+    s = s.trim();
+    s = trimNanoTimestamp(s);
+
+    int firstSpace = s.indexOf(' ');
+    if (firstSpace < 0) {
+      s = s.concat(" 00:00:00");
+    }
+    try {
+      result = Timestamp.valueOf(s);
+    } catch (IllegalArgumentException e) {
+      // Let's try to parse it as timestamp with time zone and transform
+      try {
+        result = Timestamp.from(TimestampTZUtil.parse(s).getZonedDateTime().toInstant());
+      } catch (DateTimeException e2) {
+        result = null;
+      }
+    }
+    return result;
+  }
+
+  private static String trimNanoTimestamp(String s) {
+    int firstSpace = s.indexOf(' ');
+    // Throw away extra if more than 9 decimal places
+    int periodIdx = s.indexOf(".");
+    if (periodIdx != -1) {
+      int secondSpace = firstSpace < 0 ? -1 : s.indexOf(' ', firstSpace + 1);
+      int maxLength = secondSpace == -1 ? s.length() : secondSpace;
+      if (maxLength - periodIdx > 9) {
+        s = s.substring(0, periodIdx + 10).concat(s.substring(maxLength, s.length()));
+      }
+    }
+    return s;
+  }
+
+  public static TimestampTZ getTimestampTZ(Object o, PrimitiveObjectInspector oi,
+          ZoneId timeZone) {
     if (o == null) {
       return null;
     }
@@ -1172,25 +1219,23 @@ public final class PrimitiveObjectInspectorUtils {
     case VOID: {
       return null;
     }
-    // The resulting timestamp with time zone will have TZ in UTC
-    // instead of the original TZ in the string representation.
     case STRING: {
       StringObjectInspector soi = (StringObjectInspector) oi;
       String s = soi.getPrimitiveJavaObject(o).trim();
-      return TimestampTZ.parseOrNull(s);
+      return TimestampTZUtil.parseOrNull(trimNanoTimestamp(s), timeZone);
     }
     case CHAR:
     case VARCHAR: {
       String s = getString(o, oi).trim();
-      return TimestampTZ.parseOrNull(s);
+      return TimestampTZUtil.parseOrNull(trimNanoTimestamp(s), timeZone);
     }
     case DATE: {
       Date date = ((DateObjectInspector) oi).getPrimitiveWritableObject(o).get();
-      return TimestampTZ.convert(date);
+      return TimestampTZUtil.convert(date, timeZone);
     }
     case TIMESTAMP: {
       Timestamp ts = ((TimestampObjectInspector) oi).getPrimitiveWritableObject(o).getTimestamp();
-      return TimestampTZ.convert(ts);
+      return TimestampTZUtil.convert(ts, timeZone);
     }
     case TIMESTAMPTZ: {
       return ((TimestampTZObjectInspector) oi).getPrimitiveWritableObject(o).getTimestampTZ();
@@ -1199,28 +1244,6 @@ public final class PrimitiveObjectInspectorUtils {
       throw new RuntimeException("Cannot convert to " + serdeConstants.TIMESTAMPTZ_TYPE_NAME +
           " from: " + oi.getTypeName());
     }
-  }
-
-  static Timestamp getTimestampFromString(String s) {
-    Timestamp result;
-    s = s.trim();
-
-    // Throw away extra if more than 9 decimal places
-    int periodIdx = s.indexOf(".");
-    if (periodIdx != -1) {
-      if (s.length() - periodIdx > 9) {
-        s = s.substring(0, periodIdx + 10);
-      }
-    }
-    if (s.indexOf(' ') < 0) {
-      s = s.concat(" 00:00:00");
-    }
-    try {
-      result = Timestamp.valueOf(s);
-    } catch (IllegalArgumentException e) {
-      result = null;
-    }
-    return result;
   }
 
   public static HiveIntervalYearMonth getHiveIntervalYearMonth(Object o, PrimitiveObjectInspector oi) {
