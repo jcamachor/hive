@@ -88,7 +88,7 @@ import org.apache.hadoop.hive.serde2.typeinfo.ListTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.MapTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.StructTypeInfo;
-import org.apache.hadoop.hive.serde2.typeinfo.TimestampTZTypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.TimestampLocalTZTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
@@ -751,8 +751,8 @@ public class TypeCheckProcFactory {
           serdeConstants.DATE_TYPE_NAME);
       conversionFunctionTextHashMap.put(HiveParser.TOK_TIMESTAMP,
           serdeConstants.TIMESTAMP_TYPE_NAME);
-      conversionFunctionTextHashMap.put(HiveParser.TOK_TIMESTAMPTZ,
-          serdeConstants.TIMESTAMPTZ_TYPE_NAME);
+      conversionFunctionTextHashMap.put(HiveParser.TOK_TIMESTAMPLOCALTZ,
+          serdeConstants.TIMESTAMPLOCALTZ_TYPE_NAME);
       conversionFunctionTextHashMap.put(HiveParser.TOK_INTERVAL_YEAR_MONTH,
           serdeConstants.INTERVAL_YEAR_MONTH_TYPE_NAME);
       conversionFunctionTextHashMap.put(HiveParser.TOK_INTERVAL_DAY_TIME,
@@ -1005,17 +1005,17 @@ public class TypeCheckProcFactory {
                 ((SettableUDF)genericUDF).setTypeInfo(varcharTypeInfo);
               }
               break;
-            case HiveParser.TOK_TIMESTAMPTZ:
-              TimestampTZTypeInfo timestampTZTypeInfo = new TimestampTZTypeInfo();
+            case HiveParser.TOK_TIMESTAMPLOCALTZ:
+              TimestampLocalTZTypeInfo timestampLocalTZTypeInfo = new TimestampLocalTZTypeInfo();
               HiveConf conf;
               try {
                 conf = Hive.get().getConf();
               } catch (HiveException e) {
                 throw new SemanticException(e);
               }
-              timestampTZTypeInfo.setTimeZone(conf.getLocalTimeZone());
+              timestampLocalTZTypeInfo.setTimeZone(conf.getLocalTimeZone());
               if (genericUDF != null) {
-                ((SettableUDF)genericUDF).setTypeInfo(timestampTZTypeInfo);
+                ((SettableUDF)genericUDF).setTypeInfo(timestampLocalTZTypeInfo);
               }
               break;
             case HiveParser.TOK_DECIMAL:

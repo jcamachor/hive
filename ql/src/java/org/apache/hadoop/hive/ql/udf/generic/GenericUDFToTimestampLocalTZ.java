@@ -26,33 +26,33 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorConverter;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
-import org.apache.hadoop.hive.serde2.objectinspector.primitive.SettableTimestampTZObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorConverter.TimestampTZConverter;
-import org.apache.hadoop.hive.serde2.typeinfo.TimestampTZTypeInfo;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.SettableTimestampLocalTZObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorConverter.TimestampLocalTZConverter;
+import org.apache.hadoop.hive.serde2.typeinfo.TimestampLocalTZTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 
 /**
- * Convert from string to TIMESTAMP WITH TIME ZONE.
+ * Convert from string to TIMESTAMP WITH LOCAL TIME ZONE.
  */
-@Description(name = "timestamp with time zone",
-    value = "CAST(STRING as TIMESTAMP WITH TIME ZONE) - returns the" +
-        "timestamp with time zone represented by string.",
+@Description(name = "timestamp with local time zone",
+    value = "CAST(STRING as TIMESTAMP WITH LOCAL TIME ZONE) - returns the" +
+        "timestamp with local time zone represented by string.",
     extended = "The string should be of format 'yyyy-MM-dd HH:mm:ss[.SSS...] ZoneId/ZoneOffset'. " +
         "Examples of ZoneId and ZoneOffset are Asia/Shanghai and GMT+08:00. " +
         "The time and zone parts are optional. If time is absent, '00:00:00.0' will be used. " +
         "If zone is absent, the system time zone will be used.")
-public class GenericUDFToTimestampTZ extends GenericUDF implements SettableUDF {
+public class GenericUDFToTimestampLocalTZ extends GenericUDF implements SettableUDF {
 
   private transient PrimitiveObjectInspector argumentOI;
-  private transient PrimitiveObjectInspectorConverter.TimestampTZConverter converter;
+  private transient PrimitiveObjectInspectorConverter.TimestampLocalTZConverter converter;
 
-  private TimestampTZTypeInfo typeInfo;
+  private TimestampLocalTZTypeInfo typeInfo;
 
   @Override
   public ObjectInspector initialize(ObjectInspector[] arguments) throws UDFArgumentException {
     if (arguments.length < 1) {
       throw new UDFArgumentLengthException(
-          "The function CAST as TIMESTAMP WITH TIME ZONE requires at least one argument, got "
+          "The function CAST as TIMESTAMP WITH LOCAL TIME ZONE requires at least one argument, got "
               + arguments.length);
     }
     try {
@@ -63,19 +63,19 @@ public class GenericUDFToTimestampTZ extends GenericUDF implements SettableUDF {
       case STRING:
       case DATE:
       case TIMESTAMP:
-      case TIMESTAMPTZ:
+      case TIMESTAMPLOCALTZ:
         break;
       default:
-        throw new UDFArgumentException("CAST as TIMESTAMP WITH TIME ZONE only allows" +
+        throw new UDFArgumentException("CAST as TIMESTAMP WITH LOCAL TIME ZONE only allows" +
             "string/date/timestamp/timestamp with time zone types");
       }
     } catch (ClassCastException e) {
       throw new UDFArgumentException(
-          "The function CAST as TIMESTAMP WITH TIME ZONE takes only primitive types");
+          "The function CAST as TIMESTAMP WITH LOCAL TIME ZONE takes only primitive types");
     }
-    SettableTimestampTZObjectInspector outputOI = (SettableTimestampTZObjectInspector)
+    SettableTimestampLocalTZObjectInspector outputOI = (SettableTimestampLocalTZObjectInspector)
           PrimitiveObjectInspectorFactory.getPrimitiveWritableObjectInspector(typeInfo);
-    converter = new TimestampTZConverter(argumentOI, outputOI);
+    converter = new TimestampLocalTZConverter(argumentOI, outputOI);
     return outputOI;
   }
 
@@ -107,7 +107,7 @@ public class GenericUDFToTimestampTZ extends GenericUDF implements SettableUDF {
 
   @Override
   public void setTypeInfo(TypeInfo typeInfo) throws UDFArgumentException {
-    this.typeInfo = (TimestampTZTypeInfo) typeInfo;
+    this.typeInfo = (TimestampLocalTZTypeInfo) typeInfo;
   }
 
 }

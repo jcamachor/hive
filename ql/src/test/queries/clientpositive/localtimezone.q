@@ -24,7 +24,7 @@ insert into `timestamp_test` VALUES
   ('2011-01-01 01:01:01.12345678912 GMT-05:00'),
   ('2011-01-01 01:01:01.12345678912 xyz');
 
-create table `timestamptz_test` (`mydate1` timestamp with time zone);
+create table `timestamptz_test` (`mydate1` timestamp with local time zone);
 
 insert into `timestamptz_test` VALUES
   ('2011-01-01 01:01:01.123'),
@@ -66,16 +66,16 @@ select extract(minute from `mydate1`) from `timestamptz_test`;
 select extract(second from `mydate1`) from `timestamptz_test`;
 
 select cast(`mydate1` as date) from `timestamptz_test`;
-select cast(`mydate1` as timestamp with time zone) from `date_test`;
+select cast(`mydate1` as timestamp with local time zone) from `date_test`;
 select cast(`mydate1` as timestamp) from `timestamptz_test`;
-select cast(`mydate1` as timestamp with time zone) from `timestamp_test`;
+select cast(`mydate1` as timestamp with local time zone) from `timestamp_test`;
 
 select `mydate1` from `timestamptz_test` group by `mydate1`;
 select a.`mydate1` as c1, b.`mydate1` as c2
 from `timestamptz_test` a join `timestamptz_test` b
 on a.`mydate1` = b.`mydate1`;
 
-create table `timestamptz_test2` (`mydate1` timestamp with time zone, `item` string, `price` double);
+create table `timestamptz_test2` (`mydate1` timestamp with local time zone, `item` string, `price` double);
 insert into `timestamptz_test2` VALUES
   ('2011-01-01 01:01:01.123', 'laptop 1', 9.2),
   ('2011-01-01 01:01:01.123', 'mouse 1', 3.1),

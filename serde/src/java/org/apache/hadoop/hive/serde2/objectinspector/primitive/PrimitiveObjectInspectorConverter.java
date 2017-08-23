@@ -33,7 +33,7 @@ import org.apache.hadoop.hive.serde2.lazy.LazyInteger;
 import org.apache.hadoop.hive.serde2.lazy.LazyLong;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorConverters.Converter;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
-import org.apache.hadoop.hive.serde2.typeinfo.TimestampTZTypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.TimestampLocalTZTypeInfo;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.Text;
 
@@ -293,19 +293,19 @@ public class PrimitiveObjectInspectorConverter {
     }
   }
 
-  public static class TimestampTZConverter implements Converter {
+  public static class TimestampLocalTZConverter implements Converter {
     final PrimitiveObjectInspector inputOI;
-    final SettableTimestampTZObjectInspector outputOI;
+    final SettableTimestampLocalTZObjectInspector outputOI;
     final Object r;
     final ZoneId timeZone;
 
-    public TimestampTZConverter(
+    public TimestampLocalTZConverter(
         PrimitiveObjectInspector inputOI,
-        SettableTimestampTZObjectInspector outputOI) {
+        SettableTimestampLocalTZObjectInspector outputOI) {
       this.inputOI = inputOI;
       this.outputOI = outputOI;
       this.r = outputOI.create(new TimestampTZ());
-      this.timeZone = ((TimestampTZTypeInfo) outputOI.getTypeInfo()).timeZone();
+      this.timeZone = ((TimestampLocalTZTypeInfo) outputOI.getTypeInfo()).timeZone();
     }
 
     @Override
@@ -314,7 +314,7 @@ public class PrimitiveObjectInspectorConverter {
         return null;
       }
 
-      return outputOI.set(r, PrimitiveObjectInspectorUtils.getTimestampTZ(input, inputOI, timeZone));
+      return outputOI.set(r, PrimitiveObjectInspectorUtils.getTimestampLocalTZ(input, inputOI, timeZone));
     }
   }
 
@@ -492,8 +492,8 @@ public class PrimitiveObjectInspectorConverter {
         t.set(((TimestampObjectInspector) inputOI)
             .getPrimitiveWritableObject(input).toString());
         return t;
-      case TIMESTAMPTZ:
-        t.set(((TimestampTZObjectInspector) inputOI).getPrimitiveWritableObject(input).toString());
+      case TIMESTAMPLOCALTZ:
+        t.set(((TimestampLocalTZObjectInspector) inputOI).getPrimitiveWritableObject(input).toString());
         return t;
       case INTERVAL_YEAR_MONTH:
         t.set(((HiveIntervalYearMonthObjectInspector) inputOI)

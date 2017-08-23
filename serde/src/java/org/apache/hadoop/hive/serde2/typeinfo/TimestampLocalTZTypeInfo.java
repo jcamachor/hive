@@ -24,28 +24,28 @@ import java.util.Objects;
 import org.apache.hadoop.hive.common.type.TimestampTZUtil;
 import org.apache.hadoop.hive.serde.serdeConstants;
 
-public class TimestampTZTypeInfo extends PrimitiveTypeInfo {
+public class TimestampLocalTZTypeInfo extends PrimitiveTypeInfo {
   private static final long serialVersionUID = 1L;
 
   private ZoneId timeZone;
 
-  public TimestampTZTypeInfo() {
-    super(serdeConstants.TIMESTAMPTZ_TYPE_NAME);
+  public TimestampLocalTZTypeInfo() {
+    super(serdeConstants.TIMESTAMPLOCALTZ_TYPE_NAME);
   }
 
-  public TimestampTZTypeInfo(String timeZoneStr) {
-    super(serdeConstants.TIMESTAMPTZ_TYPE_NAME);
+  public TimestampLocalTZTypeInfo(String timeZoneStr) {
+    super(serdeConstants.TIMESTAMPLOCALTZ_TYPE_NAME);
     this.timeZone = TimestampTZUtil.parseTimeZone(timeZoneStr);
   }
 
   @Override
   public String getTypeName() {
-    return serdeConstants.TIMESTAMPTZ_TYPE_NAME;
+    return serdeConstants.TIMESTAMPLOCALTZ_TYPE_NAME;
   }
 
   @Override
   public void setTypeName(String typeName) {
-    // No need to set type name, it should always be timestamptz
+    // No need to set type name, it should always be timestamplocaltz
     return;
   }
 
@@ -58,7 +58,7 @@ public class TimestampTZTypeInfo extends PrimitiveTypeInfo {
       return false;
     }
 
-    TimestampTZTypeInfo dti = (TimestampTZTypeInfo) other;
+    TimestampLocalTZTypeInfo dti = (TimestampLocalTZTypeInfo) other;
 
     return this.timeZone().equals(dti.timeZone());
   }
@@ -82,7 +82,7 @@ public class TimestampTZTypeInfo extends PrimitiveTypeInfo {
   }
 
   public static String getQualifiedName(ZoneId timeZone) {
-    StringBuilder sb = new StringBuilder(serdeConstants.TIMESTAMPTZ_TYPE_NAME);
+    StringBuilder sb = new StringBuilder(serdeConstants.TIMESTAMPLOCALTZ_TYPE_NAME);
     sb.append("('");
     sb.append(timeZone);
     sb.append("')");

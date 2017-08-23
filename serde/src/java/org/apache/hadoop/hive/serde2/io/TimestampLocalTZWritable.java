@@ -38,7 +38,7 @@ import java.util.Arrays;
  * E.g. "2017-04-14 18:00:00 Asia/Shanghai" will be converted to
  * "2017-04-14 10:00:00.0 Z".
  */
-public class TimestampTZWritable implements WritableComparable<TimestampTZWritable> {
+public class TimestampLocalTZWritable implements WritableComparable<TimestampLocalTZWritable> {
 
   public static final byte[] nullBytes = {0x0, 0x0, 0x0, 0x0};
   private static final int DECIMAL_OR_SECOND_VINT_FLAG = 1 << 31;
@@ -68,21 +68,21 @@ public class TimestampTZWritable implements WritableComparable<TimestampTZWritab
   private byte[] externalBytes;
   private int offset;
 
-  public TimestampTZWritable() {
+  public TimestampLocalTZWritable() {
     this.bytesEmpty = false;
     this.currentBytes = internalBytes;
     this.offset = 0;
   }
 
-  public TimestampTZWritable(byte[] bytes, int offset, ZoneId timeZone) {
+  public TimestampLocalTZWritable(byte[] bytes, int offset, ZoneId timeZone) {
     set(bytes, offset, timeZone);
   }
 
-  public TimestampTZWritable(TimestampTZWritable other) {
+  public TimestampLocalTZWritable(TimestampLocalTZWritable other) {
     this(other.getBytes(), 0, other.getTimestampTZ().getZonedDateTime().getZone());
   }
 
-  public TimestampTZWritable(TimestampTZ tstz) {
+  public TimestampLocalTZWritable(TimestampTZ tstz) {
     set(tstz);
   }
 
@@ -106,7 +106,7 @@ public class TimestampTZWritable implements WritableComparable<TimestampTZWritab
     timestampTZEmpty = false;
   }
 
-  public void set(TimestampTZWritable t) {
+  public void set(TimestampLocalTZWritable t) {
     if (t.bytesEmpty) {
       set(t.getTimestampTZ());
     } else if (t.currentBytes == t.externalBytes) {
@@ -224,14 +224,14 @@ public class TimestampTZWritable implements WritableComparable<TimestampTZWritab
   }
 
   @Override
-  public int compareTo(TimestampTZWritable o) {
+  public int compareTo(TimestampLocalTZWritable o) {
     return getTimestampTZ().compareTo(o.getTimestampTZ());
   }
 
   @Override
   public boolean equals(Object o) {
-    if (o instanceof TimestampTZWritable) {
-      return compareTo((TimestampTZWritable) o) == 0;
+    if (o instanceof TimestampLocalTZWritable) {
+      return compareTo((TimestampLocalTZWritable) o) == 0;
     }
     return false;
   }

@@ -69,7 +69,7 @@ public final class TypeInfoFactory {
   /**
    * A TimestampTZTypeInfo with system default time zone.
    */
-  public static final TimestampTZTypeInfo timestampTZTypeInfo = new TimestampTZTypeInfo(
+  public static final TimestampLocalTZTypeInfo timestampLocalTZTypeInfo = new TimestampLocalTZTypeInfo(
       ZoneId.systemDefault().getId());
 
   public static final PrimitiveTypeInfo unknownTypeInfo = new PrimitiveTypeInfo("unknown");
@@ -92,7 +92,7 @@ public final class TypeInfoFactory {
     cachedPrimitiveTypeInfo.put(serdeConstants.SMALLINT_TYPE_NAME, shortTypeInfo);
     cachedPrimitiveTypeInfo.put(serdeConstants.DATE_TYPE_NAME, dateTypeInfo);
     cachedPrimitiveTypeInfo.put(serdeConstants.TIMESTAMP_TYPE_NAME, timestampTypeInfo);
-    cachedPrimitiveTypeInfo.put(serdeConstants.TIMESTAMPTZ_TYPE_NAME, timestampTZTypeInfo);
+    cachedPrimitiveTypeInfo.put(serdeConstants.TIMESTAMPLOCALTZ_TYPE_NAME, timestampLocalTZTypeInfo);
     cachedPrimitiveTypeInfo.put(serdeConstants.INTERVAL_YEAR_MONTH_TYPE_NAME, intervalYearMonthTypeInfo);
     cachedPrimitiveTypeInfo.put(serdeConstants.INTERVAL_DAY_TIME_TYPE_NAME, intervalDayTimeTypeInfo);
     cachedPrimitiveTypeInfo.put(serdeConstants.BINARY_TYPE_NAME, binaryTypeInfo);
@@ -163,11 +163,11 @@ public final class TypeInfoFactory {
         }
         return new DecimalTypeInfo(Integer.valueOf(parts.typeParams[0]),
             Integer.valueOf(parts.typeParams[1]));
-      case TIMESTAMPTZ:
+      case TIMESTAMPLOCALTZ:
         if (parts.typeParams.length != 1) {
           return null;
         }
-        return new TimestampTZTypeInfo(parts.typeParams[0]);
+        return new TimestampLocalTZTypeInfo(parts.typeParams[0]);
       default:
         return null;
     }
@@ -188,9 +188,9 @@ public final class TypeInfoFactory {
     return (DecimalTypeInfo) getPrimitiveTypeInfo(fullName);
   };
 
-  public static TimestampTZTypeInfo getTimestampTZTypeInfo(ZoneId defaultTimeZone) {
-    String fullName = TimestampTZTypeInfo.getQualifiedName(defaultTimeZone);
-    return (TimestampTZTypeInfo) getPrimitiveTypeInfo(fullName);
+  public static TimestampLocalTZTypeInfo getTimestampTZTypeInfo(ZoneId defaultTimeZone) {
+    String fullName = TimestampLocalTZTypeInfo.getQualifiedName(defaultTimeZone);
+    return (TimestampLocalTZTypeInfo) getPrimitiveTypeInfo(fullName);
   };
 
   public static TypeInfo getPrimitiveTypeInfoFromPrimitiveWritable(

@@ -71,10 +71,10 @@ public class TestTimestampTZWritable {
     String s2 = "2017-04-14 10:00:00.00 GMT";
     String s3 = "2017-04-14 18:00:00 UTC+08:00";
     String s4 = "2017-04-14 18:00:00 Europe/London";
-    TimestampTZWritable writable1 = new TimestampTZWritable(TimestampTZUtil.parse(s1));
-    TimestampTZWritable writable2 = new TimestampTZWritable(TimestampTZUtil.parse(s2));
-    TimestampTZWritable writable3 = new TimestampTZWritable(TimestampTZUtil.parse(s3));
-    TimestampTZWritable writable4 = new TimestampTZWritable(TimestampTZUtil.parse(s4));
+    TimestampLocalTZWritable writable1 = new TimestampLocalTZWritable(TimestampTZUtil.parse(s1));
+    TimestampLocalTZWritable writable2 = new TimestampLocalTZWritable(TimestampTZUtil.parse(s2));
+    TimestampLocalTZWritable writable3 = new TimestampLocalTZWritable(TimestampTZUtil.parse(s3));
+    TimestampLocalTZWritable writable4 = new TimestampLocalTZWritable(TimestampTZUtil.parse(s4));
 
     Assert.assertEquals(writable1, writable2);
     Assert.assertEquals(writable1, writable3);
@@ -92,9 +92,9 @@ public class TestTimestampTZWritable {
   }
 
   private static void verifyConversion(TimestampTZ srcTstz) {
-    TimestampTZWritable src = new TimestampTZWritable(srcTstz);
+    TimestampLocalTZWritable src = new TimestampLocalTZWritable(srcTstz);
     byte[] bytes = src.getBytes();
-    TimestampTZWritable dest = new TimestampTZWritable(bytes, 0, ZoneId.of("UTC"));
+    TimestampLocalTZWritable dest = new TimestampLocalTZWritable(bytes, 0, ZoneId.of("UTC"));
     TimestampTZ destTstz = dest.getTimestampTZ();
     String errMsg = "Src tstz with seconds " + srcTstz.getEpochSecond() + ", nanos " +
         srcTstz.getNanos() + ". Dest tstz with seconds " + destTstz.getEpochSecond() +

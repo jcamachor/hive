@@ -2,19 +2,19 @@ PREHOOK: query: drop table tstz1
 PREHOOK: type: DROPTABLE
 POSTHOOK: query: drop table tstz1
 POSTHOOK: type: DROPTABLE
-PREHOOK: query: create table tstz1(t timestamp with time zone)
+PREHOOK: query: create table tstz1(t timestamp with local time zone)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@tstz1
-POSTHOOK: query: create table tstz1(t timestamp with time zone)
+POSTHOOK: query: create table tstz1(t timestamp with local time zone)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tstz1
-PREHOOK: query: insert overwrite table tstz1 select cast('2016-01-03 12:26:34 America/Los_Angeles' as timestamp with time zone)
+PREHOOK: query: insert overwrite table tstz1 select cast('2016-01-03 12:26:34 America/Los_Angeles' as timestamp with local time zone)
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@tstz1
-POSTHOOK: query: insert overwrite table tstz1 select cast('2016-01-03 12:26:34 America/Los_Angeles' as timestamp with time zone)
+POSTHOOK: query: insert overwrite table tstz1 select cast('2016-01-03 12:26:34 America/Los_Angeles' as timestamp with local time zone)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@tstz1

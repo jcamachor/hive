@@ -443,7 +443,7 @@ public abstract class HiveBaseResultSet implements ResultSet {
         return value;
       case TIMESTAMP_TYPE:
         return Timestamp.valueOf((String) value);
-      case TIMESTAMPTZ_TYPE:
+      case TIMESTAMPLOCALTZ_TYPE:
         return TimestampTZUtil.parse((String) value);
       case DECIMAL_TYPE:
         return new BigDecimal((String)value);

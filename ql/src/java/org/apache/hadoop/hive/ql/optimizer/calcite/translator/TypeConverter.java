@@ -202,7 +202,7 @@ public class TypeConverter {
     case TIMESTAMP:
       convertedType = dtFactory.createSqlType(SqlTypeName.TIMESTAMP);
       break;
-    case TIMESTAMPTZ:
+    case TIMESTAMPLOCALTZ:
       convertedType = new HiveType(TimestampTZ.class);
       break;
     case INTERVAL_YEAR_MONTH:
@@ -365,7 +365,8 @@ public class TypeConverter {
     case OTHER:
     default:
       if (rType instanceof HiveType && ((HiveType) rType).getTypeClass() == TimestampTZ.class) {
-        return TypeInfoFactory.timestampTZTypeInfo;
+        // TODO: This block should be removed when we upgrade Calcite to use local time-zone
+        return TypeInfoFactory.timestampLocalTZTypeInfo;
       }
       return TypeInfoFactory.voidTypeInfo;
     }
@@ -397,7 +398,7 @@ public class TypeConverter {
       break;
     case NULL:
       if (calciteType instanceof HiveType && ((HiveType) calciteType).getTypeClass() == TimestampTZ.class) {
-        ht = new HiveToken(HiveParser.TOK_TIMESTAMPTZ, "TOK_TIMESTAMPTZ");
+        ht = new HiveToken(HiveParser.TOK_TIMESTAMPLOCALTZ, "TOK_TIMESTAMPLOCALTZ");
         break;
       }
       // fall-through

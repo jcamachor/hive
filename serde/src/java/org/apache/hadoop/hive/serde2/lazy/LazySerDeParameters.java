@@ -31,7 +31,7 @@ import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.SerDeUtils;
 import org.apache.hadoop.hive.serde2.lazy.objectinspector.primitive.LazyObjectInspectorParameters;
-import org.apache.hadoop.hive.serde2.typeinfo.TimestampTZTypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.TimestampLocalTZTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
@@ -163,10 +163,10 @@ public class LazySerDeParameters implements LazyObjectInspectorParameters {
     columnTypes = TypeInfoUtils.getTypeInfosFromTypeString(columnTypeProperty);
     // Insert time-zone for timestamp type
     if (conf != null) {
-      final TimestampTZTypeInfo tsTZTypeInfo = new TimestampTZTypeInfo(
+      final TimestampLocalTZTypeInfo tsTZTypeInfo = new TimestampLocalTZTypeInfo(
           conf.get(ConfVars.HIVE_LOCAL_TIME_ZONE.varname));
       for (int i = 0; i < columnTypes.size(); i++) {
-        if (columnTypes.get(i) instanceof TimestampTZTypeInfo) {
+        if (columnTypes.get(i) instanceof TimestampLocalTZTypeInfo) {
           columnTypes.set(i, tsTZTypeInfo);
         }
       }

@@ -18,12 +18,12 @@
 package org.apache.hadoop.hive.serde2.objectinspector.primitive;
 
 import org.apache.hadoop.hive.common.type.TimestampTZ;
-import org.apache.hadoop.hive.serde2.io.TimestampTZWritable;
+import org.apache.hadoop.hive.serde2.io.TimestampLocalTZWritable;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 
-public interface TimestampTZObjectInspector extends PrimitiveObjectInspector {
+public interface TimestampLocalTZObjectInspector extends PrimitiveObjectInspector {
 
-  TimestampTZWritable getPrimitiveWritableObject(Object o);
+  TimestampLocalTZWritable getPrimitiveWritableObject(Object o);
 
   TimestampTZ getPrimitiveJavaObject(Object o);
 }

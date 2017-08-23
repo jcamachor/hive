@@ -181,9 +181,9 @@ public class SqlFunctionConverter {
         castUDF = FunctionRegistry.getFunctionInfo("double");
       } else if (castType.equals(TypeInfoFactory.timestampTypeInfo)) {
         castUDF = FunctionRegistry.getFunctionInfo("timestamp");
-      } else if (castType.equals(TypeInfoFactory.timestampTZTypeInfo)) {
+      } else if (castType.equals(TypeInfoFactory.timestampLocalTZTypeInfo)) {
         castUDF = handleCastForParameterizedType(castType,
-            FunctionRegistry.getFunctionInfo("timestamp with time zone"));
+            FunctionRegistry.getFunctionInfo(serdeConstants.TIMESTAMPLOCALTZ_TYPE_NAME));
       } else if (castType.equals(TypeInfoFactory.dateTypeInfo)) {
         castUDF = FunctionRegistry.getFunctionInfo("date");
       } else if (castType instanceof DecimalTypeInfo) {

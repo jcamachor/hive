@@ -19,21 +19,21 @@ package org.apache.hadoop.hive.serde2.lazybinary;
 
 import java.time.ZoneId;
 
-import org.apache.hadoop.hive.serde2.io.TimestampTZWritable;
+import org.apache.hadoop.hive.serde2.io.TimestampLocalTZWritable;
 import org.apache.hadoop.hive.serde2.lazy.ByteArrayRef;
-import org.apache.hadoop.hive.serde2.objectinspector.primitive.WritableTimestampTZObjectInspector;
-import org.apache.hadoop.hive.serde2.typeinfo.TimestampTZTypeInfo;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.WritableTimestampLocalTZObjectInspector;
+import org.apache.hadoop.hive.serde2.typeinfo.TimestampLocalTZTypeInfo;
 
-public class LazyBinaryTimestampTZ extends
-    LazyBinaryPrimitive<WritableTimestampTZObjectInspector, TimestampTZWritable> {
+public class LazyBinaryTimestampLocalTZ extends
+    LazyBinaryPrimitive<WritableTimestampLocalTZObjectInspector, TimestampLocalTZWritable> {
 
   private ZoneId timeZone;
 
-  public LazyBinaryTimestampTZ(WritableTimestampTZObjectInspector oi) {
+  public LazyBinaryTimestampLocalTZ(WritableTimestampLocalTZObjectInspector oi) {
     super(oi);
-    TimestampTZTypeInfo typeInfo = (TimestampTZTypeInfo) oi.getTypeInfo();
+    TimestampLocalTZTypeInfo typeInfo = (TimestampLocalTZTypeInfo) oi.getTypeInfo();
     this.timeZone = typeInfo.timeZone();
-    this.data = new TimestampTZWritable();
+    this.data = new TimestampLocalTZWritable();
   }
 
   @Override

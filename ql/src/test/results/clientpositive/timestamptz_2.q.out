@@ -2,11 +2,11 @@ PREHOOK: query: drop table tstz2
 PREHOOK: type: DROPTABLE
 POSTHOOK: query: drop table tstz2
 POSTHOOK: type: DROPTABLE
-PREHOOK: query: create table tstz2(t timestamp with time zone)
+PREHOOK: query: create table tstz2(t timestamp with local time zone)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@tstz2
-POSTHOOK: query: create table tstz2(t timestamp with time zone)
+POSTHOOK: query: create table tstz2(t timestamp with local time zone)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tstz2

@@ -68,11 +68,11 @@ POSTHOOK: query: insert into `timestamp_test` VALUES
 POSTHOOK: type: QUERY
 POSTHOOK: Output: default@timestamp_test
 POSTHOOK: Lineage: timestamp_test.mydate1 EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-PREHOOK: query: create table `timestamptz_test` (`mydate1` timestamp with time zone)
+PREHOOK: query: create table `timestamptz_test` (`mydate1` timestamp with local time zone)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@timestamptz_test
-POSTHOOK: query: create table `timestamptz_test` (`mydate1` timestamp with time zone)
+POSTHOOK: query: create table `timestamptz_test` (`mydate1` timestamp with local time zone)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@timestamptz_test
@@ -397,11 +397,11 @@ POSTHOOK: Input: default@timestamptz_test
 2010-12-31
 2010-12-31
 NULL
-PREHOOK: query: select cast(`mydate1` as timestamp with time zone) from `date_test`
+PREHOOK: query: select cast(`mydate1` as timestamp with local time zone) from `date_test`
 PREHOOK: type: QUERY
 PREHOOK: Input: default@date_test
 #### A masked pattern was here ####
-POSTHOOK: query: select cast(`mydate1` as timestamp with time zone) from `date_test`
+POSTHOOK: query: select cast(`mydate1` as timestamp with local time zone) from `date_test`
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@date_test
 #### A masked pattern was here ####
@@ -427,11 +427,11 @@ POSTHOOK: Input: default@timestamptz_test
 2010-12-31 17:01:01.123456789
 2010-12-31 23:01:01.123456789
 NULL
-PREHOOK: query: select cast(`mydate1` as timestamp with time zone) from `timestamp_test`
+PREHOOK: query: select cast(`mydate1` as timestamp with local time zone) from `timestamp_test`
 PREHOOK: type: QUERY
 PREHOOK: Input: default@timestamp_test
 #### A masked pattern was here ####
-POSTHOOK: query: select cast(`mydate1` as timestamp with time zone) from `timestamp_test`
+POSTHOOK: query: select cast(`mydate1` as timestamp with local time zone) from `timestamp_test`
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@timestamp_test
 #### A masked pattern was here ####
@@ -475,11 +475,11 @@ POSTHOOK: Input: default@timestamptz_test
 2010-12-31 23:01:01.123456789 GMT-07:00	2010-12-31 23:01:01.123456789 GMT-07:00
 2011-01-01 02:01:01.123 GMT-07:00	2011-01-01 02:01:01.123 GMT-07:00
 2011-01-01 02:01:01.123456789 GMT-07:00	2011-01-01 02:01:01.123456789 GMT-07:00
-PREHOOK: query: create table `timestamptz_test2` (`mydate1` timestamp with time zone, `item` string, `price` double)
+PREHOOK: query: create table `timestamptz_test2` (`mydate1` timestamp with local time zone, `item` string, `price` double)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@timestamptz_test2
-POSTHOOK: query: create table `timestamptz_test2` (`mydate1` timestamp with time zone, `item` string, `price` double)
+POSTHOOK: query: create table `timestamptz_test2` (`mydate1` timestamp with local time zone, `item` string, `price` double)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@timestamptz_test2

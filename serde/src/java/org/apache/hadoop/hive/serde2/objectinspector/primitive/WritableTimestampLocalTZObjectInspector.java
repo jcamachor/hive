@@ -18,26 +18,26 @@
 package org.apache.hadoop.hive.serde2.objectinspector.primitive;
 
 import org.apache.hadoop.hive.common.type.TimestampTZ;
-import org.apache.hadoop.hive.serde2.io.TimestampTZWritable;
-import org.apache.hadoop.hive.serde2.typeinfo.TimestampTZTypeInfo;
+import org.apache.hadoop.hive.serde2.io.TimestampLocalTZWritable;
+import org.apache.hadoop.hive.serde2.typeinfo.TimestampLocalTZTypeInfo;
 
-public class WritableTimestampTZObjectInspector extends
-    AbstractPrimitiveWritableObjectInspector implements SettableTimestampTZObjectInspector {
+public class WritableTimestampLocalTZObjectInspector extends
+    AbstractPrimitiveWritableObjectInspector implements SettableTimestampLocalTZObjectInspector {
 
-  public WritableTimestampTZObjectInspector() {
+  public WritableTimestampLocalTZObjectInspector() {
   }
 
-  public WritableTimestampTZObjectInspector(TimestampTZTypeInfo typeInfo) {
+  public WritableTimestampLocalTZObjectInspector(TimestampLocalTZTypeInfo typeInfo) {
     super(typeInfo);
   }
 
   @Override
-  public TimestampTZWritable getPrimitiveWritableObject(Object o) {
+  public TimestampLocalTZWritable getPrimitiveWritableObject(Object o) {
     if (o == null) {
       return null;
     }
-    TimestampTZWritable t = (TimestampTZWritable) o;
-    TimestampTZTypeInfo timestampTZTypeInfo = (TimestampTZTypeInfo) typeInfo;
+    TimestampLocalTZWritable t = (TimestampLocalTZWritable) o;
+    TimestampLocalTZTypeInfo timestampTZTypeInfo = (TimestampLocalTZTypeInfo) typeInfo;
     if (!t.getTimestampTZ().getZonedDateTime().getZone().equals(timestampTZTypeInfo.timeZone())) {
       t.setTimeZone(timestampTZTypeInfo.timeZone());
     }
@@ -49,8 +49,8 @@ public class WritableTimestampTZObjectInspector extends
     if (o == null) {
       return null;
     }
-    TimestampTZWritable t = (TimestampTZWritable) o;
-    TimestampTZTypeInfo timestampTZTypeInfo = (TimestampTZTypeInfo) typeInfo;
+    TimestampLocalTZWritable t = (TimestampLocalTZWritable) o;
+    TimestampLocalTZTypeInfo timestampTZTypeInfo = (TimestampLocalTZTypeInfo) typeInfo;
     if (!t.getTimestampTZ().getZonedDateTime().getZone().equals(timestampTZTypeInfo.timeZone())) {
       t.setTimeZone(timestampTZTypeInfo.timeZone());
     }
@@ -59,7 +59,7 @@ public class WritableTimestampTZObjectInspector extends
 
   @Override
   public Object set(Object o, byte[] bytes, int offset) {
-    ((TimestampTZWritable) o).set(bytes, offset, ((TimestampTZTypeInfo) typeInfo).timeZone());
+    ((TimestampLocalTZWritable) o).set(bytes, offset, ((TimestampLocalTZTypeInfo) typeInfo).timeZone());
     return o;
   }
 
@@ -68,40 +68,40 @@ public class WritableTimestampTZObjectInspector extends
     if (t == null) {
       return null;
     }
-    TimestampTZTypeInfo timestampTZTypeInfo = (TimestampTZTypeInfo) typeInfo;
+    TimestampLocalTZTypeInfo timestampTZTypeInfo = (TimestampLocalTZTypeInfo) typeInfo;
     if (!t.getZonedDateTime().getZone().equals(timestampTZTypeInfo.timeZone())) {
       t.setZonedDateTime(t.getZonedDateTime().withZoneSameInstant(timestampTZTypeInfo.timeZone()));
     }
-    ((TimestampTZWritable) o).set(t);
+    ((TimestampLocalTZWritable) o).set(t);
     return o;
   }
 
   @Override
-  public Object set(Object o, TimestampTZWritable t) {
+  public Object set(Object o, TimestampLocalTZWritable t) {
     if (t == null) {
       return null;
     }
-    TimestampTZTypeInfo timestampTZTypeInfo = (TimestampTZTypeInfo) typeInfo;
+    TimestampLocalTZTypeInfo timestampTZTypeInfo = (TimestampLocalTZTypeInfo) typeInfo;
     if (!t.getTimestampTZ().getZonedDateTime().getZone().equals(timestampTZTypeInfo.timeZone())) {
       t.getTimestampTZ().setZonedDateTime(
           t.getTimestampTZ().getZonedDateTime().withZoneSameInstant(timestampTZTypeInfo.timeZone()));
     }
-    ((TimestampTZWritable) o).set(t);
+    ((TimestampLocalTZWritable) o).set(t);
     return o;
   }
 
   @Override
   public Object create(byte[] bytes, int offset) {
-    return new TimestampTZWritable(bytes, offset, ((TimestampTZTypeInfo) typeInfo).timeZone());
+    return new TimestampLocalTZWritable(bytes, offset, ((TimestampLocalTZTypeInfo) typeInfo).timeZone());
   }
 
   @Override
   public Object create(TimestampTZ t) {
-    return new TimestampTZWritable(t);
+    return new TimestampLocalTZWritable(t);
   }
 
   @Override
   public Object copyObject(Object o) {
-    return o == null ? null : new TimestampTZWritable((TimestampTZWritable) o);
+    return o == null ? null : new TimestampLocalTZWritable((TimestampLocalTZWritable) o);
   }
 }

@@ -18,16 +18,16 @@
 package org.apache.hadoop.hive.serde2.lazy.objectinspector.primitive;
 
 import org.apache.hadoop.hive.common.type.TimestampTZ;
-import org.apache.hadoop.hive.serde2.io.TimestampTZWritable;
-import org.apache.hadoop.hive.serde2.lazy.LazyTimestampTZ;
-import org.apache.hadoop.hive.serde2.objectinspector.primitive.TimestampTZObjectInspector;
-import org.apache.hadoop.hive.serde2.typeinfo.TimestampTZTypeInfo;
+import org.apache.hadoop.hive.serde2.io.TimestampLocalTZWritable;
+import org.apache.hadoop.hive.serde2.lazy.LazyTimestampLocalTZ;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.TimestampLocalTZObjectInspector;
+import org.apache.hadoop.hive.serde2.typeinfo.TimestampLocalTZTypeInfo;
 
-public class LazyTimestampTZObjectInspector
-    extends AbstractPrimitiveLazyObjectInspector<TimestampTZWritable>
-    implements TimestampTZObjectInspector {
+public class LazyTimestampLocalTZObjectInspector
+    extends AbstractPrimitiveLazyObjectInspector<TimestampLocalTZWritable>
+    implements TimestampLocalTZObjectInspector {
 
-  protected LazyTimestampTZObjectInspector(TimestampTZTypeInfo typeInfo) {
+  protected LazyTimestampLocalTZObjectInspector(TimestampLocalTZTypeInfo typeInfo) {
     super(typeInfo);
   }
 
@@ -37,8 +37,8 @@ public class LazyTimestampTZObjectInspector
       return null;
     }
 
-    TimestampTZ t = ((LazyTimestampTZ) o).getWritableObject().getTimestampTZ();
-    TimestampTZTypeInfo timestampTZTypeInfo = (TimestampTZTypeInfo) typeInfo;
+    TimestampTZ t = ((LazyTimestampLocalTZ) o).getWritableObject().getTimestampTZ();
+    TimestampLocalTZTypeInfo timestampTZTypeInfo = (TimestampLocalTZTypeInfo) typeInfo;
     if (!t.getZonedDateTime().getZone().equals(timestampTZTypeInfo.timeZone())) {
       t.setZonedDateTime(t.getZonedDateTime().withZoneSameInstant(timestampTZTypeInfo.timeZone()));
     }
@@ -47,6 +47,6 @@ public class LazyTimestampTZObjectInspector
 
   @Override
   public Object copyObject(Object o) {
-    return o == null ? null : new LazyTimestampTZ((LazyTimestampTZ) o);
+    return o == null ? null : new LazyTimestampLocalTZ((LazyTimestampLocalTZ) o);
   }
 }

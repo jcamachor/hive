@@ -271,7 +271,7 @@ public class ExprNodeConverter extends RexVisitorImpl<ExprNodeDesc> {
       case OTHER:
       default:
         if (lType instanceof HiveType && ((HiveType) lType).getTypeClass() == TimestampTZ.class) {
-          return new ExprNodeConstantDesc(TypeInfoFactory.timestampTZTypeInfo, null);
+          return new ExprNodeConstantDesc(TypeInfoFactory.timestampLocalTZTypeInfo, null);
         }
         return new ExprNodeConstantDesc(TypeInfoFactory.voidTypeInfo, null);
       }
@@ -344,7 +344,7 @@ public class ExprNodeConverter extends RexVisitorImpl<ExprNodeDesc> {
       case OTHER:
       default:
         if (lType instanceof HiveType && ((HiveType) lType).getTypeClass() == TimestampTZ.class) {
-          return new ExprNodeConstantDesc(TypeInfoFactory.timestampTZTypeInfo, literal.getValue3());
+          return new ExprNodeConstantDesc(TypeInfoFactory.timestampLocalTZTypeInfo, literal.getValue3());
         }
         return new ExprNodeConstantDesc(TypeInfoFactory.voidTypeInfo, literal.getValue3());
       }

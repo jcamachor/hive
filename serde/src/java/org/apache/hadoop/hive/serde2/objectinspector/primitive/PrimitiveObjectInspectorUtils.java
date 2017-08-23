@@ -32,7 +32,7 @@ import java.util.Map;
 import org.apache.hadoop.hive.common.type.TimestampTZ;
 import org.apache.hadoop.hive.common.type.TimestampTZUtil;
 import org.apache.hadoop.hive.ql.util.TimestampUtils;
-import org.apache.hadoop.hive.serde2.io.TimestampTZWritable;
+import org.apache.hadoop.hive.serde2.io.TimestampLocalTZWritable;
 import org.apache.hadoop.hive.common.type.HiveChar;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.common.type.HiveIntervalYearMonth;
@@ -229,8 +229,8 @@ public final class PrimitiveObjectInspectorUtils {
       PrimitiveCategory.TIMESTAMP, serdeConstants.TIMESTAMP_TYPE_NAME, null,
       Timestamp.class, TimestampWritable.class);
   public static final PrimitiveTypeEntry timestampTZTypeEntry = new PrimitiveTypeEntry(
-      PrimitiveCategory.TIMESTAMPTZ, serdeConstants.TIMESTAMPTZ_TYPE_NAME, null,
-      TimestampTZ.class, TimestampTZWritable.class);
+      PrimitiveCategory.TIMESTAMPLOCALTZ, serdeConstants.TIMESTAMPLOCALTZ_TYPE_NAME, null,
+      TimestampTZ.class, TimestampLocalTZWritable.class);
   public static final PrimitiveTypeEntry intervalYearMonthTypeEntry = new PrimitiveTypeEntry(
       PrimitiveCategory.INTERVAL_YEAR_MONTH, serdeConstants.INTERVAL_YEAR_MONTH_TYPE_NAME, null,
       HiveIntervalYearMonth.class, HiveIntervalYearMonthWritable.class);
@@ -445,9 +445,9 @@ public final class PrimitiveObjectInspectorUtils {
       return ((TimestampObjectInspector) oi1).getPrimitiveWritableObject(o1)
           .equals(((TimestampObjectInspector) oi2).getPrimitiveWritableObject(o2));
     }
-    case TIMESTAMPTZ: {
-      return ((TimestampTZObjectInspector) oi1).getPrimitiveWritableObject(o1).equals(
-          ((TimestampTZObjectInspector) oi2).getPrimitiveWritableObject(o2));
+    case TIMESTAMPLOCALTZ: {
+      return ((TimestampLocalTZObjectInspector) oi1).getPrimitiveWritableObject(o1).equals(
+          ((TimestampLocalTZObjectInspector) oi2).getPrimitiveWritableObject(o2));
     }
     case INTERVAL_YEAR_MONTH: {
       return ((HiveIntervalYearMonthObjectInspector) oi1).getPrimitiveWritableObject(o1)
@@ -880,8 +880,8 @@ public final class PrimitiveObjectInspectorUtils {
     case TIMESTAMP:
       result = ((TimestampObjectInspector) oi).getPrimitiveWritableObject(o).toString();
       break;
-    case TIMESTAMPTZ:
-      result = ((TimestampTZObjectInspector) oi).getPrimitiveWritableObject(o).toString();
+    case TIMESTAMPLOCALTZ:
+      result = ((TimestampLocalTZObjectInspector) oi).getPrimitiveWritableObject(o).toString();
       break;
     case INTERVAL_YEAR_MONTH:
       result = ((HiveIntervalYearMonthObjectInspector) oi).getPrimitiveWritableObject(o).toString();
@@ -1081,7 +1081,7 @@ public final class PrimitiveObjectInspectorUtils {
       result = DateWritable.timeToDate(
           ((TimestampObjectInspector) oi).getPrimitiveWritableObject(o).getSeconds());
       break;
-    case TIMESTAMPTZ:
+    case TIMESTAMPLOCALTZ:
       String tstz = oi.getPrimitiveWritableObject(o).toString();
       int divSpace = tstz.indexOf(' ');
       if (divSpace == -1) {
@@ -1158,7 +1158,7 @@ public final class PrimitiveObjectInspectorUtils {
     case TIMESTAMP:
       result = ((TimestampObjectInspector) inputOI).getPrimitiveWritableObject(o).getTimestamp();
       break;
-    case TIMESTAMPTZ:
+    case TIMESTAMPLOCALTZ:
       String tstz = inputOI.getPrimitiveWritableObject(o).toString();
       int index = tstz.indexOf(" ");
       index = tstz.indexOf(" ", index + 1);
@@ -1210,7 +1210,7 @@ public final class PrimitiveObjectInspectorUtils {
     return s;
   }
 
-  public static TimestampTZ getTimestampTZ(Object o, PrimitiveObjectInspector oi,
+  public static TimestampTZ getTimestampLocalTZ(Object o, PrimitiveObjectInspector oi,
           ZoneId timeZone) {
     if (o == null) {
       return null;
@@ -1237,11 +1237,11 @@ public final class PrimitiveObjectInspectorUtils {
       Timestamp ts = ((TimestampObjectInspector) oi).getPrimitiveWritableObject(o).getTimestamp();
       return TimestampTZUtil.convert(ts, timeZone);
     }
-    case TIMESTAMPTZ: {
-      return ((TimestampTZObjectInspector) oi).getPrimitiveWritableObject(o).getTimestampTZ();
+    case TIMESTAMPLOCALTZ: {
+      return ((TimestampLocalTZObjectInspector) oi).getPrimitiveWritableObject(o).getTimestampTZ();
     }
     default:
-      throw new RuntimeException("Cannot convert to " + serdeConstants.TIMESTAMPTZ_TYPE_NAME +
+      throw new RuntimeException("Cannot convert to " + serdeConstants.TIMESTAMPLOCALTZ_TYPE_NAME +
           " from: " + oi.getTypeName());
     }
   }
@@ -1354,7 +1354,7 @@ public final class PrimitiveObjectInspectorUtils {
         return PrimitiveGrouping.BOOLEAN_GROUP;
       case TIMESTAMP:
       case DATE:
-      case TIMESTAMPTZ:
+      case TIMESTAMPLOCALTZ:
         return PrimitiveGrouping.DATE_GROUP;
       case INTERVAL_YEAR_MONTH:
       case INTERVAL_DAY_TIME:
