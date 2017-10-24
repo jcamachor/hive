@@ -22,19 +22,13 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
-import java.io.UnsupportedEncodingException;
 import java.math.BigDecimal;
-import java.math.MathContext;
-import java.math.RoundingMode;
-import java.sql.Timestamp;
-import java.util.Arrays;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
-import junit.framework.Assert;
-
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.common.type.RandomTypeUtil;
+import org.apache.hadoop.hive.common.type.Timestamp;
 import org.apache.hadoop.hive.ql.exec.vector.BytesColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.DecimalColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.DoubleColumnVector;
@@ -50,7 +44,10 @@ import org.apache.hadoop.hive.serde2.io.TimestampWritable;
 import org.apache.hadoop.hive.serde2.typeinfo.HiveDecimalUtils;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
+import org.apache.hadoop.hive.ql.util.TimestampUtils;
 import org.junit.Test;
+
+import junit.framework.Assert;
 
 /**
  * Test VectorExpression classes for vectorized implementations of type casts.
@@ -87,7 +84,7 @@ public class TestVectorTypeCasts {
     expr.evaluate(b);
     for (int i = 0; i < intValues.length; i++) {
       Timestamp timestamp = resultV.asScratchTimestamp(i);
-      long actual = DateWritable.millisToDays(timestamp.getTime());
+      long actual = DateWritable.millisToDays(timestamp.getMillis());
       assertEquals(actual, intValues[i]);
     }
   }
@@ -463,9 +460,8 @@ public class TestVectorTypeCasts {
     Random r = new Random(94830);
     for (int i = 0; i < doubleValues.length; i++) {
       long millis = RandomTypeUtil.randomMillis(r);
-      Timestamp ts = new Timestamp(millis);
       int nanos = RandomTypeUtil.randomNanos(r);
-      ts.setNanos(nanos);
+      Timestamp ts = Timestamp.ofEpochMilli(millis, nanos);
       TimestampWritable tsw = new TimestampWritable(ts);
       double asDouble = tsw.getDouble();
       doubleValues[i] = asDouble;
@@ -528,8 +524,7 @@ public class TestVectorTypeCasts {
         break;
       }
       long millis = RandomTypeUtil.randomMillis(r);
-      Timestamp ts = new Timestamp(millis);
-      ts.setNanos(optionalNanos);
+      Timestamp ts = Timestamp.ofEpochMilli(millis, optionalNanos);
       TimestampWritable tsw = new TimestampWritable(ts);
       hiveDecimalValues[i] = tsw.getHiveDecimal();
 

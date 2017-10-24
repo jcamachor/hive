@@ -18,15 +18,16 @@
 
 package org.apache.hadoop.hive.ql.exec.vector;
 
-import org.junit.Test;
-
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.sql.Timestamp;
-
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.time.LocalDateTime;
+
+import org.apache.hadoop.hive.common.type.Timestamp;
+import org.junit.Test;
 
 /**
  * Test for StructColumnVector
@@ -110,11 +111,11 @@ public class TestStructColumnVector {
     batch.cols[0] = x;
     batch.cols[1] = y;
     batch.reset();
-    Timestamp ts = Timestamp.valueOf("2000-01-01 00:00:00");
+    Timestamp ts = new Timestamp(LocalDateTime.of(2000, 1, 1, 0, 0, 0));
     for(int r=0; r < 10; ++r) {
       batch.size += 1;
       x1.vector[r] = 3 * r;
-      ts.setTime(ts.getTime() + 1000);
+      ts.setTimeInMillis(ts.getMillis() + 1000);
       x2.set(r, ts);
       byte[] buffer = ("value " + r).getBytes(StandardCharsets.UTF_8);
       y.setRef(r, buffer, 0, buffer.length);

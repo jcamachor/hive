@@ -19,7 +19,6 @@
 package org.apache.hadoop.hive.ql.exec.vector.expressions;
 
 import java.sql.Date;
-import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -32,10 +31,27 @@ import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.common.type.HiveIntervalDayTime;
 import org.apache.hadoop.hive.common.type.HiveIntervalYearMonth;
 import org.apache.hadoop.hive.common.type.HiveVarchar;
-import org.apache.hadoop.hive.ql.exec.vector.*;
+import org.apache.hadoop.hive.common.type.Timestamp;
+import org.apache.hadoop.hive.ql.exec.vector.BytesColumnVector;
+import org.apache.hadoop.hive.ql.exec.vector.ColumnVector;
+import org.apache.hadoop.hive.ql.exec.vector.Decimal64ColumnVector;
+import org.apache.hadoop.hive.ql.exec.vector.DecimalColumnVector;
+import org.apache.hadoop.hive.ql.exec.vector.DoubleColumnVector;
+import org.apache.hadoop.hive.ql.exec.vector.IntervalDayTimeColumnVector;
+import org.apache.hadoop.hive.ql.exec.vector.ListColumnVector;
+import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
+import org.apache.hadoop.hive.ql.exec.vector.MapColumnVector;
+import org.apache.hadoop.hive.ql.exec.vector.StructColumnVector;
+import org.apache.hadoop.hive.ql.exec.vector.TimestampColumnVector;
+import org.apache.hadoop.hive.ql.exec.vector.TimestampUtils;
+import org.apache.hadoop.hive.ql.exec.vector.UnionColumnVector;
+import org.apache.hadoop.hive.ql.exec.vector.VectorExtractRow;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
-import org.apache.hadoop.hive.serde2.io.*;
+import org.apache.hadoop.hive.serde2.io.DateWritable;
+import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
+import org.apache.hadoop.hive.serde2.io.HiveIntervalDayTimeWritable;
+import org.apache.hadoop.hive.serde2.io.TimestampWritable;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
@@ -58,9 +74,9 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.SettableHiveInter
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.SettableHiveVarcharObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.SettableIntObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.SettableLongObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.primitive.SettableTimestampObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.SettableShortObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.SettableStringObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.SettableTimestampObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.VoidObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.MapTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.StructTypeInfo;
@@ -69,7 +85,6 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.hadoop.hive.serde2.typeinfo.UnionTypeInfo;
 import org.apache.hadoop.io.Text;
-import org.apache.hive.common.util.DateUtils;
 
 /**
  * VectorExpressionWritableFactory helper class for generating VectorExpressionWritable objects.
@@ -896,7 +911,7 @@ public final class VectorExpressionWriterFactory {
 
       @Override
       public Object initValue(Object ignored) {
-        return ((SettableTimestampObjectInspector) this.objectInspector).create(new Timestamp(0));
+        return ((SettableTimestampObjectInspector) this.objectInspector).create(new Timestamp());
       }
     }.init(fieldObjInspector);
   }

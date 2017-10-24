@@ -17,9 +17,9 @@
  */
 package org.apache.hadoop.hive.ql.exec.vector;
 
-import java.sql.Timestamp;
 import java.util.Arrays;
 
+import org.apache.hadoop.hive.common.type.Timestamp;
 import org.apache.hadoop.io.Writable;
 
 /**
@@ -72,7 +72,7 @@ public class TimestampColumnVector extends ColumnVector {
     time = new long[len];
     nanos = new int[len];
 
-    scratchTimestamp = new Timestamp(0);
+    scratchTimestamp = new Timestamp();
 
     scratchWritable = null;     // Allocated by caller.
   }
@@ -112,8 +112,7 @@ public class TimestampColumnVector extends ColumnVector {
    * @param elementNum
    */
   public void timestampUpdate(Timestamp timestamp, int elementNum) {
-    timestamp.setTime(time[elementNum]);
-    timestamp.setNanos(nanos[elementNum]);
+    timestamp.setTimeInMillis(time[elementNum], nanos[elementNum]);
   }
 
   /**
@@ -123,8 +122,7 @@ public class TimestampColumnVector extends ColumnVector {
    * @return
    */
   public Timestamp asScratchTimestamp(int elementNum) {
-    scratchTimestamp.setTime(time[elementNum]);
-    scratchTimestamp.setNanos(nanos[elementNum]);
+    scratchTimestamp.setTimeInMillis(time[elementNum], nanos[elementNum]);
     return scratchTimestamp;
   }
 
@@ -142,8 +140,7 @@ public class TimestampColumnVector extends ColumnVector {
    * @return
    */
   public long getTimestampAsLong(int elementNum) {
-    scratchTimestamp.setTime(time[elementNum]);
-    scratchTimestamp.setNanos(nanos[elementNum]);
+    scratchTimestamp.setTimeInMillis(time[elementNum], nanos[elementNum]);
     return getTimestampAsLong(scratchTimestamp);
   }
 
@@ -153,30 +150,17 @@ public class TimestampColumnVector extends ColumnVector {
    * @return
    */
   public static long getTimestampAsLong(Timestamp timestamp) {
-    return millisToSeconds(timestamp.getTime());
+    return timestamp.getSeconds();
   }
 
   // Copy of TimestampWritable.millisToSeconds
-  /**
-   * Rounds the number of milliseconds relative to the epoch down to the nearest whole number of
-   * seconds. 500 would round to 0, -500 would round to -1.
-   */
-  private static long millisToSeconds(long millis) {
-    if (millis >= 0) {
-      return millis / 1000;
-    } else {
-      return (millis - 999) / 1000;
-    }
-  }
-
   /**
    * Return a double representation of a Timestamp.
    * @param elementNum
    * @return
    */
   public double getDouble(int elementNum) {
-    scratchTimestamp.setTime(time[elementNum]);
-    scratchTimestamp.setNanos(nanos[elementNum]);
+    scratchTimestamp.setTimeInMillis(time[elementNum], nanos[elementNum]);
     return getDouble(scratchTimestamp);
   }
 
@@ -188,7 +172,7 @@ public class TimestampColumnVector extends ColumnVector {
   public static double getDouble(Timestamp timestamp) {
     // Same algorithm as TimestampWritable (not currently import-able here).
     double seconds, nanos;
-    seconds = millisToSeconds(timestamp.getTime());
+    seconds = timestamp.getSeconds();
     nanos = timestamp.getNanos();
     return seconds + nanos / 1000000000;
   }
@@ -337,7 +321,7 @@ public class TimestampColumnVector extends ColumnVector {
       noNulls = false;
       return;
     }
-    this.time[elementNum] = timestamp.getTime();
+    this.time[elementNum] = timestamp.getMillis();
     this.nanos[elementNum] = timestamp.getNanos();
   }
 
@@ -351,7 +335,7 @@ public class TimestampColumnVector extends ColumnVector {
    * @param elementNum
    */
   public void setFromScratchTimestamp(int elementNum) {
-    this.time[elementNum] = scratchTimestamp.getTime();
+    this.time[elementNum] = scratchTimestamp.getMillis();
     this.nanos[elementNum] = scratchTimestamp.getNanos();
   }
 
@@ -456,7 +440,7 @@ public class TimestampColumnVector extends ColumnVector {
   public void fill(Timestamp timestamp) {
     isRepeating = true;
     isNull[0] = false;
-    time[0] = timestamp.getTime();
+    time[0] = timestamp.getMillis();
     nanos[0] = timestamp.getNanos();
   }
 
@@ -483,8 +467,7 @@ public class TimestampColumnVector extends ColumnVector {
       row = 0;
     }
     if (noNulls || !isNull[row]) {
-      scratchTimestamp.setTime(time[row]);
-      scratchTimestamp.setNanos(nanos[row]);
+      scratchTimestamp.setTimeInMillis(time[row], nanos[row]);
       buffer.append(scratchTimestamp.toString());
     } else {
       buffer.append("null");

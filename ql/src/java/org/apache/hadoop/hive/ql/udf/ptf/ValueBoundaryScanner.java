@@ -18,10 +18,10 @@
 
 package org.apache.hadoop.hive.ql.udf.ptf;
 
-import java.sql.Timestamp;
 import java.util.Date;
 
 import org.apache.hadoop.hive.common.type.HiveDecimal;
+import org.apache.hadoop.hive.common.type.Timestamp;
 import org.apache.hadoop.hive.common.type.TimestampTZ;
 import org.apache.hadoop.hive.ql.exec.PTFPartition;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -583,9 +583,9 @@ class TimestampValueBoundaryScanner extends SingleValueBoundaryScanner {
   public boolean isDistanceGreater(Object v1, Object v2, int amt) {
     if (v1 != null && v2 != null) {
       long l1 = PrimitiveObjectInspectorUtils.getTimestamp(v1,
-          (PrimitiveObjectInspector) expressionDef.getOI()).getTime();
+          (PrimitiveObjectInspector) expressionDef.getOI()).getMillis();
       long l2 = PrimitiveObjectInspectorUtils.getTimestamp(v2,
-          (PrimitiveObjectInspector) expressionDef.getOI()).getTime();
+          (PrimitiveObjectInspector) expressionDef.getOI()).getMillis();
       return (double)(l1-l2)/1000 > amt; // TODO: lossy conversion, distance is considered in seconds
     }
     return v1 != null || v2 != null; // True if only one value is null

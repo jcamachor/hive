@@ -100,8 +100,7 @@ public class UDFSecond extends UDF {
       return null;
     }
 
-    calendar.setTime(t.getTimestamp());
-    result.set(calendar.get(Calendar.SECOND));
+    result.set(t.getTimestamp().getLocalDateTime().getSecond());
     return result;
   }
 

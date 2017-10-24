@@ -18,9 +18,8 @@
 
 package org.apache.hadoop.hive.ql.exec.vector.expressions;
 
+import org.apache.hadoop.hive.common.type.Timestamp;
 import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor;
-
-import java.sql.Timestamp;
 
 /**
  * Compute IF(expr1, expr2, expr3) for 3 input  expressions.

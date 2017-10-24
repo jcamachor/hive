@@ -96,8 +96,7 @@ public class UDFMinute extends UDF {
       return null;
     }
 
-    calendar.setTime(t.getTimestamp());
-    result.set(calendar.get(Calendar.MINUTE));
+    result.set(t.getTimestamp().getLocalDateTime().getMinute());
     return result;
   }
 

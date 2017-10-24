@@ -296,7 +296,7 @@ class HiveHBaseInputFormatUtil {
         timestamp = ((LongObjectInspector) inspector).get(value);
       } else {
         PrimitiveObjectInspector primitive = (PrimitiveObjectInspector) inspector;
-        timestamp = PrimitiveObjectInspectorUtils.getTimestamp(value, primitive).getTime();
+        timestamp = PrimitiveObjectInspectorUtils.getTimestamp(value, primitive).getMillis();
       }
     } catch (HiveException e) {
       throw new IOException(e);

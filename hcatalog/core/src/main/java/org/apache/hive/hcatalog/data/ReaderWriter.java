@@ -33,6 +33,7 @@ import java.util.Map.Entry;
 import org.apache.hadoop.hive.common.type.HiveChar;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.common.type.HiveVarchar;
+import org.apache.hadoop.hive.common.type.Timestamp;
 import org.apache.hadoop.hive.serde2.io.DateWritable;
 import org.apache.hadoop.hive.serde2.io.HiveCharWritable;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
@@ -217,7 +218,7 @@ public abstract class ReaderWriter {
       new DateWritable((Date)val).write(out);
       return;
     case DataType.TIMESTAMP:
-      new TimestampWritable((java.sql.Timestamp)val).write(out);
+      new TimestampWritable((Timestamp)val).write(out);
       return;
     default:
       throw new IOException("Unexpected data type " + type +

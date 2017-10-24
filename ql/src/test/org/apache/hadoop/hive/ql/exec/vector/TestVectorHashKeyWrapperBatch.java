@@ -18,20 +18,17 @@
 
 package org.apache.hadoop.hive.ql.exec.vector;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-
-import java.sql.Timestamp;
-
-import org.junit.Test;
+import org.apache.hadoop.hive.common.type.Timestamp;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.IdentityExpression;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
-import org.apache.hadoop.hive.ql.exec.vector.util.FakeVectorRowBatchFromObjectIterables;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
+import org.junit.Test;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 /**
  * Unit test for VectorHashKeyWrapperBatch class.
@@ -61,13 +58,16 @@ public class TestVectorHashKeyWrapperBatch {
     // Cause Timestamp object to be replaced (in buggy code) with ZERO_TIMESTAMP.
     timestampColVector.noNulls = false;
     timestampColVector.isNull[0] = true;
-    Timestamp scratch = new Timestamp(2039);
-    Timestamp ts0 = new Timestamp(2039);
-    scratch.setTime(ts0.getTime());
+    Timestamp scratch = new Timestamp();
+    scratch.setTimeInMillis(2039);
+    Timestamp ts0 = new Timestamp();
+    ts0.setTimeInMillis(2039);
+    scratch.setTimeInMillis(ts0.getMillis());
     scratch.setNanos(ts0.getNanos());
     timestampColVector.set(1, scratch);
-    Timestamp ts1 = new Timestamp(33222);
-    scratch.setTime(ts1.getTime());
+    Timestamp ts1 = new Timestamp();
+    ts1.setTimeInMillis(33222);
+    scratch.setTimeInMillis(ts1.getMillis());
     scratch.setNanos(ts1.getNanos());
     timestampColVector.set(2, scratch);
     batch.size = 3;

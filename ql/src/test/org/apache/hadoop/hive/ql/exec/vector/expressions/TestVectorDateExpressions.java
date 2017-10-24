@@ -18,8 +18,17 @@
 
 package org.apache.hadoop.hive.ql.exec.vector.expressions;
 
-import org.junit.Assert;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.List;
+import java.util.Random;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+
 import org.apache.commons.lang.ArrayUtils;
+import org.apache.hadoop.hive.common.type.Timestamp;
 import org.apache.hadoop.hive.ql.exec.vector.BytesColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.TestVectorizedRowBatch;
@@ -36,22 +45,11 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.internal.runners.statements.Fail;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
-
-import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.List;
-import java.util.Random;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.concurrent.ThreadFactory;
 
 public class TestVectorDateExpressions {
 
@@ -59,7 +57,7 @@ public class TestVectorDateExpressions {
 
   /* copied over from VectorUDFTimestampFieldLong */
   private TimestampWritable toTimestampWritable(long daysSinceEpoch) {
-    Timestamp ts = new Timestamp(DateWritable.daysToMillis((int) daysSinceEpoch));
+    Timestamp ts = Timestamp.ofEpochMilli(DateWritable.daysToMillis((int) daysSinceEpoch));
     return new TimestampWritable(ts);
   }
 
@@ -309,7 +307,7 @@ public class TestVectorDateExpressions {
     LongWritable res = getLongWritable(tsw);
     if(res.get() != y) {
       System.out.printf("%d vs %d for %d, %d\n", res.get(), y, t,
-              tsw.getTimestamp().getTime()/1000);
+              tsw.getTimestamp().getSeconds());
     }
 
     Assert.assertEquals(res.get(), y);

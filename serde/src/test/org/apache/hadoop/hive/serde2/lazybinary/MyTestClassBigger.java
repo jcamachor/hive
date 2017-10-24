@@ -18,7 +18,6 @@
 package org.apache.hadoop.hive.serde2.lazybinary;
 
 import java.sql.Date;
-import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -31,10 +30,10 @@ import org.apache.hadoop.hive.common.type.HiveIntervalDayTime;
 import org.apache.hadoop.hive.common.type.HiveIntervalYearMonth;
 import org.apache.hadoop.hive.common.type.HiveVarchar;
 import org.apache.hadoop.hive.common.type.RandomTypeUtil;
+import org.apache.hadoop.hive.common.type.Timestamp;
 import org.apache.hadoop.hive.serde2.binarysortable.MyTestClass;
 import org.apache.hadoop.hive.serde2.binarysortable.MyTestInnerStruct;
 import org.apache.hadoop.hive.serde2.binarysortable.MyTestPrimitiveClass;
-import org.apache.hadoop.hive.serde2.binarysortable.TestBinarySortableSerDe;
 import org.apache.hadoop.hive.serde2.binarysortable.MyTestPrimitiveClass.ExtraTypeInfo;
 
 /**

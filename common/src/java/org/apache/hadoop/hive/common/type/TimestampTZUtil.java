@@ -17,7 +17,6 @@
  */
 package org.apache.hadoop.hive.common.type;
 
-import java.sql.Timestamp;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.time.DateTimeException;
@@ -129,8 +128,13 @@ public class TimestampTZUtil {
   // Converts Date to TimestampTZ. The conversion is done text-wise since
   // Date/Timestamp should be treated as description of date/time.
   public static TimestampTZ convert(Date date, ZoneId defaultTimeZone) {
-    String s = date instanceof Timestamp ? date.toString() : CONVERT_FORMATTER.get().format(date);
+    String s = date instanceof java.sql.Timestamp ? date.toString() : CONVERT_FORMATTER.get().format(date);
     return parse(s, defaultTimeZone);
+  }
+
+  // Converts Timestamp to TimestampTZ.
+  public static TimestampTZ convert(Timestamp ts, ZoneId defaultTimeZone) {
+    return parse(ts.toString(), defaultTimeZone);
   }
 
   public static ZoneId parseTimeZone(String timeZoneStr) {

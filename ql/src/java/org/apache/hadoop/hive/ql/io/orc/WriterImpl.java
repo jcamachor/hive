@@ -19,12 +19,10 @@
 package org.apache.hadoop.hive.ql.io.orc;
 
 import java.io.IOException;
-import java.sql.Timestamp;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.ql.exec.vector.BytesColumnVector;
@@ -41,6 +39,7 @@ import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.serde2.objectinspector.ListObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.MapObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.UnionObjectInspector;
@@ -60,9 +59,6 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.StringObjectInspe
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.TimestampObjectInspector;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.Text;
-
-import com.google.common.annotations.VisibleForTesting;
-import org.apache.orc.PhysicalWriter;
 
 /**
  * An ORC file writer. The file is divided into stripes, which is the natural
@@ -195,9 +191,8 @@ public class WriterImpl extends org.apache.orc.impl.WriterImpl implements Writer
             }
             case TIMESTAMP: {
               TimestampColumnVector vector = (TimestampColumnVector) column;
-              Timestamp ts = ((TimestampObjectInspector) inspector)
-                  .getPrimitiveJavaObject(obj);
-              vector.set(rowId, ts);
+              vector.set(rowId, ((TimestampObjectInspector) inspector)
+                  .getPrimitiveJavaObject(obj));
               break;
             }
             case DATE: {

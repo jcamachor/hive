@@ -18,7 +18,6 @@
 package org.apache.hadoop.hive.common.type;
 
 import java.sql.Date;
-import java.sql.Timestamp;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;

@@ -18,10 +18,10 @@
 package org.apache.hadoop.hive.ql.util;
 
 import java.sql.Date;
-import java.sql.Timestamp;
 import java.util.TimeZone;
 
 import org.apache.hadoop.hive.common.type.HiveIntervalYearMonth;
+import org.apache.hadoop.hive.common.type.Timestamp;
 import org.apache.hadoop.hive.common.type.HiveIntervalDayTime;
 import org.apache.hadoop.hive.ql.util.DateTimeMath;
 import org.junit.*;

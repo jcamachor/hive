@@ -25,6 +25,7 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.NoSuchElementException;
 
+import org.apache.hadoop.hive.common.type.Timestamp;
 import org.apache.hadoop.hive.common.type.TimestampTZ;
 import org.apache.hadoop.hive.ql.exec.UDF;
 import org.apache.hadoop.hive.serde2.io.TimestampLocalTZWritable;
@@ -59,13 +60,13 @@ public abstract class UDFDateFloor extends UDF {
     if (t == null) {
       return null;
     }
-    final long originalTimestamp = t.getTimestamp().getTime(); // default
+    final long originalTimestamp = t.getTimestamp().getMillis(); // default
     final long originalTimestampUTC = new DateTime(originalTimestamp)
         .withZoneRetainFields(DateTimeZone.UTC).getMillis(); // default -> utc
     final long newTimestampUTC = granularity.truncate(originalTimestampUTC); // utc
     final long newTimestamp = new DateTime(newTimestampUTC, DateTimeZone.UTC)
         .withZoneRetainFields(DateTimeZone.getDefault()).getMillis(); // utc -> default
-    resultTS.setTime(newTimestamp);
+    resultTS.set(Timestamp.ofEpochMilli(newTimestamp));
     return resultTS;
   }
 

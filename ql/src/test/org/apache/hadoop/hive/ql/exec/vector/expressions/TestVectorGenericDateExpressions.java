@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql.exec.vector.expressions;
 
+import org.apache.hadoop.hive.common.type.Timestamp;
 import org.apache.hadoop.hive.ql.exec.vector.BytesColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.ColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
@@ -35,7 +36,6 @@ import org.junit.Test;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.sql.Date;
-import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.List;
@@ -88,7 +88,7 @@ public class TestVectorGenericDateExpressions {
   }
 
   private Timestamp toTimestamp(long date) {
-    return new Timestamp(DateWritable.daysToMillis((int) date));
+    return Timestamp.ofEpochMilli(DateWritable.daysToMillis((int) date));
   }
 
   private BytesColumnVector toString(LongColumnVector date) {
@@ -479,7 +479,7 @@ public class TestVectorGenericDateExpressions {
     byte[] bytes = "error".getBytes(utf8);
     VectorizedRowBatch batch = new VectorizedRowBatch(2, 1);
 
-    udf = new VectorUDFDateDiffScalarCol(new Timestamp(0), 0, 1);
+    udf = new VectorUDFDateDiffScalarCol(new Timestamp(), 0, 1);
     udf.setInputTypeInfos(new TypeInfo[] {TypeInfoFactory.timestampTypeInfo, TypeInfoFactory.stringTypeInfo});
     udf.transientInit();
     batch.cols[0] = new BytesColumnVector(1);

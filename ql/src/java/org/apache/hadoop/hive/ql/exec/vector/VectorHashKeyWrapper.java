@@ -21,11 +21,11 @@ package org.apache.hadoop.hive.ql.exec.vector;
 import org.apache.hive.common.util.Murmur3;
 
 import java.sql.Date;
-import java.sql.Timestamp;
 import java.util.Arrays;
 
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.common.type.HiveIntervalDayTime;
+import org.apache.hadoop.hive.common.type.Timestamp;
 import org.apache.hadoop.hive.ql.exec.KeyWrapper;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.StringExpr;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -78,7 +78,7 @@ public class VectorHashKeyWrapper extends KeyWrapper {
   private HiveDecimalWritable[] decimalValues;
 
   private Timestamp[] timestampValues;
-  private static Timestamp ZERO_TIMESTAMP = new Timestamp(0);
+  private static Timestamp ZERO_TIMESTAMP = new Timestamp();
 
   private HiveIntervalDayTime[] intervalDayTimeValues;
   private static HiveIntervalDayTime ZERO_INTERVALDAYTIME= new HiveIntervalDayTime(0, 0);
@@ -115,7 +115,7 @@ public class VectorHashKeyWrapper extends KeyWrapper {
       byteLengths = EMPTY_INT_ARRAY;
     }
     for(int i = 0; i < timestampValuesCount; ++i) {
-      timestampValues[i] = new Timestamp(0);
+      timestampValues[i] = new Timestamp();
     }
     for(int i = 0; i < intervalDayTimeValuesCount; ++i) {
       intervalDayTimeValues[i] = new HiveIntervalDayTime();
@@ -356,7 +356,7 @@ public class VectorHashKeyWrapper extends KeyWrapper {
   public void assignTimestamp(int index, Timestamp value) {
     // Do not assign the input value object to the timestampValues array element.
     // Always copy value using set* methods.
-    timestampValues[index].setTime(value.getTime());
+    timestampValues[index].setTimeInMillis(value.getMillis());
     timestampValues[index].setNanos(value.getNanos());
   }
 
@@ -367,7 +367,7 @@ public class VectorHashKeyWrapper extends KeyWrapper {
   public void assignNullTimestamp(int keyIndex, int index) {
     isNull[keyIndex] = true;
     // assign 0 to simplify hashcode
-    timestampValues[index].setTime(ZERO_TIMESTAMP.getTime());
+    timestampValues[index].setTimeInMillis(ZERO_TIMESTAMP.getMillis());
     timestampValues[index].setNanos(ZERO_TIMESTAMP.getNanos());
   }
 

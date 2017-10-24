@@ -18,9 +18,8 @@
 
 package org.apache.hadoop.hive.ql.exec.vector;
 
-import java.sql.Timestamp;
-
 import org.apache.hadoop.hive.common.type.HiveIntervalDayTime;
+import org.apache.hadoop.hive.common.type.Timestamp;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -77,7 +76,7 @@ public class VectorBatchDebug {
           } else if (colVector instanceof DecimalColumnVector) {
             sb.append(((DecimalColumnVector) colVector).vector[index].toString());
           } else if (colVector instanceof TimestampColumnVector) {
-            Timestamp timestamp = new Timestamp(0);
+            Timestamp timestamp = new Timestamp();
             ((TimestampColumnVector) colVector).timestampUpdate(timestamp, index);
             sb.append(timestamp.toString());
           } else if (colVector instanceof IntervalDayTimeColumnVector) {

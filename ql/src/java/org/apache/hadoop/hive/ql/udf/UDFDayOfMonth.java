@@ -85,23 +85,22 @@ public class UDFDayOfMonth extends UDF {
     }
   }
 
-  public IntWritable evaluate(DateWritable d) {
-    if (d == null) {
-      return null;
-    }
-
-    calendar.setTime(d.get(false)); // Time doesn't matter.
-    result.set(calendar.get(Calendar.DAY_OF_MONTH));
-    return result;
-  }
+//  public IntWritable evaluate(DateWritable d) {
+//    if (d == null) {
+//      return null;
+//    }
+//
+//    calendar.setTime(d.get(false)); // Time doesn't matter.
+//    result.set(calendar.get(Calendar.DAY_OF_MONTH));
+//    return result;
+//  }
 
   public IntWritable evaluate(TimestampWritable t) {
     if (t == null) {
       return null;
     }
 
-    calendar.setTime(t.getTimestamp());
-    result.set(calendar.get(Calendar.DAY_OF_MONTH));
+    result.set(t.getTimestamp().getLocalDateTime().getDayOfMonth());
     return result;
   }
 

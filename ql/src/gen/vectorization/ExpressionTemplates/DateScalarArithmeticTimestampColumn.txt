@@ -18,9 +18,9 @@
 
 package org.apache.hadoop.hive.ql.exec.vector.expressions.gen;
 
-import java.sql.Timestamp;
 import java.util.Arrays;
 
+import org.apache.hadoop.hive.common.type.Timestamp;
 import org.apache.hadoop.hive.common.type.HiveIntervalDayTime;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
 import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor;
@@ -55,8 +55,8 @@ public class <ClassName> extends VectorExpression {
   public <ClassName>(long value, int colNum, int outputColumnNum) {
     super(outputColumnNum);
     // Scalar input #1 is type date (days).  For the math we convert it to a timestamp.
-    this.value = new Timestamp(0);
-    this.value.setTime(DateWritable.daysToMillis((int) value));
+    this.value = new Timestamp();
+    this.value.setTimeInMillis(DateWritable.daysToMillis((int) value));
     this.colNum = colNum;
   }
 

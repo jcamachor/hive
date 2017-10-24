@@ -23,11 +23,11 @@ import org.junit.Test;
 import java.io.PrintWriter;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.sql.Timestamp;
 import java.util.Date;
 import java.util.Random;
 
 import org.apache.hadoop.hive.common.type.RandomTypeUtil;
+import org.apache.hadoop.hive.common.type.Timestamp;
 
 import static org.junit.Assert.*;
 

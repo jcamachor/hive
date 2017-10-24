@@ -18,12 +18,15 @@
 package org.apache.hadoop.hive.ql.util;
 
 import java.sql.Date;
-import java.sql.Timestamp;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.Calendar;
 import java.util.TimeZone;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.hadoop.hive.common.type.HiveIntervalYearMonth;
+import org.apache.hadoop.hive.common.type.Timestamp;
 import org.apache.hadoop.hive.common.type.HiveIntervalDayTime;
 import org.apache.hadoop.hive.serde2.io.DateWritable;
 import org.apache.hive.common.util.DateUtils;
@@ -102,7 +105,7 @@ public class DateTimeMath {
       return null;
     }
 
-    Timestamp tsResult = new Timestamp(0);
+    Timestamp tsResult = new Timestamp();
     add(ts, interval, tsResult);
 
     return tsResult;
@@ -115,9 +118,8 @@ public class DateTimeMath {
 
     // Attempt to match Oracle semantics for timestamp arithmetic,
     // where timestamp arithmetic is done in UTC, then converted back to local timezone
-    long resultMillis = addMonthsToMillisUtc(ts.getTime(), interval.getTotalMonths());
-    result.setTime(resultMillis);
-    result.setNanos(ts.getNanos());
+    long resultMillis = addMonthsToMillisUtc(ts.getMillis(), interval.getTotalMonths());
+    result.setTimeInMillis(resultMillis, ts.getNanos());
 
     return true;
   }
@@ -127,7 +129,7 @@ public class DateTimeMath {
       return null;
     }
 
-    Timestamp tsResult = new Timestamp(0);
+    Timestamp tsResult = new Timestamp();
     add(interval, ts, tsResult);
 
     return tsResult;
@@ -140,9 +142,8 @@ public class DateTimeMath {
 
     // Attempt to match Oracle semantics for timestamp arithmetic,
     // where timestamp arithmetic is done in UTC, then converted back to local timezone
-    long resultMillis = addMonthsToMillisUtc(ts.getTime(), interval.getTotalMonths());
-    result.setTime(resultMillis);
-    result.setNanos(ts.getNanos());
+    long resultMillis = addMonthsToMillisUtc(ts.getMillis(), interval.getTotalMonths());
+    result.setTimeInMillis(resultMillis, ts.getNanos());
 
     return true;
   }
@@ -208,7 +209,7 @@ public class DateTimeMath {
       return null;
     }
 
-    Timestamp tsResult = new Timestamp(0);
+    Timestamp tsResult = new Timestamp();
     subtract(left, right, tsResult);
 
     return tsResult;
@@ -255,7 +256,7 @@ public class DateTimeMath {
       return null;
     }
 
-    Timestamp tsResult = new Timestamp(0);
+    Timestamp tsResult = new Timestamp();
     add(ts, interval, tsResult);
 
     return tsResult;
@@ -269,10 +270,9 @@ public class DateTimeMath {
 
     nanosResult.addNanos(ts.getNanos(), interval.getNanos());
 
-    long newMillis = ts.getTime()
+    long newMillis = ts.getMillis()
         + TimeUnit.SECONDS.toMillis(interval.getTotalSeconds() + nanosResult.seconds);
-    result.setTime(newMillis);
-    result.setNanos(nanosResult.nanos);
+    result.setTimeInMillis(newMillis, nanosResult.nanos);
     return true;
   }
 
@@ -281,7 +281,7 @@ public class DateTimeMath {
       return null;
     }
 
-    Timestamp tsResult = new Timestamp(0);
+    Timestamp tsResult = new Timestamp();
     add(interval, ts, tsResult);
     return tsResult;
   }
@@ -294,10 +294,9 @@ public class DateTimeMath {
 
     nanosResult.addNanos(ts.getNanos(), interval.getNanos());
 
-    long newMillis = ts.getTime()
+    long newMillis = ts.getMillis()
         + TimeUnit.SECONDS.toMillis(interval.getTotalSeconds() + nanosResult.seconds);
-    result.setTime(newMillis);
-    result.setNanos(nanosResult.nanos);
+    result.setTimeInMillis(newMillis, nanosResult.nanos);
     return true;
   }
 
@@ -373,8 +372,8 @@ public class DateTimeMath {
 
     nanosResult.addNanos(left.getNanos(), -(right.getNanos()));
 
-    long totalSeconds = TimeUnit.MILLISECONDS.toSeconds(left.getTime())
-        - TimeUnit.MILLISECONDS.toSeconds(right.getTime()) + nanosResult.seconds;
+    long totalSeconds = TimeUnit.MILLISECONDS.toSeconds(left.getMillis())
+        - TimeUnit.MILLISECONDS.toSeconds(right.getMillis()) + nanosResult.seconds;
     result.set(totalSeconds, nanosResult.nanos);
     return true;
   }

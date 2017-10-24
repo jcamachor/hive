@@ -42,7 +42,7 @@ public class CastLongToTimestamp extends VectorExpression {
   }
 
   private void setSeconds(TimestampColumnVector timestampColVector, long[] vector, int elementNum) {
-    timestampColVector.getScratchTimestamp().setTime(vector[elementNum] * 1000);
+    timestampColVector.getScratchTimestamp().setTimeInSeconds(vector[elementNum]);
     timestampColVector.setFromScratchTimestamp(elementNum);
   }
 

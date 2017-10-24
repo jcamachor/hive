@@ -69,7 +69,7 @@ public abstract class VectorUDFTimestampFieldTimestamp extends VectorExpression 
   }
 
   protected long getTimestampField(TimestampColumnVector timestampColVector, int elementNum) {
-    calendar.setTime(timestampColVector.asScratchTimestamp(elementNum));
+    calendar.setTimeInMillis(timestampColVector.asScratchTimestamp(elementNum).getMillis());
     return calendar.get(field);
   }
 

@@ -18,8 +18,8 @@
 package org.apache.hadoop.hive.ql.udf.generic;
 
 import java.sql.Date;
-import java.sql.Timestamp;
 
+import org.apache.hadoop.hive.common.type.Timestamp;
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentLengthException;
@@ -119,7 +119,7 @@ public class GenericUDFDate extends GenericUDF {
     case TIMESTAMP:
       Timestamp ts = ((TimestampWritable) timestampConverter.convert(arguments[0].get()))
           .getTimestamp();
-      output.set(DateWritable.millisToDays(ts.getTime()));
+      output.set(DateWritable.millisToDays(ts.getMillis()));
       break;
     case TIMESTAMPLOCALTZ:
     case DATE:

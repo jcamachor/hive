@@ -40,7 +40,7 @@ public class CastMillisecondsLongToTimestamp extends VectorExpression {
 
   private void setMilliseconds(TimestampColumnVector timestampColVector,
                                long[] vector, int elementNum) {
-    timestampColVector.getScratchTimestamp().setTime(vector[elementNum]);
+    timestampColVector.getScratchTimestamp().setTimeInMillis(vector[elementNum]);
     timestampColVector.setFromScratchTimestamp(elementNum);
   }
 

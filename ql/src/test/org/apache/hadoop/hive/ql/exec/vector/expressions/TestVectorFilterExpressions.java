@@ -22,10 +22,9 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
-import java.sql.Timestamp;
-
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
+import org.apache.hadoop.hive.common.type.Timestamp;
 import org.apache.hadoop.hive.ql.exec.vector.BytesColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.DecimalColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.DoubleColumnVector;
@@ -595,7 +594,7 @@ public class TestVectorFilterExpressions {
     vrb.cols[0] = new TimestampColumnVector();
 
     TimestampColumnVector lcv0 = (TimestampColumnVector) vrb.cols[0];
-    Timestamp startTS = new Timestamp(0); // the epoch
+    Timestamp startTS = new Timestamp(); // the epoch
     Timestamp endTS = Timestamp.valueOf("2013-11-05 00:00:00.000000000");
 
     Timestamp ts0 = Timestamp.valueOf("1963-11-06 00:00:00.000");

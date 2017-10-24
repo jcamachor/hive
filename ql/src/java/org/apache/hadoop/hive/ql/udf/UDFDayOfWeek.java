@@ -82,23 +82,22 @@ public class UDFDayOfWeek extends UDF {
     }
   }
 
-  public IntWritable evaluate(DateWritable d) {
-    if (d == null) {
-      return null;
-    }
-
-    calendar.setTime(d.get(false)); // Time doesn't matter.
-    result.set(calendar.get(Calendar.DAY_OF_WEEK));
-    return result;
-  }
+//  public IntWritable evaluate(DateWritable d) {
+//    if (d == null) {
+//      return null;
+//    }
+//
+//    calendar.setTime(d.get(false)); // Time doesn't matter.
+//    result.set(calendar.get(Calendar.DAY_OF_WEEK));
+//    return result;
+//  }
 
   public IntWritable evaluate(TimestampWritable t) {
     if (t == null) {
       return null;
     }
 
-    calendar.setTime(t.getTimestamp());
-    result.set(calendar.get(Calendar.DAY_OF_WEEK));
+    result.set(t.getTimestamp().getLocalDateTime().getDayOfWeek().plus(1).getValue());
     return result;
   }
 

@@ -19,8 +19,8 @@
 package org.apache.hadoop.hive.ql.exec.vector.expressions.gen;
 
 import java.util.Arrays;
-import java.sql.Timestamp;
 
+import org.apache.hadoop.hive.common.type.Timestamp;
 import org.apache.hadoop.hive.common.type.HiveIntervalDayTime;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
 import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
@@ -42,7 +42,7 @@ public class <ClassName> extends VectorExpression {
   private final int colNum;
   private final <HiveOperandType2> value;
 
-  private transient final Timestamp scratchTimestamp1 = new Timestamp(0);
+  private transient final Timestamp scratchTimestamp1 = new Timestamp();
   private transient final DateTimeMath dtm = new DateTimeMath();
 
   public <ClassName>(int colNum, <HiveOperandType2> value, int outputColumnNum) {
@@ -90,7 +90,7 @@ public class <ClassName> extends VectorExpression {
     if (inputColVector1.isRepeating) {
       if (inputColVector1.noNulls || !inputIsNull[0]) {
         outputIsNull[0] = false;
-        scratchTimestamp1.setTime(DateWritable.daysToMillis((int) vector1[0]));
+        scratchTimestamp1.setTimeInMillis(DateWritable.daysToMillis((int) vector1[0]));
         dtm.<OperatorMethod>(
             scratchTimestamp1, value, outputColVector.getScratch<CamelReturnType>());
         outputColVector.setFromScratch<CamelReturnType>(0);
@@ -111,7 +111,7 @@ public class <ClassName> extends VectorExpression {
            for(int j = 0; j != n; j++) {
             final int i = sel[j];
             outputIsNull[i] = false;
-            scratchTimestamp1.setTime(DateWritable.daysToMillis((int) vector1[i]));
+            scratchTimestamp1.setTimeInMillis(DateWritable.daysToMillis((int) vector1[i]));
             dtm.<OperatorMethod>(
                scratchTimestamp1, value, outputColVector.getScratch<CamelReturnType>());
             outputColVector.setFromScratch<CamelReturnType>(i);
@@ -119,7 +119,7 @@ public class <ClassName> extends VectorExpression {
          } else {
            for(int j = 0; j != n; j++) {
              final int i = sel[j];
-             scratchTimestamp1.setTime(DateWritable.daysToMillis((int) vector1[i]));
+             scratchTimestamp1.setTimeInMillis(DateWritable.daysToMillis((int) vector1[i]));
              dtm.<OperatorMethod>(
                scratchTimestamp1, value, outputColVector.getScratch<CamelReturnType>());
              outputColVector.setFromScratch<CamelReturnType>(i);
@@ -134,7 +134,7 @@ public class <ClassName> extends VectorExpression {
           outputColVector.noNulls = true;
         }
         for(int i = 0; i != n; i++) {
-          scratchTimestamp1.setTime(DateWritable.daysToMillis((int) vector1[i]));
+          scratchTimestamp1.setTimeInMillis(DateWritable.daysToMillis((int) vector1[i]));
           dtm.<OperatorMethod>(
              scratchTimestamp1, value, outputColVector.getScratch<CamelReturnType>());
           outputColVector.setFromScratch<CamelReturnType>(i);
@@ -151,7 +151,7 @@ public class <ClassName> extends VectorExpression {
           int i = sel[j];
           if (!inputIsNull[i]) {
             outputIsNull[i] = false;
-            scratchTimestamp1.setTime(DateWritable.daysToMillis((int) vector1[i]));
+            scratchTimestamp1.setTimeInMillis(DateWritable.daysToMillis((int) vector1[i]));
             dtm.<OperatorMethod>(
                scratchTimestamp1, value, outputColVector.getScratch<CamelReturnType>());
             outputColVector.setFromScratch<CamelReturnType>(i);
@@ -164,7 +164,7 @@ public class <ClassName> extends VectorExpression {
         for(int i = 0; i != n; i++) {
           if (!inputIsNull[i]) {
             outputIsNull[i] = false;
-            scratchTimestamp1.setTime(DateWritable.daysToMillis((int) vector1[i]));
+            scratchTimestamp1.setTimeInMillis(DateWritable.daysToMillis((int) vector1[i]));
             dtm.<OperatorMethod>(
                scratchTimestamp1, value, outputColVector.getScratch<CamelReturnType>());
             outputColVector.setFromScratch<CamelReturnType>(i);

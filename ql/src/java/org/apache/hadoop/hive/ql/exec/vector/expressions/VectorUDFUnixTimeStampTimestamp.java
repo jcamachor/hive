@@ -30,7 +30,7 @@ public final class VectorUDFUnixTimeStampTimestamp extends VectorUDFTimestampFie
 
   @Override
   protected long getTimestampField(TimestampColumnVector timestampColVector, int elementNum) {
-    return timestampColVector.asScratchTimestamp(elementNum).getTime() / 1000;
+    return timestampColVector.asScratchTimestamp(elementNum).getSeconds();
   }
 
   public VectorUDFUnixTimeStampTimestamp(int colNum, int outputColumnNum) {

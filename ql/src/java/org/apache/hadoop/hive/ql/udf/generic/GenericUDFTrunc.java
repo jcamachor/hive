@@ -20,13 +20,13 @@
 package org.apache.hadoop.hive.ql.udf.generic;
 
 import java.math.BigDecimal;
-import java.sql.Timestamp;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 
 import org.apache.hadoop.hive.common.type.HiveDecimal;
+import org.apache.hadoop.hive.common.type.Timestamp;
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentLengthException;
@@ -310,7 +310,7 @@ public class GenericUDFTrunc extends GenericUDF {
     case TIMESTAMP:
       Timestamp ts =
           ((TimestampWritable) timestampConverter.convert(arguments[0].get())).getTimestamp();
-      date = ts;
+      date = new Date(ts.getMillis());
       break;
     case DATE:
       DateWritable dw = (DateWritable) dateWritableConverter.convert(arguments[0].get());

@@ -23,6 +23,7 @@ import static org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveO
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
+import org.apache.hadoop.hive.common.type.Timestamp;
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentTypeException;
@@ -97,13 +98,15 @@ public class GenericUDFDateFormat extends GenericUDF {
     }
     // the function should support both short date and full timestamp format
     // time part of the timestamp should not be skipped
-    Date date = getTimestampValue(arguments, 0, tsConverters);
-    if (date == null) {
+    Timestamp ts = getTimestampValue(arguments, 0, tsConverters);
+    Date date;
+    if (ts == null) {
       date = getDateValue(arguments, 0, dtInputTypes, dtConverters);
       if (date == null) {
         return null;
       }
     }
+    date = new Date(getTimestampValue(arguments, 0, tsConverters).getMillis());
 
     String res = formatter.format(date);
     if (res == null) {

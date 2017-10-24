@@ -17,11 +17,12 @@
  */
 package org.apache.hadoop.hive.ql.udf.generic;
 
-import java.sql.Timestamp;
+import java.sql.Date;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.sql.Date;
 
+import org.apache.hadoop.hive.common.type.Timestamp;
 import org.apache.hadoop.hive.common.type.TimestampTZ;
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
@@ -123,7 +124,7 @@ public class GenericUDFDateDiff extends GenericUDF {
     case TIMESTAMP:
       Timestamp ts = ((TimestampWritable) converter.convert(argument.get()))
         .getTimestamp();
-      return new Date(ts.getTime());
+      return new Date(ts.getMillis());
     case DATE:
       DateWritable dw = (DateWritable) converter.convert(argument.get());
       return dw.get();

@@ -83,23 +83,22 @@ public class UDFMonth extends UDF {
     }
   }
 
-  public IntWritable evaluate(DateWritable d) {
-    if (d == null) {
-      return null;
-    }
-
-    calendar.setTime(d.get(false));  // Time doesn't matter.
-    result.set(1 + calendar.get(Calendar.MONTH));
-    return result;
-  }
+//  public IntWritable evaluate(DateWritable d) {
+//    if (d == null) {
+//      return null;
+//    }
+//
+//    calendar.setTime(d.get(false));  // Time doesn't matter.
+//    result.set(1 + calendar.get(Calendar.MONTH));
+//    return result;
+//  }
 
   public IntWritable evaluate(TimestampWritable t) {
     if (t == null) {
       return null;
     }
 
-    calendar.setTime(t.getTimestamp());
-    result.set(1 + calendar.get(Calendar.MONTH));
+    result.set(t.getTimestamp().getLocalDateTime().getMonthValue());
     return result;
   }
 

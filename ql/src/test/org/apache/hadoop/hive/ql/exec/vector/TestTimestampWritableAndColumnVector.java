@@ -20,10 +20,10 @@ package org.apache.hadoop.hive.ql.exec.vector;
 
 import org.junit.Test;
 
-import java.sql.Timestamp;
 import java.util.Random;
 
 import org.apache.hadoop.hive.common.type.RandomTypeUtil;
+import org.apache.hadoop.hive.common.type.Timestamp;
 import org.apache.hadoop.hive.ql.util.TimestampUtils;
 
 import static org.junit.Assert.*;

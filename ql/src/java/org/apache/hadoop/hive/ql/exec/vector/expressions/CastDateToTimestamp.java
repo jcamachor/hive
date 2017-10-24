@@ -44,7 +44,7 @@ public class CastDateToTimestamp extends VectorExpression {
   }
 
   private void setDays(TimestampColumnVector timestampColVector, long[] vector, int elementNum) {
-    timestampColVector.getScratchTimestamp().setTime(DateWritable.daysToMillis((int) vector[elementNum]));
+    timestampColVector.getScratchTimestamp().setTimeInMillis(DateWritable.daysToMillis((int) vector[elementNum]));
     timestampColVector.setFromScratchTimestamp(elementNum);
   }
 

@@ -1591,7 +1591,7 @@ public class GenVectorCode extends Task {
       // Special case - Date requires its own specific BetweenDynamicValue class, but derives from FilterLongColumnBetween
       typeName = "Long";
     } else if (operandType.equals("timestamp")) {
-      defaultValue = "new Timestamp(0)";
+      defaultValue = "new Timestamp()";
       vectorType = "Timestamp";
       getPrimitiveMethod = "getTimestamp";
       getValueMethod = "";

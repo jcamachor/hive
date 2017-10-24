@@ -85,23 +85,22 @@ public class UDFYear extends UDF {
     }
   }
 
-  public IntWritable evaluate(DateWritable d) {
-    if (d == null) {
-      return null;
-    }
-
-    calendar.setTime(d.get(false));  // Time doesn't matter.
-    result.set(calendar.get(Calendar.YEAR));
-    return result;
-  }
+//  public IntWritable evaluate(DateWritable d) {
+//    if (d == null) {
+//      return null;
+//    }
+//
+//    calendar.setTime(d.get(false));  // Time doesn't matter.
+//    result.set(calendar.get(Calendar.YEAR));
+//    return result;
+//  }
 
   public IntWritable evaluate(TimestampWritable t) {
     if (t == null) {
       return null;
     }
 
-    calendar.setTime(t.getTimestamp());
-    result.set(calendar.get(Calendar.YEAR));
+    result.set(t.getTimestamp().getLocalDateTime().getYear());
     return result;
   }
 

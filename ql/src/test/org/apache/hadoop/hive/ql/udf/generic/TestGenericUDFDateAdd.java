@@ -19,19 +19,19 @@
 package org.apache.hadoop.hive.ql.udf.generic;
 
 import java.sql.Date;
-import java.sql.Timestamp;
+import java.time.LocalDateTime;
 
-import junit.framework.TestCase;
-
+import org.apache.hadoop.hive.common.type.Timestamp;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF.DeferredJavaObject;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF.DeferredObject;
-import org.apache.hadoop.hive.ql.udf.generic.GenericUDFDateAdd;
 import org.apache.hadoop.hive.serde2.io.DateWritable;
 import org.apache.hadoop.hive.serde2.io.TimestampWritable;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 import org.apache.hadoop.io.Text;
+
+import junit.framework.TestCase;
 
 public class TestGenericUDFDateAdd extends TestCase {
   public void testStringToDate() throws HiveException {
@@ -66,8 +66,8 @@ public class TestGenericUDFDateAdd extends TestCase {
     ObjectInspector[] arguments = {valueOI1, valueOI2};
 
     udf.initialize(arguments);
-    DeferredObject valueObj1 = new DeferredJavaObject(new TimestampWritable(new Timestamp(109, 06,
-        20, 4, 17, 52, 0)));
+    DeferredObject valueObj1 = new DeferredJavaObject(new TimestampWritable(
+        new Timestamp(LocalDateTime.of(109, 06, 20, 4, 17, 52, 0))));
     DeferredObject valueObj2 = new DeferredJavaObject(new Integer("3"));
     DeferredObject[] args = {valueObj1, valueObj2};
     DateWritable output = (DateWritable) udf.evaluate(args);

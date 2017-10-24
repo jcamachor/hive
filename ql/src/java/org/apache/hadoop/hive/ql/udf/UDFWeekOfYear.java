@@ -20,8 +20,10 @@ package org.apache.hadoop.hive.ql.udf;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.temporal.IsoFields;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.Locale;
 
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDF;
@@ -82,23 +84,22 @@ public class UDFWeekOfYear extends UDF {
     }
   }
 
-  public IntWritable evaluate(DateWritable d) {
-    if (d == null) {
-      return null;
-    }
-
-    calendar.setTime(d.get(false));  // Time doesn't matter.
-    result.set(calendar.get(Calendar.WEEK_OF_YEAR));
-    return result;
-  }
+//  public IntWritable evaluate(DateWritable d) {
+//    if (d == null) {
+//      return null;
+//    }
+//
+//    calendar.setTime(d.get(false));  // Time doesn't matter.
+//    result.set(calendar.get(Calendar.WEEK_OF_YEAR));
+//    return result;
+//  }
 
   public IntWritable evaluate(TimestampWritable t) {
     if (t == null) {
       return null;
     }
 
-    calendar.setTime(t.getTimestamp());
-    result.set(calendar.get(Calendar.WEEK_OF_YEAR));
+    result.set(t.getTimestamp().getLocalDateTime().get(IsoFields.WEEK_OF_WEEK_BASED_YEAR));
     return result;
   }
 

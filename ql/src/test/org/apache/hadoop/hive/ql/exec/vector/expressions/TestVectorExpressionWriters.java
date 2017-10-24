@@ -19,14 +19,12 @@
 package org.apache.hadoop.hive.ql.exec.vector.expressions;
 
 
-import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Random;
 
-import junit.framework.Assert;
-
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.common.type.HiveVarchar;
+import org.apache.hadoop.hive.common.type.Timestamp;
 import org.apache.hadoop.hive.ql.exec.vector.BytesColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.DecimalColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.DoubleColumnVector;
@@ -57,6 +55,8 @@ import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.Writable;
 import org.junit.Test;
+
+import junit.framework.Assert;
 
 /**
  * Unit tests for vector expression writers.
@@ -115,7 +115,7 @@ public class TestVectorExpressionWriters {
     } else if (ti.equals(TypeInfoFactory.booleanTypeInfo)) {
       return new BooleanWritable( value == 0 ? false : true);
     } else if (ti.equals(TypeInfoFactory.timestampTypeInfo)) {
-      Timestamp ts = new Timestamp(value);
+      Timestamp ts = Timestamp.ofEpochMilli(value);
       TimestampWritable tw = new TimestampWritable(ts);
       return tw;
     }

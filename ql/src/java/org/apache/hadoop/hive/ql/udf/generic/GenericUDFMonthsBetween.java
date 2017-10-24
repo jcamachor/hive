@@ -31,6 +31,7 @@ import java.math.BigDecimal;
 import java.util.Calendar;
 import java.util.Date;
 
+import org.apache.hadoop.hive.common.type.Timestamp;
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -103,21 +104,25 @@ public class GenericUDFMonthsBetween extends GenericUDF {
   public Object evaluate(DeferredObject[] arguments) throws HiveException {
     // the function should support both short date and full timestamp format
     // time part of the timestamp should not be skipped
-    Date date1 = getTimestampValue(arguments, 0, tsConverters);
-    if (date1 == null) {
+    Timestamp ts1 = getTimestampValue(arguments, 0, tsConverters);
+    Date date1;
+    if (ts1 == null) {
       date1 = getDateValue(arguments, 0, dtInputTypes, dtConverters);
       if (date1 == null) {
         return null;
       }
     }
+    date1 = new Date(ts1.getMillis());
 
-    Date date2 = getTimestampValue(arguments, 1, tsConverters);
-    if (date2 == null) {
+    Timestamp ts2 = getTimestampValue(arguments, 1, tsConverters);
+    Date date2;
+    if (ts2 == null) {
       date2 = getDateValue(arguments, 1, dtInputTypes, dtConverters);
       if (date2 == null) {
         return null;
       }
     }
+    date2 = new Date(ts2.getMillis());
 
     cal1.setTime(date1);
     cal2.setTime(date2);
