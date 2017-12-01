@@ -19,8 +19,6 @@
 package org.apache.hadoop.hive.metastore;
 
 
-import org.apache.hadoop.hive.metastore.api.WMFullResourcePlan;
-
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.List;
@@ -69,6 +67,7 @@ import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
 import org.apache.hadoop.hive.metastore.api.InvalidPartitionException;
 import org.apache.hadoop.hive.metastore.api.LockRequest;
 import org.apache.hadoop.hive.metastore.api.LockResponse;
+import org.apache.hadoop.hive.metastore.api.Materialization;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.MetadataPpdResult;
 import org.apache.hadoop.hive.metastore.api.NoSuchLockException;
@@ -77,8 +76,8 @@ import org.apache.hadoop.hive.metastore.api.NoSuchTxnException;
 import org.apache.hadoop.hive.metastore.api.NotNullConstraintsRequest;
 import org.apache.hadoop.hive.metastore.api.NotificationEvent;
 import org.apache.hadoop.hive.metastore.api.NotificationEventResponse;
-import org.apache.hadoop.hive.metastore.api.NotificationEventsCountResponse;
 import org.apache.hadoop.hive.metastore.api.NotificationEventsCountRequest;
+import org.apache.hadoop.hive.metastore.api.NotificationEventsCountResponse;
 import org.apache.hadoop.hive.metastore.api.OpenTxnsResponse;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.PartitionEventType;
@@ -88,8 +87,6 @@ import org.apache.hadoop.hive.metastore.api.PrimaryKeysRequest;
 import org.apache.hadoop.hive.metastore.api.PrincipalPrivilegeSet;
 import org.apache.hadoop.hive.metastore.api.PrincipalType;
 import org.apache.hadoop.hive.metastore.api.PrivilegeBag;
-import org.apache.hadoop.hive.metastore.api.WMResourcePlan;
-import org.apache.hadoop.hive.metastore.api.WMTrigger;
 import org.apache.hadoop.hive.metastore.api.Role;
 import org.apache.hadoop.hive.metastore.api.SQLForeignKey;
 import org.apache.hadoop.hive.metastore.api.SQLNotNullConstraint;
@@ -109,6 +106,10 @@ import org.apache.hadoop.hive.metastore.api.UnknownPartitionException;
 import org.apache.hadoop.hive.metastore.api.UnknownTableException;
 import org.apache.hadoop.hive.metastore.api.WMMapping;
 import org.apache.hadoop.hive.metastore.api.WMPool;
+import org.apache.hadoop.hive.metastore.api.WMFullResourcePlan;
+import org.apache.hadoop.hive.metastore.api.WMResourcePlan;
+import org.apache.hadoop.hive.metastore.api.WMTrigger;
+import org.apache.hadoop.hive.metastore.messaging.EventUtils.NotificationFilter;
 import org.apache.hadoop.hive.metastore.partition.spec.PartitionSpecProxy;
 import org.apache.thrift.TException;
 
@@ -427,6 +428,18 @@ public interface IMetaStoreClient {
    *          Any other errors
    */
   List<Table> getTableObjectsByName(String dbName, List<String> tableNames)
+      throws MetaException, InvalidOperationException, UnknownDBException, TException;
+
+  /**
+   * 
+   * @param dbName
+   * @return
+   * @throws MetaException
+   * @throws InvalidOperationException
+   * @throws UnknownDBException
+   * @throws TException
+   */
+  Map<String, Materialization> getMaterializationsInvalidationInfo(String dbName, List<String> tableNames)
       throws MetaException, InvalidOperationException, UnknownDBException, TException;
 
   /**
@@ -1608,20 +1621,6 @@ public interface IMetaStoreClient {
   void insertTable(Table table, boolean overwrite) throws MetaException;
 
   /**
-   * A filter provided by the client that determines if a given notification event should be
-   * returned.
-   */
-  @InterfaceAudience.LimitedPrivate({"HCatalog"})
-  interface NotificationFilter {
-    /**
-     * Whether a notification event should be accepted
-     * @param event
-     * @return if true, event will be added to list, if false it will be ignored
-     */
-    boolean accept(NotificationEvent event);
-  }
-
-  /**
    * Get the next set of notifications from the database.
    * @param lastEventId The last event id that was consumed by this reader.  The returned
    *                    notifications will start at the next eventId available after this eventId.
@@ -1644,6 +1643,15 @@ public interface IMetaStoreClient {
    */
   @InterfaceAudience.LimitedPrivate({"HCatalog"})
   CurrentNotificationEventId getCurrentNotificationEventId() throws TException;
+
+  /**
+   * Get the last notification event id for the given table
+   * @return last used id
+   * @throws TException
+   */
+  @InterfaceAudience.LimitedPrivate({"HCatalog"})
+  NotificationEvent getLastNotificationEventForTable(String dbName, String tableName)
+      throws TException;
 
   /**
    * Get the number of events from given eventID for the input database.

@@ -594,6 +594,24 @@ module ThriftHiveMetastore
       raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'get_table_objects_by_name_req failed: unknown result')
     end
 
+    def get_materialization_invalidation_info(dbname, tbl_names)
+      send_get_materialization_invalidation_info(dbname, tbl_names)
+      return recv_get_materialization_invalidation_info()
+    end
+
+    def send_get_materialization_invalidation_info(dbname, tbl_names)
+      send_message('get_materialization_invalidation_info', Get_materialization_invalidation_info_args, :dbname => dbname, :tbl_names => tbl_names)
+    end
+
+    def recv_get_materialization_invalidation_info()
+      result = receive_message(Get_materialization_invalidation_info_result)
+      return result.success unless result.success.nil?
+      raise result.o1 unless result.o1.nil?
+      raise result.o2 unless result.o2.nil?
+      raise result.o3 unless result.o3.nil?
+      raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'get_materialization_invalidation_info failed: unknown result')
+    end
+
     def get_table_names_by_filter(dbname, filter, max_tables)
       send_get_table_names_by_filter(dbname, filter, max_tables)
       return recv_get_table_names_by_filter()
@@ -2542,6 +2560,21 @@ module ThriftHiveMetastore
       raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'get_current_notificationEventId failed: unknown result')
     end
 
+    def get_last_notification_event_for_table(db_name, table_name)
+      send_get_last_notification_event_for_table(db_name, table_name)
+      return recv_get_last_notification_event_for_table()
+    end
+
+    def send_get_last_notification_event_for_table(db_name, table_name)
+      send_message('get_last_notification_event_for_table', Get_last_notification_event_for_table_args, :db_name => db_name, :table_name => table_name)
+    end
+
+    def recv_get_last_notification_event_for_table()
+      result = receive_message(Get_last_notification_event_for_table_result)
+      return result.success unless result.success.nil?
+      raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'get_last_notification_event_for_table failed: unknown result')
+    end
+
     def get_notification_events_count(rqst)
       send_get_notification_events_count(rqst)
       return recv_get_notification_events_count()
@@ -3457,6 +3490,21 @@ module ThriftHiveMetastore
         result.o3 = o3
       end
       write_result(result, oprot, 'get_table_objects_by_name_req', seqid)
+    end
+
+    def process_get_materialization_invalidation_info(seqid, iprot, oprot)
+      args = read_args(iprot, Get_materialization_invalidation_info_args)
+      result = Get_materialization_invalidation_info_result.new()
+      begin
+        result.success = @handler.get_materialization_invalidation_info(args.dbname, args.tbl_names)
+      rescue ::MetaException => o1
+        result.o1 = o1
+      rescue ::InvalidOperationException => o2
+        result.o2 = o2
+      rescue ::UnknownDBException => o3
+        result.o3 = o3
+      end
+      write_result(result, oprot, 'get_materialization_invalidation_info', seqid)
     end
 
     def process_get_table_names_by_filter(seqid, iprot, oprot)
@@ -4908,6 +4956,13 @@ module ThriftHiveMetastore
       result = Get_current_notificationEventId_result.new()
       result.success = @handler.get_current_notificationEventId()
       write_result(result, oprot, 'get_current_notificationEventId', seqid)
+    end
+
+    def process_get_last_notification_event_for_table(seqid, iprot, oprot)
+      args = read_args(iprot, Get_last_notification_event_for_table_args)
+      result = Get_last_notification_event_for_table_result.new()
+      result.success = @handler.get_last_notification_event_for_table(args.db_name, args.table_name)
+      write_result(result, oprot, 'get_last_notification_event_for_table', seqid)
     end
 
     def process_get_notification_events_count(seqid, iprot, oprot)
@@ -6521,6 +6576,46 @@ module ThriftHiveMetastore
 
     FIELDS = {
       SUCCESS => {:type => ::Thrift::Types::STRUCT, :name => 'success', :class => ::GetTablesResult},
+      O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::MetaException},
+      O2 => {:type => ::Thrift::Types::STRUCT, :name => 'o2', :class => ::InvalidOperationException},
+      O3 => {:type => ::Thrift::Types::STRUCT, :name => 'o3', :class => ::UnknownDBException}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Get_materialization_invalidation_info_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    DBNAME = 1
+    TBL_NAMES = 2
+
+    FIELDS = {
+      DBNAME => {:type => ::Thrift::Types::STRING, :name => 'dbname'},
+      TBL_NAMES => {:type => ::Thrift::Types::LIST, :name => 'tbl_names', :element => {:type => ::Thrift::Types::STRING}}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Get_materialization_invalidation_info_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    SUCCESS = 0
+    O1 = 1
+    O2 = 2
+    O3 = 3
+
+    FIELDS = {
+      SUCCESS => {:type => ::Thrift::Types::MAP, :name => 'success', :key => {:type => ::Thrift::Types::STRING}, :value => {:type => ::Thrift::Types::STRUCT, :class => ::Materialization}},
       O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::MetaException},
       O2 => {:type => ::Thrift::Types::STRUCT, :name => 'o2', :class => ::InvalidOperationException},
       O3 => {:type => ::Thrift::Types::STRUCT, :name => 'o3', :class => ::UnknownDBException}
@@ -10973,9 +11068,43 @@ module ThriftHiveMetastore
     ::Thrift::Struct.generate_accessors self
   end
 
+  class Get_last_notification_event_for_table_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    DB_NAME = 1
+    TABLE_NAME = 2
+
+    FIELDS = {
+      DB_NAME => {:type => ::Thrift::Types::STRING, :name => 'db_name'},
+      TABLE_NAME => {:type => ::Thrift::Types::STRING, :name => 'table_name'}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Get_last_notification_event_for_table_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    SUCCESS = 0
+
+    FIELDS = {
+      SUCCESS => {:type => ::Thrift::Types::STRUCT, :name => 'success', :class => ::NotificationEvent}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
   class Get_notification_events_count_args
     include ::Thrift::Struct, ::Thrift::Struct_Union
-    RQST = -1
+    RQST = 1
 
     FIELDS = {
       RQST => {:type => ::Thrift::Types::STRUCT, :name => 'rqst', :class => ::NotificationEventsCountRequest}

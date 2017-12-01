@@ -802,6 +802,7 @@ class Table
   PRIVILEGES = 13
   TEMPORARY = 14
   REWRITEENABLED = 15
+  CREATIONSIGNATURE = 16
 
   FIELDS = {
     TABLENAME => {:type => ::Thrift::Types::STRING, :name => 'tableName'},
@@ -818,7 +819,8 @@ class Table
     TABLETYPE => {:type => ::Thrift::Types::STRING, :name => 'tableType'},
     PRIVILEGES => {:type => ::Thrift::Types::STRUCT, :name => 'privileges', :class => ::PrincipalPrivilegeSet, :optional => true},
     TEMPORARY => {:type => ::Thrift::Types::BOOL, :name => 'temporary', :default => false, :optional => true},
-    REWRITEENABLED => {:type => ::Thrift::Types::BOOL, :name => 'rewriteEnabled', :optional => true}
+    REWRITEENABLED => {:type => ::Thrift::Types::BOOL, :name => 'rewriteEnabled', :optional => true},
+    CREATIONSIGNATURE => {:type => ::Thrift::Types::MAP, :name => 'creationSignature', :key => {:type => ::Thrift::Types::STRING}, :value => {:type => ::Thrift::Types::STRUCT, :class => ::NotificationEvent}, :optional => true}
   }
 
   def struct_fields; FIELDS; end
@@ -3248,6 +3250,29 @@ class TableMeta
     raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field dbName is unset!') unless @dbName
     raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field tableName is unset!') unless @tableName
     raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field tableType is unset!') unless @tableType
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
+class Materialization
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  MATERIALIZATIONTABLE = 1
+  TABLESUSED = 2
+  INVALIDATIONTIME = 3
+
+  FIELDS = {
+    MATERIALIZATIONTABLE => {:type => ::Thrift::Types::STRUCT, :name => 'materializationTable', :class => ::Table},
+    TABLESUSED => {:type => ::Thrift::Types::SET, :name => 'tablesUsed', :element => {:type => ::Thrift::Types::STRING}},
+    INVALIDATIONTIME => {:type => ::Thrift::Types::I32, :name => 'invalidationTime'}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field materializationTable is unset!') unless @materializationTable
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field tablesUsed is unset!') unless @tablesUsed
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field invalidationTime is unset!') unless @invalidationTime
   end
 
   ::Thrift::Struct.generate_accessors self

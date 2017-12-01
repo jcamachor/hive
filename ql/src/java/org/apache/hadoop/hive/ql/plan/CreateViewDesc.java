@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.ql.plan;
 
 import java.io.Serializable;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -26,13 +27,13 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
+import org.apache.hadoop.hive.metastore.api.NotificationEvent;
 import org.apache.hadoop.hive.ql.exec.DDLTask;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.HiveStorageHandler;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
-import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -66,6 +67,7 @@ public class CreateViewDesc extends DDLDesc implements Serializable {
   private String serde; // only used for materialized views
   private String storageHandler; // only used for materialized views
   private Map<String, String> serdeProps; // only used for materialized views
+  private Map<String, NotificationEvent> creationSignature; // only used for materialized views
   private ReplicationSpec replicationSpec = null;
 
   /**
@@ -254,6 +256,14 @@ public class CreateViewDesc extends DDLDesc implements Serializable {
     this.replace = replace;
   }
 
+  public Map<String, NotificationEvent> getCreationSignature() {
+    return creationSignature;
+  }
+
+  public void setCreationSignature(Map<String, NotificationEvent> creationSignature) {
+    this.creationSignature = creationSignature;
+  }
+
   @Explain(displayName = "is alter view as select", displayOnlyOnTrue = true)
   public boolean getIsAlterViewAs() {
     return isAlterViewAs;
@@ -359,6 +369,11 @@ public class CreateViewDesc extends DDLDesc implements Serializable {
     if (isMaterialized()) {
       if (getLocation() != null) {
         tbl.setDataLocation(new Path(getLocation()));
+      }
+
+      if (getCreationSignature() != null) {
+        tbl.getTTable().setCreationSignature(new HashMap<String, NotificationEvent>());
+        tbl.getTTable().getCreationSignature().putAll(getCreationSignature());
       }
 
       if (getStorageHandler() != null) {

@@ -1,3 +1,4 @@
+set hive.metastore.event.listeners=org.apache.hive.hcatalog.listener.DbNotificationListener;
 set hive.strict.checks.cartesian.product=false;
 set hive.materializedview.rewriting=true;
 set hive.stats.column.autogather=true;

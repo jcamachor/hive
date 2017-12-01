@@ -141,6 +141,8 @@ public class Context {
   // Identify whether the query involves an UPDATE, DELETE or MERGE
   private boolean isUpdateDeleteMerge;
 
+  private boolean isLoadingMaterializedView;
+
   /**
    * This determines the prefix of the
    * {@link org.apache.hadoop.hive.ql.parse.SemanticAnalyzer.Phase1Ctx#dest}
@@ -1028,6 +1030,15 @@ public class Context {
   public void setIsUpdateDeleteMerge(boolean isUpdate) {
     this.isUpdateDeleteMerge = isUpdate;
   }
+
+  public boolean getIsLoadingMaterializedView() {
+    return isLoadingMaterializedView;
+  }
+
+  public void setIsLoadingMaterializedView(boolean isLoadingMaterializedView) {
+    this.isLoadingMaterializedView = isLoadingMaterializedView;
+  }
+
   public String getExecutionId() {
     return executionId;
   }

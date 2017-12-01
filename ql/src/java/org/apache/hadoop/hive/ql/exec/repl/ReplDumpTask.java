@@ -22,7 +22,6 @@ import com.google.common.primitives.Ints;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.Function;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
@@ -124,7 +123,7 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
 
     work.overrideEventTo(getHive());
 
-    IMetaStoreClient.NotificationFilter evFilter = new AndFilter(
+    EventUtils.NotificationFilter evFilter = new AndFilter(
         new DatabaseAndTableFilter(work.dbNameOrPattern, work.tableNameOrPattern),
         new EventBoundaryFilter(work.eventFrom, work.eventTo),
         new MessageFormatFilter(MessageFactory.getInstance().getMessageFormat()));
@@ -214,7 +213,7 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
     // that occurred while bootstrap was happening - i.e. we have to look through all events
     // during the bootstrap period and consolidate them with our dump.
 
-    IMetaStoreClient.NotificationFilter evFilter =
+    EventUtils.NotificationFilter evFilter =
         new DatabaseAndTableFilter(work.dbNameOrPattern, work.tableNameOrPattern);
     EventUtils.MSClientNotificationFetcher evFetcher =
         new EventUtils.MSClientNotificationFetcher(hiveDb.getMSC());

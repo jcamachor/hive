@@ -24,6 +24,7 @@ import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.api.CurrentNotificationEventId;
 import org.apache.hadoop.hive.metastore.api.NotificationEvent;
 import org.apache.hadoop.hive.metastore.messaging.EventUtils;
+import org.apache.hadoop.hive.metastore.messaging.EventUtils.NotificationFilter;
 import org.apache.hive.hcatalog.api.HCatClient;
 import org.apache.hive.hcatalog.api.HCatNotificationEvent;
 import org.apache.thrift.TException;
@@ -130,8 +131,8 @@ public class ReplicationV1CompatRule implements TestRule {
 
     LOG.info( "Checking replv1 backward compatibility for events between : "
         + testEventIdBefore + " -> " + testEventIdAfter);
-    IMetaStoreClient.NotificationFilter evFilter =
-        new IMetaStoreClient.NotificationFilter() {
+    NotificationFilter evFilter =
+        new NotificationFilter() {
           @Override
           public boolean accept(NotificationEvent notificationEvent) {
             return true;

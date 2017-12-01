@@ -197,6 +197,11 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
     printf("get_table_objects_by_name_req\n");
   }
 
+  void get_materialization_invalidation_info(std::map<std::string, Materialization> & _return, const std::string& dbname, const std::vector<std::string> & tbl_names) {
+    // Your implementation goes here
+    printf("get_materialization_invalidation_info\n");
+  }
+
   void get_table_names_by_filter(std::vector<std::string> & _return, const std::string& dbname, const std::string& filter, const int16_t max_tables) {
     // Your implementation goes here
     printf("get_table_names_by_filter\n");
@@ -780,6 +785,11 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
   void get_current_notificationEventId(CurrentNotificationEventId& _return) {
     // Your implementation goes here
     printf("get_current_notificationEventId\n");
+  }
+
+  void get_last_notification_event_for_table(NotificationEvent& _return, const std::string& db_name, const std::string& table_name) {
+    // Your implementation goes here
+    printf("get_last_notification_event_for_table\n");
   }
 
   void get_notification_events_count(NotificationEventsCountResponse& _return, const NotificationEventsCountRequest& rqst) {

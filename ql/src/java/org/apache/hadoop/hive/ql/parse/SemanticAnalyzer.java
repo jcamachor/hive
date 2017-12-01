@@ -42,6 +42,7 @@ import java.util.TreeSet;
 import java.util.UUID;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
+
 import org.antlr.runtime.ClassicToken;
 import org.antlr.runtime.CommonToken;
 import org.antlr.runtime.Token;
@@ -72,6 +73,7 @@ import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.MetaException;
+import org.apache.hadoop.hive.metastore.api.NotificationEvent;
 import org.apache.hadoop.hive.metastore.api.Order;
 import org.apache.hadoop.hive.metastore.api.SQLForeignKey;
 import org.apache.hadoop.hive.metastore.api.SQLNotNullConstraint;
@@ -11639,7 +11641,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       // all the information for semanticcheck
       validateCreateView();
 
-      if (!createVwDesc.isMaterialized()) {
+      if (createVwDesc.isMaterialized()) {
+        createVwDesc.setCreationSignature(generateSignature(pCtx));
+      } else {
         // Since we're only creating a view (not executing it), we don't need to
         // optimize or translate the plan (and in fact, those procedures can
         // interfere with the view creation). So skip the rest of this method.
@@ -11876,6 +11880,25 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
     createVwDesc.setSchema(derivedSchema);
     createVwDesc.setViewExpandedText(expandedText);
+  }
+
+  private Map<String, NotificationEvent> generateSignature(ParseContext parseCtx) throws SemanticException {
+    Map<String, NotificationEvent> signature = new HashMap<>();
+    for (Map.Entry<String, TableScanOperator> entry : parseCtx.getTopOps().entrySet()) {
+      try {
+        String alias = entry.getKey();
+        TableScanOperator topOp = entry.getValue();
+        Table table = topOp.getConf().getTableMetadata();
+        if (!table.isMaterializedTable() && !table.isView()) {
+          // Add to signature
+          signature.put(table.getFullyQualifiedName(),
+              db.getMSC().getLastNotificationEventForTable(table.getDbName(), table.getTableName()));
+        }
+      } catch (Exception ex) {
+        throw new SemanticException(ex);
+      }
+    }
+    return signature;
   }
 
   static List<FieldSchema> convertRowSchemaToViewSchema(RowResolver rr) throws SemanticException {
@@ -12742,13 +12765,16 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     try {
       Table oldView = getTable(createVwDesc.getViewName(), false);
 
-      // Do not allow view to be defined on temp table
+      // Do not allow view to be defined on temp table or other materialized view
       Set<String> tableAliases = qb.getTabAliases();
       for (String alias : tableAliases) {
         try {
           Table table = this.getTableObjectByName(qb.getTabNameForAlias(alias));
           if (table.isTemporary()) {
             throw new SemanticException("View definition references temporary table " + alias);
+          }
+          if (table.isMaterializedView()) {
+            throw new SemanticException("View definition references materialized view " + alias);
           }
         } catch (HiveException ex) {
           throw new SemanticException(ex);

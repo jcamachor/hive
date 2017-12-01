@@ -24,6 +24,8 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -76,6 +78,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 
 /**
  * Registry for materialized views. The goal of this cache is to avoid parsing and creating
@@ -153,13 +156,13 @@ public final class HiveMaterializedViewsRegistry {
    *
    * @param materializedViewTable the materialized view
    */
-  public void addMaterializedView(Table materializedViewTable) {
+  public RelOptMaterialization addMaterializedView(Table materializedViewTable) {
     // Bail out if it is not enabled for rewriting
     if (!materializedViewTable.isRewriteEnabled()) {
-      return;
+      return null;
     }
-    materializedViewTable.getFullyQualifiedName();
 
+    // We are going to create the map for each view in the given database
     ConcurrentMap<ViewKey, RelOptMaterialization> cq =
         new ConcurrentHashMap<ViewKey, RelOptMaterialization>();
     final ConcurrentMap<ViewKey, RelOptMaterialization> prevCq = materializedViews.putIfAbsent(
@@ -170,21 +173,22 @@ public final class HiveMaterializedViewsRegistry {
     // Bail out if it already exists
     final ViewKey vk = ViewKey.forTable(materializedViewTable);
     if (cq.containsKey(vk)) {
-      return;
+      return null;
     }
-    // Add to cache
+    // Start the process to add MV to the cache
+    // First we parse the view query and create the materialization object
     final String viewQuery = materializedViewTable.getViewExpandedText();
     final RelNode tableRel = createTableScan(materializedViewTable);
     if (tableRel == null) {
       LOG.warn("Materialized view " + materializedViewTable.getCompleteName() +
               " ignored; error creating view replacement");
-      return;
+      return null;
     }
     final RelNode queryRel = parseQuery(viewQuery);
     if (queryRel == null) {
       LOG.warn("Materialized view " + materializedViewTable.getCompleteName() +
               " ignored; error parsing original query");
-      return;
+      return null;
     }
     RelOptMaterialization materialization = new RelOptMaterialization(tableRel, queryRel,
         null, tableRel.getTable().getQualifiedName());
@@ -192,7 +196,7 @@ public final class HiveMaterializedViewsRegistry {
     if (LOG.isDebugEnabled()) {
       LOG.debug("Cached materialized view for rewriting: " + tableRel.getTable().getQualifiedName());
     }
-    return;
+    return materialization;
   }
 
   /**
@@ -214,11 +218,17 @@ public final class HiveMaterializedViewsRegistry {
    * @param dbName the database
    * @return the collection of materialized views, or the empty collection if none
    */
-  Collection<RelOptMaterialization> getRewritingMaterializedViews(String dbName) {
+  Map<String, RelOptMaterialization> getRewritingMaterializedViews(String dbName) {
     if (materializedViews.get(dbName) != null) {
-      return Collections.unmodifiableCollection(materializedViews.get(dbName).values());
+      ImmutableMap.Builder<String,RelOptMaterialization> m = ImmutableMap.builder();
+      Collection<Entry<ViewKey,RelOptMaterialization>> iterable =
+          Collections.unmodifiableCollection(materializedViews.get(dbName).entrySet());
+      for (Entry<ViewKey,RelOptMaterialization> e : iterable) {
+        m.put(e.getKey().viewName, e.getValue());
+      }
+      return m.build();
     }
-    return ImmutableList.of();
+    return ImmutableMap.of();
   }
 
   private static RelNode createTableScan(Table viewTable) {
@@ -336,7 +346,9 @@ public final class HiveMaterializedViewsRegistry {
       final QueryState qs =
           new QueryState.Builder().withHiveConf(SessionState.get().getConf()).build();
       CalcitePlanner analyzer = new CalcitePlanner(qs);
-      analyzer.initCtx(new Context(SessionState.get().getConf()));
+      Context ctx = new Context(SessionState.get().getConf());
+      ctx.setIsLoadingMaterializedView(true);
+      analyzer.initCtx(ctx);
       analyzer.init(false);
       return analyzer.genLogicalPlan(node);
     } catch (Exception e) {

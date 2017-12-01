@@ -25,7 +25,6 @@ import org.apache.hadoop.fs.PathFilter;
 import org.apache.hadoop.hive.cli.CliSessionState;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
-import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.InjectableBehaviourObjectStore;
 import org.apache.hadoop.hive.metastore.InjectableBehaviourObjectStore.BehaviourInjection;
 import org.apache.hadoop.hive.metastore.MetaStoreTestUtils;
@@ -43,6 +42,7 @@ import org.apache.hadoop.hive.metastore.api.SQLPrimaryKey;
 import org.apache.hadoop.hive.metastore.api.SQLUniqueConstraint;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.UniqueConstraintsRequest;
+import org.apache.hadoop.hive.metastore.messaging.EventUtils.NotificationFilter;
 import org.apache.hadoop.hive.metastore.messaging.MessageFactory;
 import org.apache.hadoop.hive.metastore.messaging.event.filters.AndFilter;
 import org.apache.hadoop.hive.metastore.messaging.event.filters.DatabaseAndTableFilter;
@@ -3264,7 +3264,7 @@ public class TestReplicationScenarios {
     // Test testing that the filters introduced by EventUtils are working correctly.
 
     // The current filters we use in ReplicationSemanticAnalyzer is as follows:
-    //    IMetaStoreClient.NotificationFilter evFilter = EventUtils.andFilter(
+    //    NotificationFilter evFilter = EventUtils.andFilter(
     //        EventUtils.getDbTblNotificationFilter(dbNameOrPattern, tblNameOrPattern),
     //        EventUtils.getEventBoundaryFilter(eventFrom, eventTo),
     //        EventUtils.restrictByMessageFormat(MessageFactory.getInstance().getMessageFormat()));
@@ -3278,8 +3278,8 @@ public class TestReplicationScenarios {
     // events to those that match the dbname and tblname provided to the filter.
     // If the tblname passed in to the filter is null, then it restricts itself
     // to dbname-matching alone.
-    IMetaStoreClient.NotificationFilter dbTblFilter = new DatabaseAndTableFilter(dbname,tblname);
-    IMetaStoreClient.NotificationFilter dbFilter = new DatabaseAndTableFilter(dbname,null);
+    NotificationFilter dbTblFilter = new DatabaseAndTableFilter(dbname,tblname);
+    NotificationFilter dbFilter = new DatabaseAndTableFilter(dbname,null);
 
     assertFalse(dbTblFilter.accept(null));
     assertTrue(dbTblFilter.accept(createDummyEvent(dbname, tblname, 0)));
@@ -3296,7 +3296,7 @@ public class TestReplicationScenarios {
     // within a range specified.
     long evBegin = 50;
     long evEnd = 75;
-    IMetaStoreClient.NotificationFilter evRangeFilter = new EventBoundaryFilter(evBegin,evEnd);
+    NotificationFilter evRangeFilter = new EventBoundaryFilter(evBegin,evEnd);
 
     assertTrue(evBegin < evEnd);
     assertFalse(evRangeFilter.accept(null));
@@ -3311,9 +3311,9 @@ public class TestReplicationScenarios {
     // Test EventUtils.restrictByMessageFormat - this restricts events generated to those
     // that match a provided message format
 
-    IMetaStoreClient.NotificationFilter restrictByDefaultMessageFormat =
+    NotificationFilter restrictByDefaultMessageFormat =
         new MessageFormatFilter(MessageFactory.getInstance().getMessageFormat());
-    IMetaStoreClient.NotificationFilter restrictByArbitraryMessageFormat =
+    NotificationFilter restrictByArbitraryMessageFormat =
         new MessageFormatFilter(MessageFactory.getInstance().getMessageFormat() + "_bogus");
     NotificationEvent dummyEvent = createDummyEvent(dbname,tblname,0);
 
@@ -3325,14 +3325,14 @@ public class TestReplicationScenarios {
 
     // Test andFilter operation.
 
-    IMetaStoreClient.NotificationFilter yes = new IMetaStoreClient.NotificationFilter() {
+    NotificationFilter yes = new NotificationFilter() {
       @Override
       public boolean accept(NotificationEvent notificationEvent) {
         return true;
       }
     };
 
-    IMetaStoreClient.NotificationFilter no = new IMetaStoreClient.NotificationFilter() {
+    NotificationFilter no = new NotificationFilter() {
       @Override
       public boolean accept(NotificationEvent notificationEvent) {
         return false;

@@ -63,6 +63,7 @@ import org.apache.hadoop.hive.conf.HiveConfUtil;
 import org.apache.hadoop.hive.metastore.api.*;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
+import org.apache.hadoop.hive.metastore.messaging.EventUtils.NotificationFilter;
 import org.apache.hadoop.hive.metastore.partition.spec.PartitionSpecProxy;
 import org.apache.hadoop.hive.metastore.security.HadoopThriftAuthBridge;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
@@ -168,6 +169,8 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
       } else {
         client = HiveMetaStore.newRetryingHMSHandler("hive client", this.conf, true);
       }
+      // Initialize materializations invalidation cache (only for local metastore)
+      MaterializationsInvalidationCache.get().init(((IHMSHandler) client).getMS());
       isConnected = true;
       snapshotActiveConf();
       return;
@@ -1431,6 +1434,14 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
 
   /** {@inheritDoc} */
   @Override
+  public Map<String, Materialization> getMaterializationsInvalidationInfo(String dbName, List<String> tableNames)
+      throws MetaException, InvalidOperationException, UnknownDBException, TException {
+    return client.get_materialization_invalidation_info(
+        dbName, filterHook.filterTableNames(dbName, tableNames));
+  }
+
+  /** {@inheritDoc} */
+  @Override
   public List<String> listTableNamesByFilter(String dbName, String filter, short maxTables)
       throws MetaException, TException, InvalidOperationException, UnknownDBException {
     return filterHook.filterTableNames(dbName,
@@ -2371,6 +2382,13 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
 
   @InterfaceAudience.LimitedPrivate({"HCatalog"})
   @Override
+  public NotificationEvent getLastNotificationEventForTable(String dbName, String tableName)
+      throws TException {
+    return client.get_last_notification_event_for_table(dbName, tableName);
+  }
+
+  @InterfaceAudience.LimitedPrivate({"HCatalog"})
+  @Override
   public NotificationEventsCountResponse getNotificationEventsCount(NotificationEventsCountRequest rqst)
           throws TException {
     return client.get_notification_events_count(rqst);
@@ -2779,4 +2797,5 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     request.setDrop(shouldDrop);
     client.create_or_drop_wm_trigger_to_pool_mapping(request);
   }
+
 }

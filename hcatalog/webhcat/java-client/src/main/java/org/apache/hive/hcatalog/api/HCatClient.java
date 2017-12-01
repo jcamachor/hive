@@ -25,8 +25,8 @@ import java.util.Map;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.classification.InterfaceAudience;
 import org.apache.hadoop.hive.common.classification.InterfaceStability;
-import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.api.PartitionEventType;
+import org.apache.hadoop.hive.metastore.messaging.EventUtils.NotificationFilter;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hive.hcatalog.api.repl.ReplicationTask;
 import org.apache.hive.hcatalog.common.HCatException;
@@ -537,7 +537,7 @@ public abstract class HCatClient {
   @InterfaceStability.Evolving
   public abstract List<HCatNotificationEvent> getNextNotification(long lastEventId,
                                                                   int maxEvents,
-                                                                  IMetaStoreClient.NotificationFilter filter)
+                                                                  NotificationFilter filter)
       throws HCatException;
 
   /**

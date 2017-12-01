@@ -18,6 +18,11 @@
  */
 package org.apache.hadoop.hive.metastore.messaging;
 
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.api.NotificationEvent;
@@ -25,19 +30,27 @@ import org.apache.hadoop.hive.metastore.api.NotificationEventsCountRequest;
 import org.apache.hadoop.hive.metastore.messaging.event.filters.DatabaseAndTableFilter;
 import org.apache.thrift.TException;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-
 public class EventUtils {
+
+  /**
+   * A filter provided by the client that determines if a given notification event should be
+   * returned.
+   */
+  public interface NotificationFilter {
+    /**
+     * Whether a notification event should be accepted
+     * @param event
+     * @return if true, event will be added to list, if false it will be ignored
+     */
+    boolean accept(NotificationEvent event);
+  }
 
   public interface NotificationFetcher {
     int getBatchSize() throws IOException;
     long getCurrentNotificationEventId() throws IOException;
     long getDbNotificationEventsCount(long fromEventId, String dbName) throws IOException;
     List<NotificationEvent> getNextNotificationEvents(
-        long pos, IMetaStoreClient.NotificationFilter filter) throws IOException;
+        long pos, NotificationFilter filter) throws IOException;
   }
 
   // MetaStoreClient-based impl of NotificationFetcher
@@ -89,7 +102,7 @@ public class EventUtils {
 
     @Override
     public List<NotificationEvent> getNextNotificationEvents(
-        long pos, IMetaStoreClient.NotificationFilter filter) throws IOException {
+        long pos, NotificationFilter filter) throws IOException {
       try {
         return msc.getNextNotification(pos,getBatchSize(), filter).getEvents();
       } catch (TException e) {
@@ -101,7 +114,7 @@ public class EventUtils {
   public static class NotificationEventIterator implements Iterator<NotificationEvent> {
 
     private NotificationFetcher nfetcher;
-    private IMetaStoreClient.NotificationFilter filter;
+    private NotificationFilter filter;
     private int maxEvents;
 
     private Iterator<NotificationEvent> batchIter = null;
@@ -121,13 +134,13 @@ public class EventUtils {
 
     public NotificationEventIterator(
         NotificationFetcher nfetcher, long eventFrom, int maxEvents,
-        IMetaStoreClient.NotificationFilter filter) throws IOException {
+        NotificationFilter filter) throws IOException {
       init(nfetcher,eventFrom,maxEvents,filter);
     }
 
     private void init(
         NotificationFetcher nfetcher, long eventFrom, int maxEvents,
-        IMetaStoreClient.NotificationFilter filter) throws IOException {
+        NotificationFilter filter) throws IOException {
       this.nfetcher = nfetcher;
       this.filter = filter;
       this.pos = eventFrom;

@@ -2486,6 +2486,11 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       return tables;
     }
 
+    @Override
+    public Map<String, Materialization> get_materialization_invalidation_info(final String dbName, final List<String> tableNames) {
+      return MaterializationsInvalidationCache.get().getMaterializationInvalidationInfo(dbName, tableNames);
+    }
+
     private void assertClientHasCapability(ClientCapabilities client,
         ClientCapability value, String what, String call) throws MetaException {
       if (!doesClientHaveCapability(client, value)) {
@@ -6897,6 +6902,21 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     }
 
     @Override
+    public NotificationEvent get_last_notification_event_for_table(String dbName, String tableName)
+        throws TException {
+      try {
+        authorizeProxyPrivilege();
+      } catch (Exception ex) {
+        LOG.error("Not authorized to make the getLastNotificationEventForTable call. You can try to disable " +
+            ConfVars.EVENT_DB_NOTIFICATION_API_AUTH.toString(), ex);
+        throw new TException(ex);
+      }
+
+      RawStore ms = getMS();
+      return ms.getLastNotificationEventForTable(dbName, tableName);
+    }
+
+    @Override
     public NotificationEventsCountResponse get_notification_events_count(NotificationEventsCountRequest rqst)
             throws TException {
       try {
@@ -7774,6 +7794,10 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       HMSHandler baseHandler = new HiveMetaStore.HMSHandler("new db based metaserver", conf,
           false);
       IHMSHandler handler = newRetryingHMSHandler(baseHandler, conf);
+
+      // Initialize materializations invalidation cache
+      MaterializationsInvalidationCache.get().init(handler.getMS());
+
       TServerSocket serverSocket;
 
       if (useSasl) {

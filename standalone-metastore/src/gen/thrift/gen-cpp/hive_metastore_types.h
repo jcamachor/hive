@@ -449,6 +449,8 @@ class CmRecycleResponse;
 
 class TableMeta;
 
+class Materialization;
+
 class WMResourcePlan;
 
 class WMPool;
@@ -2353,7 +2355,7 @@ inline std::ostream& operator<<(std::ostream& out, const StorageDescriptor& obj)
 }
 
 typedef struct _Table__isset {
-  _Table__isset() : tableName(false), dbName(false), owner(false), createTime(false), lastAccessTime(false), retention(false), sd(false), partitionKeys(false), parameters(false), viewOriginalText(false), viewExpandedText(false), tableType(false), privileges(false), temporary(true), rewriteEnabled(false) {}
+  _Table__isset() : tableName(false), dbName(false), owner(false), createTime(false), lastAccessTime(false), retention(false), sd(false), partitionKeys(false), parameters(false), viewOriginalText(false), viewExpandedText(false), tableType(false), privileges(false), temporary(true), rewriteEnabled(false), creationSignature(false) {}
   bool tableName :1;
   bool dbName :1;
   bool owner :1;
@@ -2369,6 +2371,7 @@ typedef struct _Table__isset {
   bool privileges :1;
   bool temporary :1;
   bool rewriteEnabled :1;
+  bool creationSignature :1;
 } _Table__isset;
 
 class Table {
@@ -2395,6 +2398,7 @@ class Table {
   PrincipalPrivilegeSet privileges;
   bool temporary;
   bool rewriteEnabled;
+  std::map<std::string, NotificationEvent>  creationSignature;
 
   _Table__isset __isset;
 
@@ -2427,6 +2431,8 @@ class Table {
   void __set_temporary(const bool val);
 
   void __set_rewriteEnabled(const bool val);
+
+  void __set_creationSignature(const std::map<std::string, NotificationEvent> & val);
 
   bool operator == (const Table & rhs) const
   {
@@ -2465,6 +2471,10 @@ class Table {
     if (__isset.rewriteEnabled != rhs.__isset.rewriteEnabled)
       return false;
     else if (__isset.rewriteEnabled && !(rewriteEnabled == rhs.rewriteEnabled))
+      return false;
+    if (__isset.creationSignature != rhs.__isset.creationSignature)
+      return false;
+    else if (__isset.creationSignature && !(creationSignature == rhs.creationSignature))
       return false;
     return true;
   }
@@ -8527,6 +8537,56 @@ class TableMeta {
 void swap(TableMeta &a, TableMeta &b);
 
 inline std::ostream& operator<<(std::ostream& out, const TableMeta& obj)
+{
+  obj.printTo(out);
+  return out;
+}
+
+
+class Materialization {
+ public:
+
+  Materialization(const Materialization&);
+  Materialization& operator=(const Materialization&);
+  Materialization() : invalidationTime(0) {
+  }
+
+  virtual ~Materialization() throw();
+  Table materializationTable;
+  std::set<std::string>  tablesUsed;
+  int32_t invalidationTime;
+
+  void __set_materializationTable(const Table& val);
+
+  void __set_tablesUsed(const std::set<std::string> & val);
+
+  void __set_invalidationTime(const int32_t val);
+
+  bool operator == (const Materialization & rhs) const
+  {
+    if (!(materializationTable == rhs.materializationTable))
+      return false;
+    if (!(tablesUsed == rhs.tablesUsed))
+      return false;
+    if (!(invalidationTime == rhs.invalidationTime))
+      return false;
+    return true;
+  }
+  bool operator != (const Materialization &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const Materialization & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(Materialization &a, Materialization &b);
+
+inline std::ostream& operator<<(std::ostream& out, const Materialization& obj)
 {
   obj.printTo(out);
   return out;

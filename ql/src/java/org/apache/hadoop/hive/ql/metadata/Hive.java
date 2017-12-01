@@ -27,14 +27,11 @@ import static org.apache.hadoop.hive.serde.serdeConstants.MAPKEY_DELIM;
 import static org.apache.hadoop.hive.serde.serdeConstants.SERIALIZATION_FORMAT;
 import static org.apache.hadoop.hive.serde.serdeConstants.STRING_TYPE_NAME;
 
-import org.apache.hadoop.hive.metastore.api.WMFullResourcePlan;
-
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -111,6 +108,7 @@ import org.apache.hadoop.hive.metastore.api.HiveObjectType;
 import org.apache.hadoop.hive.metastore.api.Index;
 import org.apache.hadoop.hive.metastore.api.InsertEventRequestData;
 import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
+import org.apache.hadoop.hive.metastore.api.Materialization;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.MetadataPpdResult;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
@@ -120,8 +118,6 @@ import org.apache.hadoop.hive.metastore.api.PrimaryKeysRequest;
 import org.apache.hadoop.hive.metastore.api.PrincipalPrivilegeSet;
 import org.apache.hadoop.hive.metastore.api.PrincipalType;
 import org.apache.hadoop.hive.metastore.api.PrivilegeBag;
-import org.apache.hadoop.hive.metastore.api.WMResourcePlan;
-import org.apache.hadoop.hive.metastore.api.WMTrigger;
 import org.apache.hadoop.hive.metastore.api.Role;
 import org.apache.hadoop.hive.metastore.api.RolePrincipalGrant;
 import org.apache.hadoop.hive.metastore.api.SQLForeignKey;
@@ -134,8 +130,11 @@ import org.apache.hadoop.hive.metastore.api.ShowCompactResponse;
 import org.apache.hadoop.hive.metastore.api.SkewedInfo;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.UniqueConstraintsRequest;
+import org.apache.hadoop.hive.metastore.api.WMFullResourcePlan;
 import org.apache.hadoop.hive.metastore.api.WMMapping;
 import org.apache.hadoop.hive.metastore.api.WMPool;
+import org.apache.hadoop.hive.metastore.api.WMResourcePlan;
+import org.apache.hadoop.hive.metastore.api.WMTrigger;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.exec.AbstractFileMergeOperator;
@@ -1423,6 +1422,17 @@ public class Hive {
   }
 
   /**
+   * Get materialized views for the specified database that have enabled rewriting.
+   * @param dbName
+   * @return List of materialized view table objects
+   * @throws HiveException
+   */
+  public List<String> getMaterializedViewsForRewriting(String dbName) throws HiveException {
+    // TODO
+    return getTablesByType(dbName, ".*", TableType.MATERIALIZED_VIEW);
+  }
+
+  /**
    * Get all materialized views for the specified database.
    * @param dbName
    * @return List of materialized view table objects
@@ -1435,6 +1445,21 @@ public class Hive {
   private List<Table> getTableObjects(String dbName, String pattern, TableType tableType) throws HiveException {
     try {
       return Lists.transform(getMSC().getTableObjectsByName(dbName, getTablesByType(dbName, pattern, tableType)),
+        new com.google.common.base.Function<org.apache.hadoop.hive.metastore.api.Table, Table>() {
+          @Override
+          public Table apply(org.apache.hadoop.hive.metastore.api.Table table) {
+            return new Table(table);
+          }
+        }
+      );
+    } catch (Exception e) {
+      throw new HiveException(e);
+    }
+  }
+
+  private List<Table> getTableObjects(String dbName, List<String> tableNames) throws HiveException {
+    try {
+      return Lists.transform(getMSC().getTableObjectsByName(dbName, tableNames),
         new com.google.common.base.Function<org.apache.hadoop.hive.metastore.api.Table, Table>() {
           @Override
           public Table apply(org.apache.hadoop.hive.metastore.api.Table table) {
@@ -1532,36 +1557,57 @@ public class Hive {
    * @throws HiveException
    */
   public List<RelOptMaterialization> getRewritingMaterializedViews() throws HiveException {
+    final int diff = conf.getIntVar(HiveConf.ConfVars.HIVE_MATERIALIZED_VIEW_REWRITING_TIME_WINDOW);
+    final int minTime = (int) (System.currentTimeMillis() / 1000) - diff;
     try {
       // Final result
       List<RelOptMaterialization> result = new ArrayList<>();
       for (String dbName : getMSC().getAllDatabases()) {
         // From metastore (for security)
-        List<String> tables = getAllMaterializedViews(dbName);
-        // Cached views (includes all)
-        Collection<RelOptMaterialization> cachedViews =
-            HiveMaterializedViewsRegistry.get().getRewritingMaterializedViews(dbName);
-        if (cachedViews.isEmpty()) {
+        List<String> materializedViewNames = getMaterializedViewsForRewriting(dbName);
+        if (materializedViewNames.isEmpty()) {
           // Bail out: empty list
           continue;
         }
-        Map<String, RelOptMaterialization> qualifiedNameToView =
-            new HashMap<String, RelOptMaterialization>();
-        for (RelOptMaterialization materialization : cachedViews) {
-          qualifiedNameToView.put(materialization.qualifiedTableName.get(0), materialization);
-        }
-        for (String table : tables) {
-          // Compose qualified name
-          String fullyQualifiedName = dbName;
-          if (fullyQualifiedName != null && !fullyQualifiedName.isEmpty()) {
-            fullyQualifiedName = fullyQualifiedName + "." + table;
+        List<Table> materializedViewTables = getTableObjects(dbName, materializedViewNames);
+        // Cached views (includes all)
+        Map<String, RelOptMaterialization> cachedViews =
+            HiveMaterializedViewsRegistry.get().getRewritingMaterializedViews(dbName);
+        Map<String, Materialization> info = getMSC().getMaterializationsInvalidationInfo(
+            dbName, materializedViewNames);
+        for (Table materializedViewTable : materializedViewTables) {
+          // Check whether the materialized view is invalidated
+          int invalidationTime = info.get(materializedViewTable.getTableName()).getInvalidationTime();
+          // If the limit is not met, we do not add the materialized view
+          if (diff == 0) {
+            if (invalidationTime != 0) {
+              // If parameter is zero, materialized view cannot be outdated at all
+              LOG.info("Materialized view " + materializedViewTable.getFullyQualifiedName() +
+                  " ignored for rewriting as its contents are outdated");
+              continue;
+            }
           } else {
-            fullyQualifiedName = table;
+            if (invalidationTime != 0 && minTime > invalidationTime) {
+              LOG.info("Materialized view " + materializedViewTable.getFullyQualifiedName() +
+                  " ignored for rewriting as its contents are outdated");
+              continue;
+            }
           }
-          RelOptMaterialization materialization = qualifiedNameToView.get(fullyQualifiedName);
-          if (materialization != null) {
-            // Add to final result set
+          // It passed the test, load
+          RelOptMaterialization materialization = cachedViews.get(materializedViewTable.getTableName());
+          if (materialization != null ) {//&&
+//              ((RelOptHiveTable) materialization.tableRel.getTable()).getHiveTableMD().getCreateTime() == materializedViewTable.getCreateTime()) {
+            // It is cached, add to final result set
             result.add(materialization);
+          } else {
+            // It is not in the cache
+            if (LOG.isWarnEnabled()) {
+              LOG.warn("Materialized view " + materializedViewTable.getFullyQualifiedName() + " was not in the cache");
+            }
+            materialization = HiveMaterializedViewsRegistry.get().addMaterializedView(materializedViewTable);
+            if (materialization != null) {
+              result.add(materialization);
+            }
           }
         }
       }

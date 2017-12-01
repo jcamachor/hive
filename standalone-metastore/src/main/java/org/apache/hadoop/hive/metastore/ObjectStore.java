@@ -21,15 +21,6 @@ package org.apache.hadoop.hive.metastore;
 import static org.apache.commons.lang.StringUtils.join;
 import static org.apache.hadoop.hive.metastore.utils.StringUtils.normalizeIdentifier;
 
-import com.google.common.collect.Sets;
-import org.apache.hadoop.hive.metastore.api.WMPoolTrigger;
-import org.apache.hadoop.hive.metastore.api.WMMapping;
-import org.apache.hadoop.hive.metastore.model.MWMMapping;
-import org.apache.hadoop.hive.metastore.model.MWMMapping.EntityType;
-import org.apache.hadoop.hive.metastore.api.WMPool;
-import org.apache.hadoop.hive.metastore.model.MWMPool;
-import org.apache.hadoop.hive.metastore.api.WMFullResourcePlan;
-
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.net.InetAddress;
@@ -74,7 +65,6 @@ import javax.jdo.datastore.DataStoreCache;
 import javax.jdo.datastore.JDOConnection;
 import javax.jdo.identity.IntIdentity;
 import javax.sql.DataSource;
-
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.ArrayUtils;
@@ -138,6 +128,10 @@ import org.apache.hadoop.hive.metastore.api.Type;
 import org.apache.hadoop.hive.metastore.api.UnknownDBException;
 import org.apache.hadoop.hive.metastore.api.UnknownPartitionException;
 import org.apache.hadoop.hive.metastore.api.UnknownTableException;
+import org.apache.hadoop.hive.metastore.api.WMFullResourcePlan;
+import org.apache.hadoop.hive.metastore.api.WMMapping;
+import org.apache.hadoop.hive.metastore.api.WMPool;
+import org.apache.hadoop.hive.metastore.api.WMPoolTrigger;
 import org.apache.hadoop.hive.metastore.api.WMResourcePlan;
 import org.apache.hadoop.hive.metastore.api.WMResourcePlanStatus;
 import org.apache.hadoop.hive.metastore.api.WMTrigger;
@@ -178,6 +172,9 @@ import org.apache.hadoop.hive.metastore.model.MTableColumnStatistics;
 import org.apache.hadoop.hive.metastore.model.MTablePrivilege;
 import org.apache.hadoop.hive.metastore.model.MType;
 import org.apache.hadoop.hive.metastore.model.MVersionTable;
+import org.apache.hadoop.hive.metastore.model.MWMMapping;
+import org.apache.hadoop.hive.metastore.model.MWMMapping.EntityType;
+import org.apache.hadoop.hive.metastore.model.MWMPool;
 import org.apache.hadoop.hive.metastore.model.MWMResourcePlan;
 import org.apache.hadoop.hive.metastore.model.MWMResourcePlan.Status;
 import org.apache.hadoop.hive.metastore.model.MWMTrigger;
@@ -207,6 +204,7 @@ import com.codahale.metrics.MetricRegistry;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
 
 
 /**
@@ -1112,6 +1110,7 @@ public class ObjectStore implements RawStore, Configurable {
     boolean commited = false;
     try {
       openTransaction();
+
       MTable mtbl = convertToMTable(tbl);
       pm.makePersistent(mtbl);
 
@@ -1134,6 +1133,11 @@ public class ObjectStore implements RawStore, Configurable {
     } finally {
       if (!commited) {
         rollbackTransaction();
+      } else {
+        if (tbl.getTableType().equals(TableType.MATERIALIZED_VIEW.toString())) {
+          // Add to the invalidation cache
+          MaterializationsInvalidationCache.get().createMaterializedView(tbl, tbl.getCreationSignature().keySet());
+        }
       }
     }
   }
@@ -1174,12 +1178,14 @@ public class ObjectStore implements RawStore, Configurable {
   @Override
   public boolean dropTable(String dbName, String tableName) throws MetaException,
     NoSuchObjectException, InvalidObjectException, InvalidInputException {
+    boolean materializedView = false;
     boolean success = false;
     try {
       openTransaction();
       MTable tbl = getMTable(dbName, tableName);
       pm.retrieve(tbl);
       if (tbl != null) {
+        materializedView = tbl.getTableType().equals(TableType.MATERIALIZED_VIEW.toString());
         // first remove all the grants
         List<MTablePrivilege> tabGrants = listAllTableGrants(dbName, tableName);
         if (CollectionUtils.isNotEmpty(tabGrants)) {
@@ -1223,6 +1229,10 @@ public class ObjectStore implements RawStore, Configurable {
     } finally {
       if (!success) {
         rollbackTransaction();
+      } else {
+        if (materializedView) {
+          MaterializationsInvalidationCache.get().dropMaterializedView(dbName, tableName);
+        }
       }
     }
     return success;
@@ -1588,6 +1598,7 @@ public class ObjectStore implements RawStore, Configurable {
         .getRetention(), convertToStorageDescriptor(mtbl.getSd()),
         convertToFieldSchemas(mtbl.getPartitionKeys()), convertMap(mtbl.getParameters()),
         mtbl.getViewOriginalText(), mtbl.getViewExpandedText(), tableType);
+    t.setCreationSignature(convertToCreationSignature(mtbl.getCreationSignature()));
     t.setRewriteEnabled(mtbl.isRewriteEnabled());
     return t;
   }
@@ -1627,7 +1638,7 @@ public class ObjectStore implements RawStore, Configurable {
         .getCreateTime(), tbl.getLastAccessTime(), tbl.getRetention(),
         convertToMFieldSchemas(tbl.getPartitionKeys()), tbl.getParameters(),
         tbl.getViewOriginalText(), tbl.getViewExpandedText(), tbl.isRewriteEnabled(),
-        tableType);
+        convertToMCreationSignature(tbl.getCreationSignature()), tableType);
   }
 
   private List<MFieldSchema> convertToMFieldSchemas(List<FieldSchema> keys) {
@@ -1834,6 +1845,30 @@ public class ObjectStore implements RawStore, Configurable {
             .getSkewedColValues()),
         covertToMapMStringList((null == sd.getSkewedInfo()) ? null : sd.getSkewedInfo()
             .getSkewedColValueLocationMaps()), sd.isStoredAsSubDirectories());
+  }
+
+  private Map<String, MNotificationLog> convertToMCreationSignature(
+      Map<String, NotificationEvent> m) throws MetaException {
+    if (m == null) {
+      return null;
+    }
+    Map<String, MNotificationLog> r = new HashMap<>();
+    for (Entry<String, NotificationEvent> e : m.entrySet()) {
+      r.put(e.getKey(), translateThriftToDb(e.getValue()));
+    }
+    return r;
+  }
+
+  private Map<String, NotificationEvent> convertToCreationSignature(
+      Map<String, MNotificationLog> m) throws MetaException {
+    if (m == null) {
+      return null;
+    }
+    Map<String, NotificationEvent> r = new HashMap<>();
+    for (Entry<String, MNotificationLog> e : m.entrySet()) {
+      r.put(e.getKey(), translateDbToThrift(e.getValue()));
+    }
+    return r;
   }
 
   @Override
@@ -3601,12 +3636,19 @@ public class ObjectStore implements RawStore, Configurable {
       oldt.setViewOriginalText(newt.getViewOriginalText());
       oldt.setViewExpandedText(newt.getViewExpandedText());
       oldt.setRewriteEnabled(newt.isRewriteEnabled());
+      oldt.setCreationSignature(newt.getCreationSignature());
 
       // commit the changes
       success = commitTransaction();
     } finally {
       if (!success) {
         rollbackTransaction();
+      } else {
+        if (newTable.getTableType().equals(TableType.MATERIALIZED_VIEW.toString()) &&
+            newTable.getCreationSignature() != null) {
+          // Add to the invalidation cache if the creation signature has changed
+          MaterializationsInvalidationCache.get().createMaterializedView(newTable, newTable.getCreationSignature().keySet());
+        }
       }
     }
   }
@@ -8847,6 +8889,14 @@ public class ObjectStore implements RawStore, Configurable {
       }
       pm.makePersistent(translateThriftToDb(entry));
       commited = commitTransaction();
+
+      // Update registry with modifications
+      String dbName = entry.getDbName();
+      String tableName = entry.getTableName();
+      if (dbName != null && tableName != null) {
+        MaterializationsInvalidationCache.get().notifyTableModification(
+            dbName, tableName, entry.getEventId(), entry.getEventTime());
+      }
     } catch (Exception e) {
       LOG.error("couldnot get lock for update", e);
     } finally {
@@ -8911,6 +8961,63 @@ public class ObjectStore implements RawStore, Configurable {
       return new NotificationEventsCountResponse(result.longValue());
     } finally {
       rollbackAndCleanup(commited, query);
+    }
+  }
+
+  @Override
+  public NotificationEvent getLastNotificationEventForTable(String inputDbName, String inputTableName) {
+    boolean commited = false;
+    Query query = null;
+
+    try {
+      openTransaction();
+      query = pm.newQuery(MNotificationLog.class, "dbName == inputDbName && tableName == inputTableName");
+      query.declareParameters(
+          "java.lang.String inputDbName, java.lang.String inputTableName");
+      query.setOrdering("eventId descending");
+      query.range(0, 1);
+
+      Collection<MNotificationLog> events =
+          (Collection) query.execute(inputDbName, inputTableName);
+      commited = commitTransaction();
+      if (events == null || events.isEmpty()) {
+        return null;
+      }
+      return translateDbToThrift(events.iterator().next());
+    } finally {
+      if (!commited) {
+        rollbackAndCleanup(commited, query);
+        return null;
+      }
+    }
+  }
+
+  @Override
+  public NotificationEvent getFirstNotificationEventForTableAfterEvent(
+      String inputDbName, String inputTableName, long eventId) {
+    boolean commited = false;
+    Query query = null;
+
+    try {
+      openTransaction();
+      query = pm.newQuery(MNotificationLog.class, "dbName == inputDbName && tableName == inputTableName && eventId > fromEventId");
+      query.declareParameters(
+          "java.lang.String inputDbName, java.lang.String inputTableName, java.lang.Long fromEventId");
+      query.setOrdering("eventId ascending");
+      query.range(0, 1);
+
+      Collection<MNotificationLog> events =
+          (Collection) query.execute(inputDbName, inputTableName);
+      commited = commitTransaction();
+      if (events == null || events.isEmpty()) {
+        return null;
+      }
+      return translateDbToThrift(events.iterator().next());
+    } finally {
+      if (!commited) {
+        rollbackAndCleanup(commited, query);
+        return null;
+      }
     }
   }
 

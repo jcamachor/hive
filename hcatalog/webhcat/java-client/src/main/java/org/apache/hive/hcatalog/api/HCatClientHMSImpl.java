@@ -52,6 +52,7 @@ import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.UnknownDBException;
 import org.apache.hadoop.hive.metastore.api.UnknownTableException;
+import org.apache.hadoop.hive.metastore.messaging.EventUtils.NotificationFilter;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.exec.SerializationUtilities;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
@@ -996,7 +997,7 @@ public class HCatClientHMSImpl extends HCatClient {
 
   @Override
   public List<HCatNotificationEvent> getNextNotification(long lastEventId, int maxEvents,
-                                                         IMetaStoreClient.NotificationFilter filter)
+                                                         NotificationFilter filter)
       throws HCatException {
     try {
       NotificationEventResponse rsp = hmsClient.getNextNotification(lastEventId, maxEvents, filter);

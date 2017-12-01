@@ -327,6 +327,7 @@ struct Table {
   13: optional PrincipalPrivilegeSet privileges,
   14: optional bool temporary=false,
   15: optional bool rewriteEnabled,     // rewrite enabled or not
+  16: optional map<string, NotificationEvent> creationSignature   // only for MVs, it stores table name used -> last modification time before MV creation
 }
 
 struct Partition {
@@ -1031,6 +1032,12 @@ struct TableMeta {
   4: optional string comments;
 }
 
+struct Materialization {
+  1: required Table materializationTable;
+  2: required set<string> tablesUsed;
+  3: required i32 invalidationTime;
+}
+
 // Data types for workload management.
 
 enum WMResourcePlanStatus {
@@ -1364,6 +1371,8 @@ service ThriftHiveMetastore extends fb303.FacebookService
   list<Table> get_table_objects_by_name(1:string dbname, 2:list<string> tbl_names)
   GetTableResult get_table_req(1:GetTableRequest req) throws (1:MetaException o1, 2:NoSuchObjectException o2)
   GetTablesResult get_table_objects_by_name_req(1:GetTablesRequest req)
+				   throws (1:MetaException o1, 2:InvalidOperationException o2, 3:UnknownDBException o3)
+  map<string, Materialization> get_materialization_invalidation_info(1:string dbname, 2:list<string> tbl_names)
 				   throws (1:MetaException o1, 2:InvalidOperationException o2, 3:UnknownDBException o3)
 
   // Get a list of table names that match a filter.
@@ -1765,7 +1774,8 @@ service ThriftHiveMetastore extends fb303.FacebookService
   // Notification logging calls
   NotificationEventResponse get_next_notification(1:NotificationEventRequest rqst) 
   CurrentNotificationEventId get_current_notificationEventId()
-  NotificationEventsCountResponse get_notification_events_count(NotificationEventsCountRequest rqst)
+  NotificationEvent get_last_notification_event_for_table(1:string db_name, 2:string table_name)
+  NotificationEventsCountResponse get_notification_events_count(1:NotificationEventsCountRequest rqst)
   FireEventResponse fire_listener_event(1:FireEventRequest rqst)
   void flushCache()
 
