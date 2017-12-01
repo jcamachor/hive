@@ -1340,7 +1340,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       db.alterTable(mv, environmentContext);
       // Remove or add to materialized view rewriting cache
       if (alterMVDesc.isRewriteEnable()) {
-        HiveMaterializedViewsRegistry.get().addMaterializedView(mv);
+        HiveMaterializedViewsRegistry.get().createMaterializedView(mv);
       } else {
         HiveMaterializedViewsRegistry.get().dropMaterializedView(oldMV);
       }
@@ -5095,7 +5095,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       db.createTable(tbl, crtView.getIfNotExists());
       // Add to cache if it is a materialized view
       if (tbl.isMaterializedView()) {
-        HiveMaterializedViewsRegistry.get().addMaterializedView(tbl);
+        HiveMaterializedViewsRegistry.get().createMaterializedView(tbl);
       }
       addIfAbsentByName(new WriteEntity(tbl, WriteEntity.WriteType.DDL_NO_LOCK));
 

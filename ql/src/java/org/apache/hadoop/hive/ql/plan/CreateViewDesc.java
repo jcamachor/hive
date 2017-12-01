@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.ql.plan;
 
 import java.io.Serializable;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -32,7 +33,6 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.HiveStorageHandler;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
-import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -66,6 +66,7 @@ public class CreateViewDesc extends DDLDesc implements Serializable {
   private String serde; // only used for materialized views
   private String storageHandler; // only used for materialized views
   private Map<String, String> serdeProps; // only used for materialized views
+  private Map<String, Long> creationSignature; // only used for materialized views
   private ReplicationSpec replicationSpec = null;
 
   /**
@@ -96,7 +97,8 @@ public class CreateViewDesc extends DDLDesc implements Serializable {
           Map<String, String> tblProps, List<String> partColNames,
           boolean ifNotExists, boolean replace, boolean rewriteEnabled, boolean isAlterViewAs,
           String inputFormat, String outputFormat, String location,
-          String serde, String storageHandler, Map<String, String> serdeProps) {
+          String serde, String storageHandler, Map<String, String> serdeProps,
+          Map<String, Long> creationSignature) {
     this.viewName = viewName;
     this.schema = schema;
     this.tblProps = tblProps;
@@ -113,6 +115,7 @@ public class CreateViewDesc extends DDLDesc implements Serializable {
     this.serde = serde;
     this.storageHandler = storageHandler;
     this.serdeProps = serdeProps;
+    this.creationSignature = creationSignature;
   }
 
   /**
@@ -302,6 +305,10 @@ public class CreateViewDesc extends DDLDesc implements Serializable {
     return serdeProps;
   }
 
+  public Map<String, Long> getCreationSignature() {
+    return creationSignature;
+  }
+
   /**
    * @param replicationSpec Sets the replication spec governing this create.
    * This parameter will have meaningful values only for creates happening as a result of a replication.
@@ -360,6 +367,9 @@ public class CreateViewDesc extends DDLDesc implements Serializable {
       if (getLocation() != null) {
         tbl.setDataLocation(new Path(getLocation()));
       }
+
+      tbl.getTTable().setCreationSignature(new HashMap<String, Long>());
+      tbl.getTTable().getCreationSignature().putAll(getCreationSignature());
 
       if (getStorageHandler() != null) {
         tbl.setProperty(

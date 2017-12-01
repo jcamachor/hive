@@ -2329,7 +2329,7 @@ inline std::ostream& operator<<(std::ostream& out, const StorageDescriptor& obj)
 }
 
 typedef struct _Table__isset {
-  _Table__isset() : tableName(false), dbName(false), owner(false), createTime(false), lastAccessTime(false), retention(false), sd(false), partitionKeys(false), parameters(false), viewOriginalText(false), viewExpandedText(false), tableType(false), privileges(false), temporary(true), rewriteEnabled(false) {}
+  _Table__isset() : tableName(false), dbName(false), owner(false), createTime(false), lastAccessTime(false), retention(false), sd(false), partitionKeys(false), parameters(false), viewOriginalText(false), viewExpandedText(false), tableType(false), privileges(false), temporary(true), rewriteEnabled(false), creationSignature(false) {}
   bool tableName :1;
   bool dbName :1;
   bool owner :1;
@@ -2345,6 +2345,7 @@ typedef struct _Table__isset {
   bool privileges :1;
   bool temporary :1;
   bool rewriteEnabled :1;
+  bool creationSignature :1;
 } _Table__isset;
 
 class Table {
@@ -2371,6 +2372,7 @@ class Table {
   PrincipalPrivilegeSet privileges;
   bool temporary;
   bool rewriteEnabled;
+  std::map<std::string, int64_t>  creationSignature;
 
   _Table__isset __isset;
 
@@ -2403,6 +2405,8 @@ class Table {
   void __set_temporary(const bool val);
 
   void __set_rewriteEnabled(const bool val);
+
+  void __set_creationSignature(const std::map<std::string, int64_t> & val);
 
   bool operator == (const Table & rhs) const
   {
@@ -2441,6 +2445,10 @@ class Table {
     if (__isset.rewriteEnabled != rhs.__isset.rewriteEnabled)
       return false;
     else if (__isset.rewriteEnabled && !(rewriteEnabled == rhs.rewriteEnabled))
+      return false;
+    if (__isset.creationSignature != rhs.__isset.creationSignature)
+      return false;
+    else if (__isset.creationSignature && !(creationSignature == rhs.creationSignature))
       return false;
     return true;
   }

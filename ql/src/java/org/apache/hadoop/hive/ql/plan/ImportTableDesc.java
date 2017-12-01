@@ -99,7 +99,8 @@ public class ImportTableDesc {
                   null, // location: set to null here, can be overwritten by the IMPORT stmt
                   table.getSd().getSerdeInfo().getSerializationLib(),
                   null, // storagehandler passed as table params
-                  table.getSd().getSerdeInfo().getParameters());
+                  table.getSd().getSerdeInfo().getParameters(),
+                  table.getTTable().getCreationSignature());
         } else {
           this.createViewDesc = new CreateViewDesc(dbDotView,
                   table.getAllCols(),

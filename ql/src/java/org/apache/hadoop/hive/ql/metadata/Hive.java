@@ -145,6 +145,7 @@ import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.index.HiveIndexHandler;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.log.PerfLogger;
+import org.apache.hadoop.hive.ql.optimizer.calcite.RelOptHiveMaterialization;
 import org.apache.hadoop.hive.ql.optimizer.listbucketingpruner.ListBucketingPrunerUtils;
 import org.apache.hadoop.hive.ql.plan.AddPartitionDesc;
 import org.apache.hadoop.hive.ql.plan.DropTableDesc;
@@ -1529,6 +1530,8 @@ public class Hive {
    * @throws HiveException
    */
   public List<RelOptMaterialization> getRewritingMaterializedViews() throws HiveException {
+    long minTime = System.currentTimeMillis() -
+        conf.getLongVar(HiveConf.ConfVars.HIVE_MATERIALIZED_VIEW_REWRITING_TIME_WINDOW);
     try {
       // Final result
       List<RelOptMaterialization> result = new ArrayList<>();
@@ -1536,16 +1539,23 @@ public class Hive {
         // From metastore (for security)
         List<String> tables = getAllMaterializedViews(dbName);
         // Cached views (includes all)
-        Collection<RelOptMaterialization> cachedViews =
+        Collection<RelOptHiveMaterialization> cachedViews =
             HiveMaterializedViewsRegistry.get().getRewritingMaterializedViews(dbName);
         if (cachedViews.isEmpty()) {
           // Bail out: empty list
           continue;
         }
-        Map<String, RelOptMaterialization> qualifiedNameToView =
-            new HashMap<String, RelOptMaterialization>();
-        for (RelOptMaterialization materialization : cachedViews) {
-          qualifiedNameToView.put(materialization.qualifiedTableName.get(0), materialization);
+        Map<String, RelOptHiveMaterialization> qualifiedNameToView =
+            new HashMap<String, RelOptHiveMaterialization>();
+        for (RelOptHiveMaterialization materialization : cachedViews) {
+          long invalidationTime = materialization.getInvalidationTime();
+          // If the limit is not met, we do not add the materialized view
+          if (invalidationTime == 0L || minTime <= invalidationTime) {
+            qualifiedNameToView.put(materialization.qualifiedTableName.get(0), materialization);
+          } else {
+            LOG.info("Materialized view " + materialization.qualifiedTableName.get(0) +
+                " ignored for rewriting as its contents are outdated");
+          }
         }
         for (String table : tables) {
           // Compose qualified name
@@ -1559,6 +1569,10 @@ public class Hive {
           if (materialization != null) {
             // Add to final result set
             result.add(materialization);
+          } else {
+            // It is not in the cache
+            LOG.warn("Materialized view " + fullyQualifiedName +
+                " could not be added as there was a problem loading it");
           }
         }
       }

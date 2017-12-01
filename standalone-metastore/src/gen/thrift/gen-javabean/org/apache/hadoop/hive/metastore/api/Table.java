@@ -53,6 +53,7 @@ import org.slf4j.LoggerFactory;
   private static final org.apache.thrift.protocol.TField PRIVILEGES_FIELD_DESC = new org.apache.thrift.protocol.TField("privileges", org.apache.thrift.protocol.TType.STRUCT, (short)13);
   private static final org.apache.thrift.protocol.TField TEMPORARY_FIELD_DESC = new org.apache.thrift.protocol.TField("temporary", org.apache.thrift.protocol.TType.BOOL, (short)14);
   private static final org.apache.thrift.protocol.TField REWRITE_ENABLED_FIELD_DESC = new org.apache.thrift.protocol.TField("rewriteEnabled", org.apache.thrift.protocol.TType.BOOL, (short)15);
+  private static final org.apache.thrift.protocol.TField CREATION_SIGNATURE_FIELD_DESC = new org.apache.thrift.protocol.TField("creationSignature", org.apache.thrift.protocol.TType.MAP, (short)16);
 
   private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
   static {
@@ -75,6 +76,7 @@ import org.slf4j.LoggerFactory;
   private PrincipalPrivilegeSet privileges; // optional
   private boolean temporary; // optional
   private boolean rewriteEnabled; // optional
+  private Map<String,Long> creationSignature; // optional
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
@@ -92,7 +94,8 @@ import org.slf4j.LoggerFactory;
     TABLE_TYPE((short)12, "tableType"),
     PRIVILEGES((short)13, "privileges"),
     TEMPORARY((short)14, "temporary"),
-    REWRITE_ENABLED((short)15, "rewriteEnabled");
+    REWRITE_ENABLED((short)15, "rewriteEnabled"),
+    CREATION_SIGNATURE((short)16, "creationSignature");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -137,6 +140,8 @@ import org.slf4j.LoggerFactory;
           return TEMPORARY;
         case 15: // REWRITE_ENABLED
           return REWRITE_ENABLED;
+        case 16: // CREATION_SIGNATURE
+          return CREATION_SIGNATURE;
         default:
           return null;
       }
@@ -183,7 +188,7 @@ import org.slf4j.LoggerFactory;
   private static final int __TEMPORARY_ISSET_ID = 3;
   private static final int __REWRITEENABLED_ISSET_ID = 4;
   private byte __isset_bitfield = 0;
-  private static final _Fields optionals[] = {_Fields.PRIVILEGES,_Fields.TEMPORARY,_Fields.REWRITE_ENABLED};
+  private static final _Fields optionals[] = {_Fields.PRIVILEGES,_Fields.TEMPORARY,_Fields.REWRITE_ENABLED,_Fields.CREATION_SIGNATURE};
   public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
@@ -220,6 +225,10 @@ import org.slf4j.LoggerFactory;
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.BOOL)));
     tmpMap.put(_Fields.REWRITE_ENABLED, new org.apache.thrift.meta_data.FieldMetaData("rewriteEnabled", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.BOOL)));
+    tmpMap.put(_Fields.CREATION_SIGNATURE, new org.apache.thrift.meta_data.FieldMetaData("creationSignature", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
+        new org.apache.thrift.meta_data.MapMetaData(org.apache.thrift.protocol.TType.MAP, 
+            new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING), 
+            new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I64))));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(Table.class, metaDataMap);
   }
@@ -306,6 +315,10 @@ import org.slf4j.LoggerFactory;
     }
     this.temporary = other.temporary;
     this.rewriteEnabled = other.rewriteEnabled;
+    if (other.isSetCreationSignature()) {
+      Map<String,Long> __this__creationSignature = new HashMap<String,Long>(other.creationSignature);
+      this.creationSignature = __this__creationSignature;
+    }
   }
 
   public Table deepCopy() {
@@ -334,6 +347,7 @@ import org.slf4j.LoggerFactory;
 
     setRewriteEnabledIsSet(false);
     this.rewriteEnabled = false;
+    this.creationSignature = null;
   }
 
   public String getTableName() {
@@ -702,6 +716,40 @@ import org.slf4j.LoggerFactory;
     __isset_bitfield = EncodingUtils.setBit(__isset_bitfield, __REWRITEENABLED_ISSET_ID, value);
   }
 
+  public int getCreationSignatureSize() {
+    return (this.creationSignature == null) ? 0 : this.creationSignature.size();
+  }
+
+  public void putToCreationSignature(String key, long val) {
+    if (this.creationSignature == null) {
+      this.creationSignature = new HashMap<String,Long>();
+    }
+    this.creationSignature.put(key, val);
+  }
+
+  public Map<String,Long> getCreationSignature() {
+    return this.creationSignature;
+  }
+
+  public void setCreationSignature(Map<String,Long> creationSignature) {
+    this.creationSignature = creationSignature;
+  }
+
+  public void unsetCreationSignature() {
+    this.creationSignature = null;
+  }
+
+  /** Returns true if field creationSignature is set (has been assigned a value) and false otherwise */
+  public boolean isSetCreationSignature() {
+    return this.creationSignature != null;
+  }
+
+  public void setCreationSignatureIsSet(boolean value) {
+    if (!value) {
+      this.creationSignature = null;
+    }
+  }
+
   public void setFieldValue(_Fields field, Object value) {
     switch (field) {
     case TABLE_NAME:
@@ -824,6 +872,14 @@ import org.slf4j.LoggerFactory;
       }
       break;
 
+    case CREATION_SIGNATURE:
+      if (value == null) {
+        unsetCreationSignature();
+      } else {
+        setCreationSignature((Map<String,Long>)value);
+      }
+      break;
+
     }
   }
 
@@ -874,6 +930,9 @@ import org.slf4j.LoggerFactory;
     case REWRITE_ENABLED:
       return isRewriteEnabled();
 
+    case CREATION_SIGNATURE:
+      return getCreationSignature();
+
     }
     throw new IllegalStateException();
   }
@@ -915,6 +974,8 @@ import org.slf4j.LoggerFactory;
       return isSetTemporary();
     case REWRITE_ENABLED:
       return isSetRewriteEnabled();
+    case CREATION_SIGNATURE:
+      return isSetCreationSignature();
     }
     throw new IllegalStateException();
   }
@@ -1067,6 +1128,15 @@ import org.slf4j.LoggerFactory;
         return false;
     }
 
+    boolean this_present_creationSignature = true && this.isSetCreationSignature();
+    boolean that_present_creationSignature = true && that.isSetCreationSignature();
+    if (this_present_creationSignature || that_present_creationSignature) {
+      if (!(this_present_creationSignature && that_present_creationSignature))
+        return false;
+      if (!this.creationSignature.equals(that.creationSignature))
+        return false;
+    }
+
     return true;
   }
 
@@ -1148,6 +1218,11 @@ import org.slf4j.LoggerFactory;
     list.add(present_rewriteEnabled);
     if (present_rewriteEnabled)
       list.add(rewriteEnabled);
+
+    boolean present_creationSignature = true && (isSetCreationSignature());
+    list.add(present_creationSignature);
+    if (present_creationSignature)
+      list.add(creationSignature);
 
     return list.hashCode();
   }
@@ -1310,6 +1385,16 @@ import org.slf4j.LoggerFactory;
         return lastComparison;
       }
     }
+    lastComparison = Boolean.valueOf(isSetCreationSignature()).compareTo(other.isSetCreationSignature());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetCreationSignature()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.creationSignature, other.creationSignature);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
     return 0;
   }
 
@@ -1433,6 +1518,16 @@ import org.slf4j.LoggerFactory;
       if (!first) sb.append(", ");
       sb.append("rewriteEnabled:");
       sb.append(this.rewriteEnabled);
+      first = false;
+    }
+    if (isSetCreationSignature()) {
+      if (!first) sb.append(", ");
+      sb.append("creationSignature:");
+      if (this.creationSignature == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.creationSignature);
+      }
       first = false;
     }
     sb.append(")");
@@ -1631,6 +1726,26 @@ import org.slf4j.LoggerFactory;
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
+          case 16: // CREATION_SIGNATURE
+            if (schemeField.type == org.apache.thrift.protocol.TType.MAP) {
+              {
+                org.apache.thrift.protocol.TMap _map197 = iprot.readMapBegin();
+                struct.creationSignature = new HashMap<String,Long>(2*_map197.size);
+                String _key198;
+                long _val199;
+                for (int _i200 = 0; _i200 < _map197.size; ++_i200)
+                {
+                  _key198 = iprot.readString();
+                  _val199 = iprot.readI64();
+                  struct.creationSignature.put(_key198, _val199);
+                }
+                iprot.readMapEnd();
+              }
+              struct.setCreationSignatureIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
           default:
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
         }
@@ -1677,9 +1792,9 @@ import org.slf4j.LoggerFactory;
         oprot.writeFieldBegin(PARTITION_KEYS_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, struct.partitionKeys.size()));
-          for (FieldSchema _iter197 : struct.partitionKeys)
+          for (FieldSchema _iter201 : struct.partitionKeys)
           {
-            _iter197.write(oprot);
+            _iter201.write(oprot);
           }
           oprot.writeListEnd();
         }
@@ -1689,10 +1804,10 @@ import org.slf4j.LoggerFactory;
         oprot.writeFieldBegin(PARAMETERS_FIELD_DESC);
         {
           oprot.writeMapBegin(new org.apache.thrift.protocol.TMap(org.apache.thrift.protocol.TType.STRING, org.apache.thrift.protocol.TType.STRING, struct.parameters.size()));
-          for (Map.Entry<String, String> _iter198 : struct.parameters.entrySet())
+          for (Map.Entry<String, String> _iter202 : struct.parameters.entrySet())
           {
-            oprot.writeString(_iter198.getKey());
-            oprot.writeString(_iter198.getValue());
+            oprot.writeString(_iter202.getKey());
+            oprot.writeString(_iter202.getValue());
           }
           oprot.writeMapEnd();
         }
@@ -1729,6 +1844,21 @@ import org.slf4j.LoggerFactory;
         oprot.writeFieldBegin(REWRITE_ENABLED_FIELD_DESC);
         oprot.writeBool(struct.rewriteEnabled);
         oprot.writeFieldEnd();
+      }
+      if (struct.creationSignature != null) {
+        if (struct.isSetCreationSignature()) {
+          oprot.writeFieldBegin(CREATION_SIGNATURE_FIELD_DESC);
+          {
+            oprot.writeMapBegin(new org.apache.thrift.protocol.TMap(org.apache.thrift.protocol.TType.STRING, org.apache.thrift.protocol.TType.I64, struct.creationSignature.size()));
+            for (Map.Entry<String, Long> _iter203 : struct.creationSignature.entrySet())
+            {
+              oprot.writeString(_iter203.getKey());
+              oprot.writeI64(_iter203.getValue());
+            }
+            oprot.writeMapEnd();
+          }
+          oprot.writeFieldEnd();
+        }
       }
       oprot.writeFieldStop();
       oprot.writeStructEnd();
@@ -1793,7 +1923,10 @@ import org.slf4j.LoggerFactory;
       if (struct.isSetRewriteEnabled()) {
         optionals.set(14);
       }
-      oprot.writeBitSet(optionals, 15);
+      if (struct.isSetCreationSignature()) {
+        optionals.set(15);
+      }
+      oprot.writeBitSet(optionals, 16);
       if (struct.isSetTableName()) {
         oprot.writeString(struct.tableName);
       }
@@ -1818,19 +1951,19 @@ import org.slf4j.LoggerFactory;
       if (struct.isSetPartitionKeys()) {
         {
           oprot.writeI32(struct.partitionKeys.size());
-          for (FieldSchema _iter199 : struct.partitionKeys)
+          for (FieldSchema _iter204 : struct.partitionKeys)
           {
-            _iter199.write(oprot);
+            _iter204.write(oprot);
           }
         }
       }
       if (struct.isSetParameters()) {
         {
           oprot.writeI32(struct.parameters.size());
-          for (Map.Entry<String, String> _iter200 : struct.parameters.entrySet())
+          for (Map.Entry<String, String> _iter205 : struct.parameters.entrySet())
           {
-            oprot.writeString(_iter200.getKey());
-            oprot.writeString(_iter200.getValue());
+            oprot.writeString(_iter205.getKey());
+            oprot.writeString(_iter205.getValue());
           }
         }
       }
@@ -1852,12 +1985,22 @@ import org.slf4j.LoggerFactory;
       if (struct.isSetRewriteEnabled()) {
         oprot.writeBool(struct.rewriteEnabled);
       }
+      if (struct.isSetCreationSignature()) {
+        {
+          oprot.writeI32(struct.creationSignature.size());
+          for (Map.Entry<String, Long> _iter206 : struct.creationSignature.entrySet())
+          {
+            oprot.writeString(_iter206.getKey());
+            oprot.writeI64(_iter206.getValue());
+          }
+        }
+      }
     }
 
     @Override
     public void read(org.apache.thrift.protocol.TProtocol prot, Table struct) throws org.apache.thrift.TException {
       TTupleProtocol iprot = (TTupleProtocol) prot;
-      BitSet incoming = iprot.readBitSet(15);
+      BitSet incoming = iprot.readBitSet(16);
       if (incoming.get(0)) {
         struct.tableName = iprot.readString();
         struct.setTableNameIsSet(true);
@@ -1889,29 +2032,29 @@ import org.slf4j.LoggerFactory;
       }
       if (incoming.get(7)) {
         {
-          org.apache.thrift.protocol.TList _list201 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
-          struct.partitionKeys = new ArrayList<FieldSchema>(_list201.size);
-          FieldSchema _elem202;
-          for (int _i203 = 0; _i203 < _list201.size; ++_i203)
+          org.apache.thrift.protocol.TList _list207 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
+          struct.partitionKeys = new ArrayList<FieldSchema>(_list207.size);
+          FieldSchema _elem208;
+          for (int _i209 = 0; _i209 < _list207.size; ++_i209)
           {
-            _elem202 = new FieldSchema();
-            _elem202.read(iprot);
-            struct.partitionKeys.add(_elem202);
+            _elem208 = new FieldSchema();
+            _elem208.read(iprot);
+            struct.partitionKeys.add(_elem208);
           }
         }
         struct.setPartitionKeysIsSet(true);
       }
       if (incoming.get(8)) {
         {
-          org.apache.thrift.protocol.TMap _map204 = new org.apache.thrift.protocol.TMap(org.apache.thrift.protocol.TType.STRING, org.apache.thrift.protocol.TType.STRING, iprot.readI32());
-          struct.parameters = new HashMap<String,String>(2*_map204.size);
-          String _key205;
-          String _val206;
-          for (int _i207 = 0; _i207 < _map204.size; ++_i207)
+          org.apache.thrift.protocol.TMap _map210 = new org.apache.thrift.protocol.TMap(org.apache.thrift.protocol.TType.STRING, org.apache.thrift.protocol.TType.STRING, iprot.readI32());
+          struct.parameters = new HashMap<String,String>(2*_map210.size);
+          String _key211;
+          String _val212;
+          for (int _i213 = 0; _i213 < _map210.size; ++_i213)
           {
-            _key205 = iprot.readString();
-            _val206 = iprot.readString();
-            struct.parameters.put(_key205, _val206);
+            _key211 = iprot.readString();
+            _val212 = iprot.readString();
+            struct.parameters.put(_key211, _val212);
           }
         }
         struct.setParametersIsSet(true);
@@ -1940,6 +2083,21 @@ import org.slf4j.LoggerFactory;
       if (incoming.get(14)) {
         struct.rewriteEnabled = iprot.readBool();
         struct.setRewriteEnabledIsSet(true);
+      }
+      if (incoming.get(15)) {
+        {
+          org.apache.thrift.protocol.TMap _map214 = new org.apache.thrift.protocol.TMap(org.apache.thrift.protocol.TType.STRING, org.apache.thrift.protocol.TType.I64, iprot.readI32());
+          struct.creationSignature = new HashMap<String,Long>(2*_map214.size);
+          String _key215;
+          long _val216;
+          for (int _i217 = 0; _i217 < _map214.size; ++_i217)
+          {
+            _key215 = iprot.readString();
+            _val216 = iprot.readI64();
+            struct.creationSignature.put(_key215, _val216);
+          }
+        }
+        struct.setCreationSignatureIsSet(true);
       }
     }
   }

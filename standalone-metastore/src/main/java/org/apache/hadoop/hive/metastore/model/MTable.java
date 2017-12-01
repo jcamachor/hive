@@ -35,6 +35,7 @@ public class MTable {
   private String viewOriginalText;
   private String viewExpandedText;
   private boolean rewriteEnabled;
+  private Map<String, Long> creationSignature;
   private String tableType;
 
   public MTable() {}
@@ -55,8 +56,8 @@ public class MTable {
    */
   public MTable(String tableName, MDatabase database, MStorageDescriptor sd, String owner,
       int createTime, int lastAccessTime, int retention, List<MFieldSchema> partitionKeys,
-      Map<String, String> parameters,
-      String viewOriginalText, String viewExpandedText, boolean rewriteEnabled, String tableType) {
+      Map<String, String> parameters, String viewOriginalText, String viewExpandedText,
+      boolean rewriteEnabled, Map<String, Long> creationSignature, String tableType) {
     this.tableName = tableName;
     this.database = database;
     this.sd = sd;
@@ -69,6 +70,7 @@ public class MTable {
     this.viewOriginalText = viewOriginalText;
     this.viewExpandedText = viewExpandedText;
     this.rewriteEnabled = rewriteEnabled;
+    this.creationSignature = creationSignature;
     this.tableType = tableType;
   }
 
@@ -168,6 +170,20 @@ public class MTable {
    */
   public void setRewriteEnabled(boolean rewriteEnabled) {
     this.rewriteEnabled = rewriteEnabled;
+  }
+
+  /**
+   * @return the signature
+   */
+  public Map<String, Long> getCreationSignature() {
+    return creationSignature;
+  }
+
+  /**
+   * @param creationSignature the signature to set
+   */
+  public void setCreationSignature(Map<String, Long> creationSignature) {
+    this.creationSignature = creationSignature;
   }
 
   /**

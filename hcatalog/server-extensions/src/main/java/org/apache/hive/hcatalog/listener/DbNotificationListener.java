@@ -69,6 +69,7 @@ import org.apache.hadoop.hive.metastore.events.InsertEvent;
 import org.apache.hadoop.hive.metastore.events.LoadPartitionDoneEvent;
 import org.apache.hadoop.hive.metastore.events.ListenerEvent;
 import org.apache.hadoop.hive.metastore.messaging.EventMessage.EventType;
+import org.apache.hadoop.hive.ql.metadata.HiveMaterializedViewsRegistry;
 import org.apache.hadoop.hive.metastore.messaging.MessageFactory;
 import org.apache.hadoop.hive.metastore.messaging.PartitionFiles;
 import org.slf4j.Logger;
@@ -573,14 +574,23 @@ public class DbNotificationListener extends TransactionalMetaStoreEventListener 
     event.setMessageFormat(msgFactory.getMessageFormat());
     LOG.debug("DbNotificationListener: Processing : {}:{}", event.getEventId(),
         event.getMessage());
-    HMSHandler.getMSForConf(hiveConf).addNotificationEvent(event);
+    RawStore ms = HMSHandler.getMSForConf(hiveConf);
+    ms.addNotificationEvent(event);
 
-      // Set the DB_NOTIFICATION_EVENT_ID for future reference by other listeners.
-      if (event.isSetEventId()) {
-        listenerEvent.putParameter(
-            MetaStoreEventListenerConstants.DB_NOTIFICATION_EVENT_ID_KEY_NAME,
-            Long.toString(event.getEventId()));
-      }
+    // Update registry with modifications
+    String dbName = event.getDbName();
+    String tableName = event.getTableName();
+    if (dbName != null && tableName != null) {
+      HiveMaterializedViewsRegistry.get().notifyTableModification(
+          dbName, tableName, event.getEventId(), event.getEventTime());
+    }
+
+    // Set the DB_NOTIFICATION_EVENT_ID for future reference by other listeners.
+    if (event.isSetEventId()) {
+      listenerEvent.putParameter(
+          MetaStoreEventListenerConstants.DB_NOTIFICATION_EVENT_ID_KEY_NAME,
+          Long.toString(event.getEventId()));
+    }
   }
 
   private static class CleanerThread extends Thread {

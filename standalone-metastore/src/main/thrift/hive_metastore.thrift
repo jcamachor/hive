@@ -327,6 +327,7 @@ struct Table {
   13: optional PrincipalPrivilegeSet privileges,
   14: optional bool temporary=false,
   15: optional bool rewriteEnabled,     // rewrite enabled or not
+  16: optional map<string, i64> creationSignature   // only for MVs, it stores table name used -> last modification time before MV creation
 }
 
 struct Partition {

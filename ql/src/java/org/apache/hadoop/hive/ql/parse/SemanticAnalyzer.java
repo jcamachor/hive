@@ -12683,12 +12683,27 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     unparseTranslator.enable();
 
     if (isMaterialized) {
+      // Create signature consisting of the tables that the materialized view
+      // is reading and the time at which the table was accessed last
+      Map<String, Long> signature = new HashMap<String, Long>();
+      for (String alias : qb.getTabAliases()) {
+        try {
+          String tableName = qb.getTabNameForAlias(alias);
+          Table table = getTableObjectByName(tableName);
+          if (!table.isMaterializedTable() && !table.isView()) {
+            // Add to signature
+            signature.put(tableName, new Long(table.getLastAccessTime()));
+          }
+        } catch (HiveException ex) {
+          throw new SemanticException(ex);
+        }
+      }
       createVwDesc = new CreateViewDesc(
           dbDotTable, cols, comment, tblProps, partColNames,
           ifNotExists, isRebuild, rewriteEnabled, isAlterViewAs,
           storageFormat.getInputFormat(), storageFormat.getOutputFormat(),
           location, storageFormat.getSerde(), storageFormat.getStorageHandler(),
-          storageFormat.getSerdeProps());
+          storageFormat.getSerdeProps(), signature);
       addDbAndTabToOutputs(qualTabName, TableType.MATERIALIZED_VIEW);
       queryState.setCommandType(HiveOperation.CREATE_MATERIALIZED_VIEW);
     } else {
@@ -12736,13 +12751,16 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     try {
       Table oldView = getTable(createVwDesc.getViewName(), false);
 
-      // Do not allow view to be defined on temp table
+      // Do not allow view to be defined on temp table or other materialized view
       Set<String> tableAliases = qb.getTabAliases();
       for (String alias : tableAliases) {
         try {
           Table table = this.getTableObjectByName(qb.getTabNameForAlias(alias));
           if (table.isTemporary()) {
             throw new SemanticException("View definition references temporary table " + alias);
+          }
+          if (table.isMaterializedView()) {
+            throw new SemanticException("View definition references materialized view " + alias);
           }
         } catch (HiveException ex) {
           throw new SemanticException(ex);

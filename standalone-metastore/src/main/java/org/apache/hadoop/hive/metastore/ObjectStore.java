@@ -1587,6 +1587,7 @@ public class ObjectStore implements RawStore, Configurable {
         .getRetention(), convertToStorageDescriptor(mtbl.getSd()),
         convertToFieldSchemas(mtbl.getPartitionKeys()), convertMap(mtbl.getParameters()),
         mtbl.getViewOriginalText(), mtbl.getViewExpandedText(), tableType);
+    t.setCreationSignature(mtbl.getCreationSignature());
     t.setRewriteEnabled(mtbl.isRewriteEnabled());
     return t;
   }
@@ -1626,7 +1627,7 @@ public class ObjectStore implements RawStore, Configurable {
         .getCreateTime(), tbl.getLastAccessTime(), tbl.getRetention(),
         convertToMFieldSchemas(tbl.getPartitionKeys()), tbl.getParameters(),
         tbl.getViewOriginalText(), tbl.getViewExpandedText(), tbl.isRewriteEnabled(),
-        tableType);
+        tbl.getCreationSignature(), tableType);
   }
 
   private List<MFieldSchema> convertToMFieldSchemas(List<FieldSchema> keys) {
