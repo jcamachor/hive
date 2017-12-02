@@ -2112,6 +2112,12 @@ public class CachedStore implements RawStore, Configurable {
   }
 
   @Override
+  public NotificationEvent getLastNotificationEventForTable(
+      String inputDbName, String inputTableName) {
+    return rawStore.getLastNotificationEventForTable(inputDbName, inputTableName);
+  }
+
+  @Override
   public NotificationEventsCountResponse getNotificationEventsCount(NotificationEventsCountRequest rqst) {
     return rawStore.getNotificationEventsCount(rqst);
   }
@@ -2511,4 +2517,5 @@ public class CachedStore implements RawStore, Configurable {
         .equals(".*")
         && MetastoreConf.getAsString(conf, MetastoreConf.ConfVars.CACHED_RAW_STORE_CACHED_OBJECTS_BLACKLIST).isEmpty();
   }
+
 }

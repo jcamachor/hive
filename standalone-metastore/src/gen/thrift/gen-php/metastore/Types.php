@@ -5116,12 +5116,13 @@ class Table {
           'var' => 'creationSignature',
           'type' => TType::MAP,
           'ktype' => TType::STRING,
-          'vtype' => TType::I64,
+          'vtype' => TType::STRUCT,
           'key' => array(
             'type' => TType::STRING,
           ),
           'val' => array(
-            'type' => TType::I64,
+            'type' => TType::STRUCT,
+            'class' => '\metastore\BasicNotificationEvent',
             ),
           ),
         );
@@ -5338,9 +5339,10 @@ class Table {
             for ($_i185 = 0; $_i185 < $_size181; ++$_i185)
             {
               $key186 = '';
-              $val187 = 0;
+              $val187 = new \metastore\BasicNotificationEvent();
               $xfer += $input->readString($key186);
-              $xfer += $input->readI64($val187);
+              $val187 = new \metastore\BasicNotificationEvent();
+              $xfer += $val187->read($input);
               $this->creationSignature[$key186] = $val187;
             }
             $xfer += $input->readMapEnd();
@@ -5473,12 +5475,12 @@ class Table {
       }
       $xfer += $output->writeFieldBegin('creationSignature', TType::MAP, 16);
       {
-        $output->writeMapBegin(TType::STRING, TType::I64, count($this->creationSignature));
+        $output->writeMapBegin(TType::STRING, TType::STRUCT, count($this->creationSignature));
         {
           foreach ($this->creationSignature as $kiter191 => $viter192)
           {
             $xfer += $output->writeString($kiter191);
-            $xfer += $output->writeI64($viter192);
+            $xfer += $viter192->write($output);
           }
         }
         $output->writeMapEnd();
@@ -17805,6 +17807,104 @@ class NotificationEventsCountResponse {
     if ($this->eventsCount !== null) {
       $xfer += $output->writeFieldBegin('eventsCount', TType::I64, 1);
       $xfer += $output->writeI64($this->eventsCount);
+      $xfer += $output->writeFieldEnd();
+    }
+    $xfer += $output->writeFieldStop();
+    $xfer += $output->writeStructEnd();
+    return $xfer;
+  }
+
+}
+
+class BasicNotificationEvent {
+  static $_TSPEC;
+
+  /**
+   * @var int
+   */
+  public $eventId = null;
+  /**
+   * @var int
+   */
+  public $eventTime = null;
+
+  public function __construct($vals=null) {
+    if (!isset(self::$_TSPEC)) {
+      self::$_TSPEC = array(
+        1 => array(
+          'var' => 'eventId',
+          'type' => TType::I64,
+          ),
+        2 => array(
+          'var' => 'eventTime',
+          'type' => TType::I32,
+          ),
+        );
+    }
+    if (is_array($vals)) {
+      if (isset($vals['eventId'])) {
+        $this->eventId = $vals['eventId'];
+      }
+      if (isset($vals['eventTime'])) {
+        $this->eventTime = $vals['eventTime'];
+      }
+    }
+  }
+
+  public function getName() {
+    return 'BasicNotificationEvent';
+  }
+
+  public function read($input)
+  {
+    $xfer = 0;
+    $fname = null;
+    $ftype = 0;
+    $fid = 0;
+    $xfer += $input->readStructBegin($fname);
+    while (true)
+    {
+      $xfer += $input->readFieldBegin($fname, $ftype, $fid);
+      if ($ftype == TType::STOP) {
+        break;
+      }
+      switch ($fid)
+      {
+        case 1:
+          if ($ftype == TType::I64) {
+            $xfer += $input->readI64($this->eventId);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 2:
+          if ($ftype == TType::I32) {
+            $xfer += $input->readI32($this->eventTime);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        default:
+          $xfer += $input->skip($ftype);
+          break;
+      }
+      $xfer += $input->readFieldEnd();
+    }
+    $xfer += $input->readStructEnd();
+    return $xfer;
+  }
+
+  public function write($output) {
+    $xfer = 0;
+    $xfer += $output->writeStructBegin('BasicNotificationEvent');
+    if ($this->eventId !== null) {
+      $xfer += $output->writeFieldBegin('eventId', TType::I64, 1);
+      $xfer += $output->writeI64($this->eventId);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->eventTime !== null) {
+      $xfer += $output->writeFieldBegin('eventTime', TType::I32, 2);
+      $xfer += $output->writeI32($this->eventTime);
       $xfer += $output->writeFieldEnd();
     }
     $xfer += $output->writeFieldStop();

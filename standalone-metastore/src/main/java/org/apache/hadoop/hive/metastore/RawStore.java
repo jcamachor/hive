@@ -641,6 +641,12 @@ public interface RawStore extends Configurable {
    */
   public NotificationEventsCountResponse getNotificationEventsCount(NotificationEventsCountRequest rqst);
 
+  /**
+   * Get the last event corresponding to given database and table.
+   * @return
+   */
+  public NotificationEvent getLastNotificationEventForTable(String inputDbName, String inputTableName);
+
   /*
    * Flush any catalog objects held by the metastore implementation.  Note that this does not
    * flush statistics objects.  This should be called at the beginning of each query.

@@ -819,6 +819,12 @@ public class DummyRawStoreForJdoConnection implements RawStore {
   }
 
   @Override
+  public NotificationEvent getLastNotificationEventForTable(
+      String inputDbName, String inputTableName) {
+    return null;
+  }
+
+  @Override
   public NotificationEventsCountResponse getNotificationEventsCount(NotificationEventsCountRequest rqst) {
     return null;
   }
@@ -1007,4 +1013,5 @@ public class DummyRawStoreForJdoConnection implements RawStore {
       throws NoSuchObjectException, MetaException {
     return null;
   }
+
 }

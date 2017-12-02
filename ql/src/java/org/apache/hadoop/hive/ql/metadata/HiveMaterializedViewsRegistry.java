@@ -39,6 +39,7 @@ import org.apache.calcite.adapter.druid.DruidTable;
 import org.apache.calcite.adapter.druid.LocalInterval;
 import org.apache.calcite.jdbc.JavaTypeFactoryImpl;
 import org.apache.calcite.plan.RelOptCluster;
+import org.apache.calcite.plan.RelOptMaterialization;
 import org.apache.calcite.plan.RelOptPlanner;
 import org.apache.calcite.plan.RelOptTable;
 import org.apache.calcite.plan.RelOptUtil;
@@ -53,6 +54,7 @@ import org.apache.commons.lang.ObjectUtils;
 import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
+import org.apache.hadoop.hive.metastore.api.BasicNotificationEvent;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.NotificationEvent;
 import org.apache.hadoop.hive.metastore.messaging.EventUtils;
@@ -87,10 +89,7 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Multimap;
-import com.google.common.collect.Multimaps;
 
 /**
  * Registry for materialized views. The goal of this cache is to avoid parsing and creating
@@ -112,15 +111,13 @@ public final class HiveMaterializedViewsRegistry {
    * Creation time is useful to ensure correctness in case multiple HS2 instances are used. */
   private final ConcurrentMap<String, ConcurrentMap<ViewKey, RelOptHiveMaterialization>> materializedViews =
       new ConcurrentHashMap<String, ConcurrentMap<ViewKey, RelOptHiveMaterialization>>();
+
   /*
    * 
    */
-  private final ConcurrentMap<String, Multimap<TableKey, RelOptHiveMaterialization>> tablesToMaterializedViews =
-      new ConcurrentHashMap<String, Multimap<TableKey, RelOptHiveMaterialization>>();
-//  /* Invalidation: fully qualified name to event id */
-//  private final ConcurrentMap<String, Long> invalidatedMaterializedViews = new ConcurrentHashMap<String, Long>();
   private final ConcurrentMap<String, ConcurrentSkipListSet<TableModificationKey>> tableModifications =
       new ConcurrentHashMap<String, ConcurrentSkipListSet<TableModificationKey>>();
+
   private final ExecutorService pool = Executors.newCachedThreadPool();
 
   private HiveMaterializedViewsRegistry() {
@@ -176,7 +173,7 @@ public final class HiveMaterializedViewsRegistry {
    *
    * @param materializedViewTable the materialized view
    */
-  public RelOptHiveMaterialization createMaterializedView(Table materializedViewTable) {
+  public RelOptMaterialization createMaterializedView(Table materializedViewTable) {
     return addMaterializedView(materializedViewTable, true);
   }
 
@@ -185,7 +182,7 @@ public final class HiveMaterializedViewsRegistry {
    *
    * @param materializedViewTable the materialized view
    */
-  private RelOptHiveMaterialization addMaterializedView(Table materializedViewTable, boolean create) {
+  private RelOptMaterialization addMaterializedView(Table materializedViewTable, boolean create) {
     // Bail out if it is not enabled for rewriting
     if (!materializedViewTable.isRewriteEnabled()) {
       return null;
@@ -224,7 +221,6 @@ public final class HiveMaterializedViewsRegistry {
     // Before loading the materialization in the cache, we need to update some
     // important information in the registry to account for rewriting invalidation
     List<RelOptTable> tablesUsed = RelOptUtil.findAllTables(queryRel);
-    int firstModificationTimeAfterCreation = 0;
     for (RelOptTable tableUsed : tablesUsed) {
       RelOptHiveTable table = (RelOptHiveTable) tableUsed;
       // First we insert a new tree set to keep table modifications, unless it already exists
@@ -236,8 +232,9 @@ public final class HiveMaterializedViewsRegistry {
       }
       // We obtain the access time to the table when the materialized view was created.
       // This is a map from table fully qualified name to last modification before MV creation.
-      final TableModificationKey lastModificationBeforeCreation = new TableModificationKey(
-          (int) (materializedViewTable.getTTable().getCreationSignature().get(table.getName()) / 1000));
+      BasicNotificationEvent e = materializedViewTable.getTTable().getCreationSignature().get(table.getName());
+      final TableModificationKey lastModificationBeforeCreation =
+          new TableModificationKey(e.getEventId(), e.getEventTime());
       modificationsTree.add(lastModificationBeforeCreation);
       if (!create) {
         // If we are not creating the MV at this instant, but instead it was created previously
@@ -258,49 +255,13 @@ public final class HiveMaterializedViewsRegistry {
             if (invalidationTime != 0) {
               // We do not need to do anything more for current table, as we detected
               // a modification event that was in the metastore.
-              firstModificationTimeAfterCreation =
-                  Integer.min(firstModificationTimeAfterCreation, invalidationTime);
+              modificationsTree.add(new TableModificationKey(event.getEventId(), invalidationTime));
               continue;
             }
           }
-        } catch (Exception e) {
+        } catch (Exception ex) {
           LOG.error("Problem connecting to the metastore when retrieving events");
           // TODO: Invalidate all cache?
-        }
-      }
-      // Next we need to store a reference from the table itself to the materialization,
-      // so we can invalidate the corresponding views if a table modification is notified
-      Multimap<TableKey, RelOptHiveMaterialization> cm =
-          Multimaps.synchronizedListMultimap(ArrayListMultimap.create());
-      final Multimap<TableKey, RelOptHiveMaterialization> prevCm =
-          tablesToMaterializedViews.putIfAbsent(table.getHiveTableMD().getDbName(), cm);
-      if (prevCm != null) {
-        cm = prevCm;
-      }
-      final TableKey tk = new TableKey(
-          table.getHiveTableMD().getTableName(), lastModificationBeforeCreation.eventTime);
-      cm.put(tk, materialization);
-      // We need to check whether since we started to cache the MV, there was an event that
-      // invalidated it.
-      final TableModificationKey lastModification = modificationsTree.last();
-      if (!lastModification.equals(lastModificationBeforeCreation)) {
-        firstModificationTimeAfterCreation =
-            Integer.min(firstModificationTimeAfterCreation, lastModification.eventTime);
-      }
-    }
-    // Store materialization (with correct invalidation time)
-    if (firstModificationTimeAfterCreation != 0) {
-      boolean success = materialization.compareAndSetInvalidationTime(0, firstModificationTimeAfterCreation);
-      while (!success) {
-        int invalidationTime = materialization.getInvalidationTime();
-        if (firstModificationTimeAfterCreation < invalidationTime) {
-          // It was set by other table modification, but it was after this table modification
-          // hence we need to set it
-          success = materialization.compareAndSetInvalidationTime(
-              invalidationTime, firstModificationTimeAfterCreation);
-        } else {
-          // Nothing to do
-          success = true;
         }
       }
     }
@@ -324,37 +285,7 @@ public final class HiveMaterializedViewsRegistry {
     if (prevModificationsTree != null) {
       modificationsTree = prevModificationsTree;
     }
-    final TableModificationKey lastModification = modificationsTree.last();
-    modificationsTree.add(new TableModificationKey(newModificationTime));
-
-    if (lastModification != null && lastModification.eventTime >= newModificationTime) {
-      // TODO: This can happen in rare cases where a modification time comes
-      // after another one that was generated afterwards. These times
-      // are generated at the notification listener. For the time being,
-      // as the difference will be negligible, we do not care.
-      return;
-    }
-
-    final TableKey tk = new TableKey(tableName, lastModification.eventTime);
-    final Collection<RelOptHiveMaterialization> materializations =
-        tablesToMaterializedViews.get(dbName).removeAll(tk);
-    for (RelOptHiveMaterialization materialization : materializations) {
-      // We need to check whether previous value is zero, as data modification
-      // in another table used by the materialized view might have modified
-      // the value too
-      boolean modified = materialization.compareAndSetInvalidationTime(0, newModificationTime);
-      while (!modified) {
-        int invalidationTime = materialization.getInvalidationTime();
-        if (newModificationTime < invalidationTime) {
-          // It was set by other table modification, but it was after this table modification
-          // hence we need to set it
-          modified = materialization.compareAndSetInvalidationTime(invalidationTime, newModificationTime);
-        } else {
-          // Nothing to do
-          modified = true;
-        }
-      }
-    }
+    modificationsTree.add(new TableModificationKey(eventId, newModificationTime));
   }
 
   /**
@@ -378,12 +309,83 @@ public final class HiveMaterializedViewsRegistry {
    * @param dbName the database
    * @return the collection of materialized views, or the empty collection if none
    */
-  Collection<RelOptHiveMaterialization> getRewritingMaterializedViews(String dbName) {
+  List<RelOptHiveMaterialization> getRewritingMaterializedViews(String dbName) {
     if (materializedViews.get(dbName) != null) {
-      return Collections.unmodifiableCollection(materializedViews.get(dbName).values());
+      ImmutableList.Builder<RelOptHiveMaterialization> l = ImmutableList.builder();
+      Collection<RelOptHiveMaterialization> iterable =
+          Collections.unmodifiableCollection(materializedViews.get(dbName).values());
+      for (RelOptHiveMaterialization materialization : iterable) {
+        int invalidationTime = getInvalidationTime(materialization);
+        // We need to check whether previous value is zero, as data modification
+        // in another table used by the materialized view might have modified
+        // the value too
+        boolean modified = materialization.compareAndSetInvalidationTime(0, invalidationTime);
+        while (!modified) {
+          int currentInvalidationTime = materialization.getInvalidationTime();
+          if (invalidationTime < currentInvalidationTime) {
+            // It was set by other table modification, but it was after this table modification
+            // hence we need to set it
+            modified = materialization.compareAndSetInvalidationTime(currentInvalidationTime, invalidationTime);
+          } else {
+            // Nothing to do
+            modified = true;
+          }
+        }
+      }
+      return l.build();
     }
     return ImmutableList.of();
   }
+
+  private int getInvalidationTime(RelOptMaterialization materialization) {
+    List<RelOptTable> tablesUsed = RelOptUtil.findAllTables(materialization.queryRel);
+    int firstModificationTimeAfterCreation = 0;
+    for (RelOptTable tableUsed : tablesUsed) {
+      RelOptHiveTable table = (RelOptHiveTable) tableUsed;
+      Table materializedViewTable = (Table) materialization.tableRel.getTable();
+      BasicNotificationEvent e = materializedViewTable.getTTable().getCreationSignature().get(table.getName());
+      final TableModificationKey lastModificationBeforeCreation =
+          new TableModificationKey(e.getEventId(), e.getEventTime());
+      final TableModificationKey post = tableModifications.get(table.getName())
+          .higher(lastModificationBeforeCreation);
+      if (post != null) {
+        if (firstModificationTimeAfterCreation == 0 ||
+            post.eventTime < firstModificationTimeAfterCreation) {
+          firstModificationTimeAfterCreation = post.eventTime;
+        }
+      }
+    }
+    return firstModificationTimeAfterCreation;
+  }
+
+//  TODO: Serialization code!
+//  Kryo kryo = SerializationUtilities.borrowKryo();
+//  try {
+//    setPlanPath(conf, hiveScratchDir);
+//
+//    Path planPath = getPlanPath(conf, name);
+//    setHasWork(conf, name);
+//
+//    OutputStream out = null;
+//
+//    final long serializedSize;
+//    final String planMode;
+//    if (HiveConf.getBoolVar(conf, ConfVars.HIVE_RPC_QUERY_PLAN)) {
+//      // add it to the conf
+//      ByteArrayOutputStream byteOut = new ByteArrayOutputStream();
+//      try {
+//        out = new DeflaterOutputStream(byteOut, new Deflater(Deflater.BEST_SPEED));
+//        SerializationUtilities.serializePlan(kryo, w, out);
+//        out.close();
+//        out = null;
+//      } finally {
+//        IOUtils.closeStream(out);
+//      }
+//      final String serializedPlan = Base64.encodeBase64String(byteOut.toByteArray());
+//      serializedSize = serializedPlan.length();
+//      planMode = "RPC";
+//      conf.set(planPath.toUri().getPath(), serializedPlan);
+//    } else {
 
   private static RelNode createTableScan(Table viewTable) {
     // 0. Recreate cluster
@@ -545,49 +547,9 @@ public final class HiveMaterializedViewsRegistry {
     }
   }
 
-  private static class TableKey {
-    private String tableName;
-    private long lastEventId;
-
-    private TableKey(String tableName, long lastEventId) {
-      this.tableName = tableName;
-      this.lastEventId = lastEventId;
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-      if(this == obj) {
-        return true;
-      }
-      if((obj == null) || (obj.getClass() != this.getClass())) {
-        return false;
-      }
-      TableKey tableKey = (TableKey) obj;
-      return lastEventId == tableKey.lastEventId && Objects.equals(tableName, tableKey.tableName);
-    }
-
-    @Override
-    public int hashCode() {
-      int hash = 7;
-      hash = 31 * hash + Long.hashCode(lastEventId);
-      hash = 31 * hash + tableName.hashCode();
-      return hash;
-    }
-
-    @Override
-    public String toString() {
-      return "TableKey{" + tableName + "," + lastEventId + "}";
-    }
-  }
-
   private static class TableModificationKey implements Comparable<TableModificationKey> {
-    private Long eventId;
+    private long eventId;
     private int eventTime;
-
-    private TableModificationKey(int eventTime) {
-      this.eventId = null;
-      this.eventTime = eventTime;
-    }
 
     private TableModificationKey(Long eventId, int eventTime) {
       this.eventId = eventId;
@@ -610,7 +572,7 @@ public final class HiveMaterializedViewsRegistry {
     @Override
     public int hashCode() {
       int hash = 7;
-      hash = 31 * hash + (eventId != null ? Long.hashCode(eventId) : 0);
+      hash = 31 * hash + Long.hashCode(eventId);
       hash = 31 * hash + Integer.hashCode(eventTime);
       return hash;
     }

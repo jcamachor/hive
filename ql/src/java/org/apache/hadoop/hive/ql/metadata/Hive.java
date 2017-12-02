@@ -57,7 +57,6 @@ import java.util.stream.Collectors;
 
 import javax.jdo.JDODataStoreException;
 
-import org.apache.calcite.plan.RelOptMaterialization;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileChecksum;
@@ -1529,12 +1528,12 @@ public class Hive {
    * @return the list of materialized views available for rewriting
    * @throws HiveException
    */
-  public List<RelOptMaterialization> getRewritingMaterializedViews() throws HiveException {
+  public List<RelOptHiveMaterialization> getRewritingMaterializedViews() throws HiveException {
     long minTime = System.currentTimeMillis() -
         conf.getLongVar(HiveConf.ConfVars.HIVE_MATERIALIZED_VIEW_REWRITING_TIME_WINDOW);
     try {
       // Final result
-      List<RelOptMaterialization> result = new ArrayList<>();
+      List<RelOptHiveMaterialization> result = new ArrayList<>();
       for (String dbName : getMSC().getAllDatabases()) {
         // From metastore (for security)
         List<String> tables = getAllMaterializedViews(dbName);
@@ -1548,9 +1547,9 @@ public class Hive {
         Map<String, RelOptHiveMaterialization> qualifiedNameToView =
             new HashMap<String, RelOptHiveMaterialization>();
         for (RelOptHiveMaterialization materialization : cachedViews) {
-          long invalidationTime = materialization.getInvalidationTime();
+          int invalidationTime = materialization.getInvalidationTime();
           // If the limit is not met, we do not add the materialized view
-          if (invalidationTime == 0L || minTime <= invalidationTime) {
+          if (invalidationTime == 0 || minTime <= invalidationTime) {
             qualifiedNameToView.put(materialization.qualifiedTableName.get(0), materialization);
           } else {
             LOG.info("Materialized view " + materialization.qualifiedTableName.get(0) +
@@ -1565,7 +1564,7 @@ public class Hive {
           } else {
             fullyQualifiedName = table;
           }
-          RelOptMaterialization materialization = qualifiedNameToView.get(fullyQualifiedName);
+          RelOptHiveMaterialization materialization = qualifiedNameToView.get(fullyQualifiedName);
           if (materialization != null) {
             // Add to final result set
             result.add(materialization);

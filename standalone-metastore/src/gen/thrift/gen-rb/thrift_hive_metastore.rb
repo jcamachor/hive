@@ -2542,6 +2542,21 @@ module ThriftHiveMetastore
       raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'get_current_notificationEventId failed: unknown result')
     end
 
+    def get_last_notification_event_for_table(db_name, table_name)
+      send_get_last_notification_event_for_table(db_name, table_name)
+      return recv_get_last_notification_event_for_table()
+    end
+
+    def send_get_last_notification_event_for_table(db_name, table_name)
+      send_message('get_last_notification_event_for_table', Get_last_notification_event_for_table_args, :db_name => db_name, :table_name => table_name)
+    end
+
+    def recv_get_last_notification_event_for_table()
+      result = receive_message(Get_last_notification_event_for_table_result)
+      return result.success unless result.success.nil?
+      raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'get_last_notification_event_for_table failed: unknown result')
+    end
+
     def get_notification_events_count(rqst)
       send_get_notification_events_count(rqst)
       return recv_get_notification_events_count()
@@ -4796,6 +4811,13 @@ module ThriftHiveMetastore
       result = Get_current_notificationEventId_result.new()
       result.success = @handler.get_current_notificationEventId()
       write_result(result, oprot, 'get_current_notificationEventId', seqid)
+    end
+
+    def process_get_last_notification_event_for_table(seqid, iprot, oprot)
+      args = read_args(iprot, Get_last_notification_event_for_table_args)
+      result = Get_last_notification_event_for_table_result.new()
+      result.success = @handler.get_last_notification_event_for_table(args.db_name, args.table_name)
+      write_result(result, oprot, 'get_last_notification_event_for_table', seqid)
     end
 
     def process_get_notification_events_count(seqid, iprot, oprot)
@@ -10763,9 +10785,43 @@ module ThriftHiveMetastore
     ::Thrift::Struct.generate_accessors self
   end
 
+  class Get_last_notification_event_for_table_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    DB_NAME = 1
+    TABLE_NAME = 2
+
+    FIELDS = {
+      DB_NAME => {:type => ::Thrift::Types::STRING, :name => 'db_name'},
+      TABLE_NAME => {:type => ::Thrift::Types::STRING, :name => 'table_name'}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Get_last_notification_event_for_table_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    SUCCESS = 0
+
+    FIELDS = {
+      SUCCESS => {:type => ::Thrift::Types::STRUCT, :name => 'success', :class => ::NotificationEvent}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
   class Get_notification_events_count_args
     include ::Thrift::Struct, ::Thrift::Struct_Union
-    RQST = -1
+    RQST = 1
 
     FIELDS = {
       RQST => {:type => ::Thrift::Types::STRUCT, :name => 'rqst', :class => ::NotificationEventsCountRequest}

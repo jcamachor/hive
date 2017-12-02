@@ -176,6 +176,7 @@ if len(sys.argv) <= 1 or sys.argv[1] == '--help':
   print('  void add_dynamic_partitions(AddDynamicPartitions rqst)')
   print('  NotificationEventResponse get_next_notification(NotificationEventRequest rqst)')
   print('  CurrentNotificationEventId get_current_notificationEventId()')
+  print('  NotificationEvent get_last_notification_event_for_table(string db_name, string table_name)')
   print('  NotificationEventsCountResponse get_notification_events_count(NotificationEventsCountRequest rqst)')
   print('  FireEventResponse fire_listener_event(FireEventRequest rqst)')
   print('  void flushCache()')
@@ -1177,6 +1178,12 @@ elif cmd == 'get_current_notificationEventId':
     print('get_current_notificationEventId requires 0 args')
     sys.exit(1)
   pp.pprint(client.get_current_notificationEventId())
+
+elif cmd == 'get_last_notification_event_for_table':
+  if len(args) != 2:
+    print('get_last_notification_event_for_table requires 2 args')
+    sys.exit(1)
+  pp.pprint(client.get_last_notification_event_for_table(args[0],args[1],))
 
 elif cmd == 'get_notification_events_count':
   if len(args) != 1:

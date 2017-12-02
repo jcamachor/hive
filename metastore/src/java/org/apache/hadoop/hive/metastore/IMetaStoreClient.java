@@ -1644,6 +1644,15 @@ public interface IMetaStoreClient {
   CurrentNotificationEventId getCurrentNotificationEventId() throws TException;
 
   /**
+   * Get the last notification event id for the given table
+   * @return last used id
+   * @throws TException
+   */
+  @InterfaceAudience.LimitedPrivate({"HCatalog"})
+  NotificationEvent getLastNotificationEventForTable(String dbName, String tableName)
+      throws TException;
+
+  /**
    * Get the number of events from given eventID for the input database.
    * @return number of events
    * @throws TException

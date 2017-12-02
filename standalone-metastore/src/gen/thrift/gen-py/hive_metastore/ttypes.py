@@ -3473,7 +3473,7 @@ class Table:
     (13, TType.STRUCT, 'privileges', (PrincipalPrivilegeSet, PrincipalPrivilegeSet.thrift_spec), None, ), # 13
     (14, TType.BOOL, 'temporary', None, False, ), # 14
     (15, TType.BOOL, 'rewriteEnabled', None, None, ), # 15
-    (16, TType.MAP, 'creationSignature', (TType.STRING,None,TType.I64,None), None, ), # 16
+    (16, TType.MAP, 'creationSignature', (TType.STRING,None,TType.STRUCT,(BasicNotificationEvent, BasicNotificationEvent.thrift_spec)), None, ), # 16
   )
 
   def __init__(self, tableName=None, dbName=None, owner=None, createTime=None, lastAccessTime=None, retention=None, sd=None, partitionKeys=None, parameters=None, viewOriginalText=None, viewExpandedText=None, tableType=None, privileges=None, temporary=thrift_spec[14][4], rewriteEnabled=None, creationSignature=None,):
@@ -3598,7 +3598,8 @@ class Table:
           (_ktype182, _vtype183, _size181 ) = iprot.readMapBegin()
           for _i185 in xrange(_size181):
             _key186 = iprot.readString()
-            _val187 = iprot.readI64()
+            _val187 = BasicNotificationEvent()
+            _val187.read(iprot)
             self.creationSignature[_key186] = _val187
           iprot.readMapEnd()
         else:
@@ -3682,10 +3683,10 @@ class Table:
       oprot.writeFieldEnd()
     if self.creationSignature is not None:
       oprot.writeFieldBegin('creationSignature', TType.MAP, 16)
-      oprot.writeMapBegin(TType.STRING, TType.I64, len(self.creationSignature))
+      oprot.writeMapBegin(TType.STRING, TType.STRUCT, len(self.creationSignature))
       for kiter191,viter192 in self.creationSignature.items():
         oprot.writeString(kiter191)
-        oprot.writeI64(viter192)
+        viter192.write(oprot)
       oprot.writeMapEnd()
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
@@ -12445,6 +12446,88 @@ class NotificationEventsCountResponse:
   def __hash__(self):
     value = 17
     value = (value * 31) ^ hash(self.eventsCount)
+    return value
+
+  def __repr__(self):
+    L = ['%s=%r' % (key, value)
+      for key, value in self.__dict__.iteritems()]
+    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+  def __eq__(self, other):
+    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+  def __ne__(self, other):
+    return not (self == other)
+
+class BasicNotificationEvent:
+  """
+  Attributes:
+   - eventId
+   - eventTime
+  """
+
+  thrift_spec = (
+    None, # 0
+    (1, TType.I64, 'eventId', None, None, ), # 1
+    (2, TType.I32, 'eventTime', None, None, ), # 2
+  )
+
+  def __init__(self, eventId=None, eventTime=None,):
+    self.eventId = eventId
+    self.eventTime = eventTime
+
+  def read(self, iprot):
+    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
+      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
+      return
+    iprot.readStructBegin()
+    while True:
+      (fname, ftype, fid) = iprot.readFieldBegin()
+      if ftype == TType.STOP:
+        break
+      if fid == 1:
+        if ftype == TType.I64:
+          self.eventId = iprot.readI64()
+        else:
+          iprot.skip(ftype)
+      elif fid == 2:
+        if ftype == TType.I32:
+          self.eventTime = iprot.readI32()
+        else:
+          iprot.skip(ftype)
+      else:
+        iprot.skip(ftype)
+      iprot.readFieldEnd()
+    iprot.readStructEnd()
+
+  def write(self, oprot):
+    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
+      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
+      return
+    oprot.writeStructBegin('BasicNotificationEvent')
+    if self.eventId is not None:
+      oprot.writeFieldBegin('eventId', TType.I64, 1)
+      oprot.writeI64(self.eventId)
+      oprot.writeFieldEnd()
+    if self.eventTime is not None:
+      oprot.writeFieldBegin('eventTime', TType.I32, 2)
+      oprot.writeI32(self.eventTime)
+      oprot.writeFieldEnd()
+    oprot.writeFieldStop()
+    oprot.writeStructEnd()
+
+  def validate(self):
+    if self.eventId is None:
+      raise TProtocol.TProtocolException(message='Required field eventId is unset!')
+    if self.eventTime is None:
+      raise TProtocol.TProtocolException(message='Required field eventTime is unset!')
+    return
+
+
+  def __hash__(self):
+    value = 17
+    value = (value * 31) ^ hash(self.eventId)
+    value = (value * 31) ^ hash(self.eventTime)
     return value
 
   def __repr__(self):

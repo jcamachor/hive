@@ -401,6 +401,8 @@ class NotificationEventsCountRequest;
 
 class NotificationEventsCountResponse;
 
+class BasicNotificationEvent;
+
 class InsertEventRequestData;
 
 class FireEventRequestData;
@@ -2372,7 +2374,7 @@ class Table {
   PrincipalPrivilegeSet privileges;
   bool temporary;
   bool rewriteEnabled;
-  std::map<std::string, int64_t>  creationSignature;
+  std::map<std::string, BasicNotificationEvent>  creationSignature;
 
   _Table__isset __isset;
 
@@ -2406,7 +2408,7 @@ class Table {
 
   void __set_rewriteEnabled(const bool val);
 
-  void __set_creationSignature(const std::map<std::string, int64_t> & val);
+  void __set_creationSignature(const std::map<std::string, BasicNotificationEvent> & val);
 
   bool operator == (const Table & rhs) const
   {
@@ -7339,6 +7341,51 @@ class NotificationEventsCountResponse {
 void swap(NotificationEventsCountResponse &a, NotificationEventsCountResponse &b);
 
 inline std::ostream& operator<<(std::ostream& out, const NotificationEventsCountResponse& obj)
+{
+  obj.printTo(out);
+  return out;
+}
+
+
+class BasicNotificationEvent {
+ public:
+
+  BasicNotificationEvent(const BasicNotificationEvent&);
+  BasicNotificationEvent& operator=(const BasicNotificationEvent&);
+  BasicNotificationEvent() : eventId(0), eventTime(0) {
+  }
+
+  virtual ~BasicNotificationEvent() throw();
+  int64_t eventId;
+  int32_t eventTime;
+
+  void __set_eventId(const int64_t val);
+
+  void __set_eventTime(const int32_t val);
+
+  bool operator == (const BasicNotificationEvent & rhs) const
+  {
+    if (!(eventId == rhs.eventId))
+      return false;
+    if (!(eventTime == rhs.eventTime))
+      return false;
+    return true;
+  }
+  bool operator != (const BasicNotificationEvent &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const BasicNotificationEvent & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(BasicNotificationEvent &a, BasicNotificationEvent &b);
+
+inline std::ostream& operator<<(std::ostream& out, const BasicNotificationEvent& obj)
 {
   obj.printTo(out);
   return out;

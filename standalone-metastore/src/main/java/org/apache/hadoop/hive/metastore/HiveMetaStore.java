@@ -6899,6 +6899,21 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     }
 
     @Override
+    public NotificationEvent get_last_notification_event_for_table(String dbName, String tableName)
+        throws TException {
+      try {
+        authorizeProxyPrivilege();
+      } catch (Exception ex) {
+        LOG.error("Not authorized to make the getLastNotificationEventForTable call. You can try to disable " +
+            ConfVars.EVENT_DB_NOTIFICATION_API_AUTH.toString(), ex);
+        throw new TException(ex);
+      }
+
+      RawStore ms = getMS();
+      return ms.getLastNotificationEventForTable(dbName, tableName);
+    }
+
+    @Override
     public NotificationEventsCountResponse get_notification_events_count(NotificationEventsCountRequest rqst)
             throws TException {
       try {

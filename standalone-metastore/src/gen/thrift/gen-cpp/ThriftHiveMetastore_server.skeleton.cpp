@@ -782,6 +782,11 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
     printf("get_current_notificationEventId\n");
   }
 
+  void get_last_notification_event_for_table(NotificationEvent& _return, const std::string& db_name, const std::string& table_name) {
+    // Your implementation goes here
+    printf("get_last_notification_event_for_table\n");
+  }
+
   void get_notification_events_count(NotificationEventsCountResponse& _return, const NotificationEventsCountRequest& rqst) {
     // Your implementation goes here
     printf("get_notification_events_count\n");

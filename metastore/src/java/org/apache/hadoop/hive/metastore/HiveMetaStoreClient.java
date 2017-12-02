@@ -2371,6 +2371,13 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
 
   @InterfaceAudience.LimitedPrivate({"HCatalog"})
   @Override
+  public NotificationEvent getLastNotificationEventForTable(String dbName, String tableName)
+      throws TException {
+    return client.get_last_notification_event_for_table(dbName, tableName);
+  }
+
+  @InterfaceAudience.LimitedPrivate({"HCatalog"})
+  @Override
   public NotificationEventsCountResponse getNotificationEventsCount(NotificationEventsCountRequest rqst)
           throws TException {
     return client.get_notification_events_count(rqst);
@@ -2724,4 +2731,5 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     request.setResourcePlanName(resourcePlan);
     return client.get_triggers_for_resourceplan(request).getTriggers();
   }
+
 }

@@ -76,7 +76,7 @@ import org.slf4j.LoggerFactory;
   private PrincipalPrivilegeSet privileges; // optional
   private boolean temporary; // optional
   private boolean rewriteEnabled; // optional
-  private Map<String,Long> creationSignature; // optional
+  private Map<String,BasicNotificationEvent> creationSignature; // optional
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
@@ -228,7 +228,7 @@ import org.slf4j.LoggerFactory;
     tmpMap.put(_Fields.CREATION_SIGNATURE, new org.apache.thrift.meta_data.FieldMetaData("creationSignature", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.MapMetaData(org.apache.thrift.protocol.TType.MAP, 
             new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING), 
-            new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I64))));
+            new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRUCT            , "BasicNotificationEvent"))));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(Table.class, metaDataMap);
   }
@@ -316,7 +316,18 @@ import org.slf4j.LoggerFactory;
     this.temporary = other.temporary;
     this.rewriteEnabled = other.rewriteEnabled;
     if (other.isSetCreationSignature()) {
-      Map<String,Long> __this__creationSignature = new HashMap<String,Long>(other.creationSignature);
+      Map<String,BasicNotificationEvent> __this__creationSignature = new HashMap<String,BasicNotificationEvent>(other.creationSignature.size());
+      for (Map.Entry<String, BasicNotificationEvent> other_element : other.creationSignature.entrySet()) {
+
+        String other_element_key = other_element.getKey();
+        BasicNotificationEvent other_element_value = other_element.getValue();
+
+        String __this__creationSignature_copy_key = other_element_key;
+
+        BasicNotificationEvent __this__creationSignature_copy_value = other_element_value;
+
+        __this__creationSignature.put(__this__creationSignature_copy_key, __this__creationSignature_copy_value);
+      }
       this.creationSignature = __this__creationSignature;
     }
   }
@@ -720,18 +731,18 @@ import org.slf4j.LoggerFactory;
     return (this.creationSignature == null) ? 0 : this.creationSignature.size();
   }
 
-  public void putToCreationSignature(String key, long val) {
+  public void putToCreationSignature(String key, BasicNotificationEvent val) {
     if (this.creationSignature == null) {
-      this.creationSignature = new HashMap<String,Long>();
+      this.creationSignature = new HashMap<String,BasicNotificationEvent>();
     }
     this.creationSignature.put(key, val);
   }
 
-  public Map<String,Long> getCreationSignature() {
+  public Map<String,BasicNotificationEvent> getCreationSignature() {
     return this.creationSignature;
   }
 
-  public void setCreationSignature(Map<String,Long> creationSignature) {
+  public void setCreationSignature(Map<String,BasicNotificationEvent> creationSignature) {
     this.creationSignature = creationSignature;
   }
 
@@ -876,7 +887,7 @@ import org.slf4j.LoggerFactory;
       if (value == null) {
         unsetCreationSignature();
       } else {
-        setCreationSignature((Map<String,Long>)value);
+        setCreationSignature((Map<String,BasicNotificationEvent>)value);
       }
       break;
 
@@ -1730,13 +1741,14 @@ import org.slf4j.LoggerFactory;
             if (schemeField.type == org.apache.thrift.protocol.TType.MAP) {
               {
                 org.apache.thrift.protocol.TMap _map197 = iprot.readMapBegin();
-                struct.creationSignature = new HashMap<String,Long>(2*_map197.size);
+                struct.creationSignature = new HashMap<String,BasicNotificationEvent>(2*_map197.size);
                 String _key198;
-                long _val199;
+                BasicNotificationEvent _val199;
                 for (int _i200 = 0; _i200 < _map197.size; ++_i200)
                 {
                   _key198 = iprot.readString();
-                  _val199 = iprot.readI64();
+                  _val199 = new BasicNotificationEvent();
+                  _val199.read(iprot);
                   struct.creationSignature.put(_key198, _val199);
                 }
                 iprot.readMapEnd();
@@ -1849,11 +1861,11 @@ import org.slf4j.LoggerFactory;
         if (struct.isSetCreationSignature()) {
           oprot.writeFieldBegin(CREATION_SIGNATURE_FIELD_DESC);
           {
-            oprot.writeMapBegin(new org.apache.thrift.protocol.TMap(org.apache.thrift.protocol.TType.STRING, org.apache.thrift.protocol.TType.I64, struct.creationSignature.size()));
-            for (Map.Entry<String, Long> _iter203 : struct.creationSignature.entrySet())
+            oprot.writeMapBegin(new org.apache.thrift.protocol.TMap(org.apache.thrift.protocol.TType.STRING, org.apache.thrift.protocol.TType.STRUCT, struct.creationSignature.size()));
+            for (Map.Entry<String, BasicNotificationEvent> _iter203 : struct.creationSignature.entrySet())
             {
               oprot.writeString(_iter203.getKey());
-              oprot.writeI64(_iter203.getValue());
+              _iter203.getValue().write(oprot);
             }
             oprot.writeMapEnd();
           }
@@ -1988,10 +2000,10 @@ import org.slf4j.LoggerFactory;
       if (struct.isSetCreationSignature()) {
         {
           oprot.writeI32(struct.creationSignature.size());
-          for (Map.Entry<String, Long> _iter206 : struct.creationSignature.entrySet())
+          for (Map.Entry<String, BasicNotificationEvent> _iter206 : struct.creationSignature.entrySet())
           {
             oprot.writeString(_iter206.getKey());
-            oprot.writeI64(_iter206.getValue());
+            _iter206.getValue().write(oprot);
           }
         }
       }
@@ -2086,14 +2098,15 @@ import org.slf4j.LoggerFactory;
       }
       if (incoming.get(15)) {
         {
-          org.apache.thrift.protocol.TMap _map214 = new org.apache.thrift.protocol.TMap(org.apache.thrift.protocol.TType.STRING, org.apache.thrift.protocol.TType.I64, iprot.readI32());
-          struct.creationSignature = new HashMap<String,Long>(2*_map214.size);
+          org.apache.thrift.protocol.TMap _map214 = new org.apache.thrift.protocol.TMap(org.apache.thrift.protocol.TType.STRING, org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
+          struct.creationSignature = new HashMap<String,BasicNotificationEvent>(2*_map214.size);
           String _key215;
-          long _val216;
+          BasicNotificationEvent _val216;
           for (int _i217 = 0; _i217 < _map214.size; ++_i217)
           {
             _key215 = iprot.readString();
-            _val216 = iprot.readI64();
+            _val216 = new BasicNotificationEvent();
+            _val216.read(iprot);
             struct.creationSignature.put(_key215, _val216);
           }
         }

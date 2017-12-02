@@ -69,9 +69,11 @@ import org.apache.hadoop.hive.metastore.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.TransactionalValidationListener;
 import org.apache.hadoop.hive.metastore.Warehouse;
+import org.apache.hadoop.hive.metastore.api.BasicNotificationEvent;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.MetaException;
+import org.apache.hadoop.hive.metastore.api.NotificationEvent;
 import org.apache.hadoop.hive.metastore.api.Order;
 import org.apache.hadoop.hive.metastore.api.SQLForeignKey;
 import org.apache.hadoop.hive.metastore.api.SQLNotNullConstraint;
@@ -12685,16 +12687,19 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     if (isMaterialized) {
       // Create signature consisting of the tables that the materialized view
       // is reading and the time at which the table was accessed last
-      Map<String, Long> signature = new HashMap<String, Long>();
+      Map<String, BasicNotificationEvent> signature = new HashMap<>();
       for (String alias : qb.getTabAliases()) {
         try {
           String tableName = qb.getTabNameForAlias(alias);
           Table table = getTableObjectByName(tableName);
           if (!table.isMaterializedTable() && !table.isView()) {
             // Add to signature
-            signature.put(tableName, new Long(table.getLastAccessTime()));
+            NotificationEvent lastEvent =
+                db.getMSC().getLastNotificationEventForTable(table.getDbName(), table.getTableName());
+            signature.put(tableName,
+                new BasicNotificationEvent(lastEvent.getEventId(), lastEvent.getEventTime()));
           }
-        } catch (HiveException ex) {
+        } catch (Exception ex) {
           throw new SemanticException(ex);
         }
       }

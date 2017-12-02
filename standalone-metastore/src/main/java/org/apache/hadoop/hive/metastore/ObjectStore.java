@@ -21,14 +21,6 @@ package org.apache.hadoop.hive.metastore;
 import static org.apache.commons.lang.StringUtils.join;
 import static org.apache.hadoop.hive.metastore.utils.StringUtils.normalizeIdentifier;
 
-import com.google.common.collect.Sets;
-import org.apache.hadoop.hive.metastore.api.WMPoolTrigger;
-import org.apache.hadoop.hive.metastore.api.WMMapping;
-import org.apache.hadoop.hive.metastore.model.MWMMapping;
-import org.apache.hadoop.hive.metastore.api.WMPool;
-import org.apache.hadoop.hive.metastore.model.MWMPool;
-import org.apache.hadoop.hive.metastore.api.WMFullResourcePlan;
-
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.net.InetAddress;
@@ -74,7 +66,6 @@ import javax.jdo.datastore.JDOConnection;
 import javax.jdo.identity.IntIdentity;
 import javax.sql.DataSource;
 
-
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.exception.ExceptionUtils;
@@ -87,6 +78,7 @@ import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.metastore.MetaStoreDirectSql.SqlFilterForPushdown;
 import org.apache.hadoop.hive.metastore.api.AggrStats;
 import org.apache.hadoop.hive.metastore.api.AlreadyExistsException;
+import org.apache.hadoop.hive.metastore.api.BasicNotificationEvent;
 import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsDesc;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
@@ -137,6 +129,10 @@ import org.apache.hadoop.hive.metastore.api.Type;
 import org.apache.hadoop.hive.metastore.api.UnknownDBException;
 import org.apache.hadoop.hive.metastore.api.UnknownPartitionException;
 import org.apache.hadoop.hive.metastore.api.UnknownTableException;
+import org.apache.hadoop.hive.metastore.api.WMFullResourcePlan;
+import org.apache.hadoop.hive.metastore.api.WMMapping;
+import org.apache.hadoop.hive.metastore.api.WMPool;
+import org.apache.hadoop.hive.metastore.api.WMPoolTrigger;
 import org.apache.hadoop.hive.metastore.api.WMResourcePlan;
 import org.apache.hadoop.hive.metastore.api.WMResourcePlanStatus;
 import org.apache.hadoop.hive.metastore.api.WMTrigger;
@@ -146,6 +142,7 @@ import org.apache.hadoop.hive.metastore.datasource.DataSourceProvider;
 import org.apache.hadoop.hive.metastore.datasource.DataSourceProviderFactory;
 import org.apache.hadoop.hive.metastore.metrics.Metrics;
 import org.apache.hadoop.hive.metastore.metrics.MetricsConstants;
+import org.apache.hadoop.hive.metastore.model.MBasicNotificationLog;
 import org.apache.hadoop.hive.metastore.model.MColumnDescriptor;
 import org.apache.hadoop.hive.metastore.model.MConstraint;
 import org.apache.hadoop.hive.metastore.model.MDBPrivilege;
@@ -177,6 +174,8 @@ import org.apache.hadoop.hive.metastore.model.MTableColumnStatistics;
 import org.apache.hadoop.hive.metastore.model.MTablePrivilege;
 import org.apache.hadoop.hive.metastore.model.MType;
 import org.apache.hadoop.hive.metastore.model.MVersionTable;
+import org.apache.hadoop.hive.metastore.model.MWMMapping;
+import org.apache.hadoop.hive.metastore.model.MWMPool;
 import org.apache.hadoop.hive.metastore.model.MWMResourcePlan;
 import org.apache.hadoop.hive.metastore.model.MWMResourcePlan.Status;
 import org.apache.hadoop.hive.metastore.model.MWMTrigger;
@@ -206,6 +205,7 @@ import com.codahale.metrics.MetricRegistry;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
 
 
 /**
@@ -1587,7 +1587,7 @@ public class ObjectStore implements RawStore, Configurable {
         .getRetention(), convertToStorageDescriptor(mtbl.getSd()),
         convertToFieldSchemas(mtbl.getPartitionKeys()), convertMap(mtbl.getParameters()),
         mtbl.getViewOriginalText(), mtbl.getViewExpandedText(), tableType);
-    t.setCreationSignature(mtbl.getCreationSignature());
+    t.setCreationSignature(convertToCreationSignature(mtbl.getCreationSignature()));
     t.setRewriteEnabled(mtbl.isRewriteEnabled());
     return t;
   }
@@ -1627,7 +1627,7 @@ public class ObjectStore implements RawStore, Configurable {
         .getCreateTime(), tbl.getLastAccessTime(), tbl.getRetention(),
         convertToMFieldSchemas(tbl.getPartitionKeys()), tbl.getParameters(),
         tbl.getViewOriginalText(), tbl.getViewExpandedText(), tbl.isRewriteEnabled(),
-        tbl.getCreationSignature(), tableType);
+        convertToMCreationSignature(tbl.getCreationSignature()), tableType);
   }
 
   private List<MFieldSchema> convertToMFieldSchemas(List<FieldSchema> keys) {
@@ -1834,6 +1834,32 @@ public class ObjectStore implements RawStore, Configurable {
             .getSkewedColValues()),
         covertToMapMStringList((null == sd.getSkewedInfo()) ? null : sd.getSkewedInfo()
             .getSkewedColValueLocationMaps()), sd.isStoredAsSubDirectories());
+  }
+
+  private Map<String, MBasicNotificationLog> convertToMCreationSignature(
+      Map<String, BasicNotificationEvent> m) throws MetaException {
+    if (m == null) {
+      return null;
+    }
+    Map<String, MBasicNotificationLog> r = new HashMap<>();
+    for (Entry<String, BasicNotificationEvent> e : m.entrySet()) {
+      r.put(e.getKey(),
+          new MBasicNotificationLog(e.getValue().getEventId(), e.getValue().getEventTime()));
+    }
+    return r;
+  }
+
+  private Map<String, BasicNotificationEvent> convertToCreationSignature(
+      Map<String, MBasicNotificationLog> m) throws MetaException {
+    if (m == null) {
+      return null;
+    }
+    Map<String, BasicNotificationEvent> r = new HashMap<>();
+    for (Entry<String, MBasicNotificationLog> e : m.entrySet()) {
+      r.put(e.getKey(),
+          new BasicNotificationEvent(e.getValue().getEventId(), e.getValue().getEventTime()));
+    }
+    return r;
   }
 
   @Override
@@ -8911,6 +8937,34 @@ public class ObjectStore implements RawStore, Configurable {
       return new NotificationEventsCountResponse(result.longValue());
     } finally {
       rollbackAndCleanup(commited, query);
+    }
+  }
+
+  @Override
+  public NotificationEvent getLastNotificationEventForTable(String inputDbName, String inputTableName) {
+    boolean commited = false;
+    Query query = null;
+
+    try {
+      openTransaction();
+      query = pm.newQuery(MNotificationLog.class, "dbName == inputDbName && tableName == inputTableName");
+      query.declareParameters(
+          "java.lang.String inputDbName, java.lang.String inputTableName");
+      query.setOrdering("eventId descending");
+      query.range(0, 1);
+
+      Collection<MNotificationLog> events =
+          (Collection) query.execute(inputDbName, inputTableName);
+      commited = commitTransaction();
+      if (events == null || events.isEmpty()) {
+        return null;
+      }
+      return translateDbToThrift(events.iterator().next());
+    } finally {
+      if (!commited) {
+        rollbackAndCleanup(commited, query);
+        return null;
+      }
     }
   }
 

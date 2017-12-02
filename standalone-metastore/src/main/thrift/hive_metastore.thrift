@@ -327,7 +327,7 @@ struct Table {
   13: optional PrincipalPrivilegeSet privileges,
   14: optional bool temporary=false,
   15: optional bool rewriteEnabled,     // rewrite enabled or not
-  16: optional map<string, i64> creationSignature   // only for MVs, it stores table name used -> last modification time before MV creation
+  16: optional map<string, BasicNotificationEvent> creationSignature   // only for MVs, it stores table name used -> last modification time before MV creation
 }
 
 struct Partition {
@@ -886,6 +886,11 @@ struct NotificationEventsCountRequest {
 
 struct NotificationEventsCountResponse {
     1: required i64 eventsCount,
+}
+
+struct BasicNotificationEvent {
+    1: required i64 eventId,
+    2: required i32 eventTime
 }
 
 struct InsertEventRequestData {
@@ -1719,7 +1724,8 @@ service ThriftHiveMetastore extends fb303.FacebookService
   // Notification logging calls
   NotificationEventResponse get_next_notification(1:NotificationEventRequest rqst) 
   CurrentNotificationEventId get_current_notificationEventId()
-  NotificationEventsCountResponse get_notification_events_count(NotificationEventsCountRequest rqst)
+  NotificationEvent get_last_notification_event_for_table(1:string db_name, 2:string table_name)
+  NotificationEventsCountResponse get_notification_events_count(1:NotificationEventsCountRequest rqst)
   FireEventResponse fire_listener_event(1:FireEventRequest rqst)
   void flushCache()
 
