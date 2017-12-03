@@ -8968,6 +8968,35 @@ public class ObjectStore implements RawStore, Configurable {
     }
   }
 
+  @Override
+  public NotificationEvent getFirstNotificationEventForTableAfterEvent(
+      String inputDbName, String inputTableName, long eventId) {
+    boolean commited = false;
+    Query query = null;
+
+    try {
+      openTransaction();
+      query = pm.newQuery(MNotificationLog.class, "dbName == inputDbName && tableName == inputTableName && eventId > fromEventId");
+      query.declareParameters(
+          "java.lang.String inputDbName, java.lang.String inputTableName, java.lang.Long fromEventId");
+      query.setOrdering("eventId ascending");
+      query.range(0, 1);
+
+      Collection<MNotificationLog> events =
+          (Collection) query.execute(inputDbName, inputTableName);
+      commited = commitTransaction();
+      if (events == null || events.isEmpty()) {
+        return null;
+      }
+      return translateDbToThrift(events.iterator().next());
+    } finally {
+      if (!commited) {
+        rollbackAndCleanup(commited, query);
+        return null;
+      }
+    }
+  }
+
   private MNotificationLog translateThriftToDb(NotificationEvent entry) {
     MNotificationLog dbEntry = new MNotificationLog();
     dbEntry.setEventId(entry.getEventId());

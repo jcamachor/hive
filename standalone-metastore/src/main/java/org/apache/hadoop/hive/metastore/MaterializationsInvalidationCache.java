@@ -28,16 +28,12 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ConcurrentSkipListSet;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 import org.apache.commons.lang.ObjectUtils;
-import org.apache.commons.lang3.event.EventUtils;
 import org.apache.curator.shaded.com.google.common.collect.ImmutableSet;
 import org.apache.hadoop.hive.metastore.api.BasicNotificationEvent;
 import org.apache.hadoop.hive.metastore.api.NotificationEvent;
 import org.apache.hadoop.hive.metastore.api.Table;
-import org.apache.hadoop.hive.metastore.messaging.MessageFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -68,6 +64,8 @@ public final class MaterializationsInvalidationCache {
   private final ConcurrentMap<String, ConcurrentSkipListSet<TableModificationKey>> tableModifications =
       new ConcurrentHashMap<String, ConcurrentSkipListSet<TableModificationKey>>();
 
+  private RawStore store;
+
   private MaterializationsInvalidationCache() {
   }
 
@@ -89,15 +87,16 @@ public final class MaterializationsInvalidationCache {
    * runnable task is created, thus the views will still not be loaded in the cache when
    * it does.
    */
-  public void init(final RawStore db) {
+  public void init(final RawStore store) {
+    this.store = store;
     try {
       List<Table> materializations = new ArrayList<Table>();
-      for (String dbName : db.getAllDatabases()) {
+      for (String dbName : store.getAllDatabases()) {
         materializations.addAll(
-            db.getTableObjectsByName(dbName, db.getTables(dbName, null, TableType.MATERIALIZED_VIEW)));
+            store.getTableObjectsByName(dbName, store.getTables(dbName, null, TableType.MATERIALIZED_VIEW)));
         for (Table mv : materializations) {
           List<Table> tablesUsed =
-              db.getTableObjectsByName(dbName, ImmutableList.copyOf(mv.getCreationSignature().keySet()));
+              store.getTableObjectsByName(dbName, ImmutableList.copyOf(mv.getCreationSignature().keySet()));
           addMaterializedView(mv, ImmutableSet.copyOf(tablesUsed), false);
         }
       }
@@ -162,28 +161,13 @@ public final class MaterializationsInvalidationCache {
         // If we are not creating the MV at this instant, but instead it was created previously
         // and we are loading it into the cache, we need to go through the event logs and
         // check if the MV is still valid.
-        try {
-          IMetaStoreClient.NotificationFilter eventsFilter = new AndFilter(
-              new DatabaseAndTableFilter(table.getHiveTableMD().getDbName(), table.getHiveTableMD().getTableName()),
-              new EventTimeBoundaryFilter(lastModificationBeforeCreation.eventTime, Integer.MAX_VALUE),
-              new MessageFormatFilter(MessageFactory.getInstance().getMessageFormat()));
-          EventUtils.MSClientNotificationFetcher eventsFetcher
-              = new EventUtils.MSClientNotificationFetcher(Hive.get().getMSC());
-          EventUtils.NotificationEventIterator eventsIter = new EventUtils.NotificationEventIterator(
-              eventsFetcher, 0, -1, eventsFilter);
-          if (eventsIter.hasNext()) {
-            NotificationEvent event = eventsIter.next();
-            int invalidationTime = event.getEventTime();
-            if (invalidationTime != 0) {
-              // We do not need to do anything more for current table, as we detected
-              // a modification event that was in the metastore.
-              modificationsTree.add(new TableModificationKey(event.getEventId(), invalidationTime));
-              continue;
-            }
-          }
-        } catch (Exception ex) {
-          LOG.error("Problem connecting to the metastore when retrieving events");
-          // TODO: Invalidate all cache?
+        NotificationEvent event = store.getFirstNotificationEventForTableAfterEvent(
+            tableUsed.getDbName(), tableUsed.getTableName(), lastModificationBeforeCreation.eventId);
+        if (event != null) {
+          // We do not need to do anything more for current table, as we detected
+          // a modification event that was in the metastore.
+          modificationsTree.add(new TableModificationKey(event.getEventId(), event.getEventTime()));
+          continue;
         }
       }
     }

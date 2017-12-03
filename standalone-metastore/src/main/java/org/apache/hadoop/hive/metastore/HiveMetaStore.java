@@ -547,7 +547,8 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       expressionProxy = PartFilterExprUtil.createExpressionProxy(conf);
       fileMetadataManager = new FileMetadataManager(this.getMS(), conf);
 
-      // TODO: Init MV registry (cache) here?
+      // Initialize materializations invalidation cache
+      MaterializationsInvalidationCache.get().init(this.getMS());
     }
 
     private static String addPrefix(String s) {
@@ -7923,8 +7924,6 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         }
 
         ReplChangeManager.scheduleCMClearer(conf);
-
-        // TODO: Init MV registry (cache) here?
       }
     };
     t.setDaemon(true);

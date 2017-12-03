@@ -22,6 +22,7 @@ import org.apache.hadoop.hive.metastore.api.WMFullResourcePlan;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -35,6 +36,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import javax.jdo.Query;
 
 import org.apache.hadoop.conf.Configurable;
 import org.apache.hadoop.conf.Configuration;
@@ -93,6 +96,7 @@ import org.apache.hadoop.hive.metastore.api.UnknownPartitionException;
 import org.apache.hadoop.hive.metastore.api.UnknownTableException;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
+import org.apache.hadoop.hive.metastore.model.MNotificationLog;
 import org.apache.hadoop.hive.metastore.partition.spec.PartitionSpecProxy;
 import org.apache.hadoop.hive.metastore.utils.FileUtils;
 import org.apache.hadoop.hive.metastore.utils.JavaUtils;
@@ -2115,6 +2119,12 @@ public class CachedStore implements RawStore, Configurable {
   public NotificationEvent getLastNotificationEventForTable(
       String inputDbName, String inputTableName) {
     return rawStore.getLastNotificationEventForTable(inputDbName, inputTableName);
+  }
+
+  @Override
+  public NotificationEvent getFirstNotificationEventForTableAfterEvent(
+      String inputDbName, String inputTableName, long eventId) {
+    return rawStore.getFirstNotificationEventForTableAfterEvent(inputDbName, inputTableName, eventId);
   }
 
   @Override
