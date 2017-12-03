@@ -577,14 +577,6 @@ public class DbNotificationListener extends TransactionalMetaStoreEventListener 
     RawStore ms = HMSHandler.getMSForConf(hiveConf);
     ms.addNotificationEvent(event);
 
-    // Update registry with modifications
-    String dbName = event.getDbName();
-    String tableName = event.getTableName();
-    if (dbName != null && tableName != null) {
-      HiveMaterializedViewsRegistry.get().notifyTableModification(
-          dbName, tableName, event.getEventId(), event.getEventTime());
-    }
-
     // Set the DB_NOTIFICATION_EVENT_ID for future reference by other listeners.
     if (event.isSetEventId()) {
       listenerEvent.putParameter(

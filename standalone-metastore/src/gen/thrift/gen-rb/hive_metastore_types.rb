@@ -3275,6 +3275,29 @@ class TableMeta
   ::Thrift::Struct.generate_accessors self
 end
 
+class Materialization
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  MATERIALIZATIONTABLE = 1
+  TABLESUSED = 2
+  INVALIDATIONTIME = 3
+
+  FIELDS = {
+    MATERIALIZATIONTABLE => {:type => ::Thrift::Types::STRUCT, :name => 'materializationTable', :class => ::Table},
+    TABLESUSED => {:type => ::Thrift::Types::SET, :name => 'tablesUsed', :element => {:type => ::Thrift::Types::STRING}},
+    INVALIDATIONTIME => {:type => ::Thrift::Types::I32, :name => 'invalidationTime'}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field materializationTable is unset!') unless @materializationTable
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field tablesUsed is unset!') unless @tablesUsed
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field invalidationTime is unset!') unless @invalidationTime
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
 class WMResourcePlan
   include ::Thrift::Struct, ::Thrift::Struct_Union
   NAME = 1

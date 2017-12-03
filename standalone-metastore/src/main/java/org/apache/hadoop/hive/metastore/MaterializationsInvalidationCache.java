@@ -17,28 +17,23 @@
  */
 package org.apache.hadoop.hive.metastore;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ConcurrentSkipListSet;
 
 import org.apache.commons.lang.ObjectUtils;
-import org.apache.curator.shaded.com.google.common.collect.ImmutableSet;
 import org.apache.hadoop.hive.metastore.api.BasicNotificationEvent;
+import org.apache.hadoop.hive.metastore.api.Materialization;
 import org.apache.hadoop.hive.metastore.api.NotificationEvent;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 
 /**
  * 
@@ -55,8 +50,8 @@ public final class MaterializationsInvalidationCache {
    * Since currently we cannot alter a materialized view, that should suffice to identify
    * whether the cached view is up to date or not.
    * Creation time is useful to ensure correctness in case multiple HS2 instances are used. */
-  private final ConcurrentMap<String, ConcurrentMap<MaterializationKey, Materialization>> materializations =
-      new ConcurrentHashMap<String, ConcurrentMap<MaterializationKey, Materialization>>();
+  private final ConcurrentMap<String, ConcurrentMap<String, MaterializationInvalidationInfo>> materializations =
+      new ConcurrentHashMap<String, ConcurrentMap<String, MaterializationInvalidationInfo>>();
 
   /*
    * 
@@ -90,14 +85,9 @@ public final class MaterializationsInvalidationCache {
   public void init(final RawStore store) {
     this.store = store;
     try {
-      List<Table> materializations = new ArrayList<Table>();
       for (String dbName : store.getAllDatabases()) {
-        materializations.addAll(
-            store.getTableObjectsByName(dbName, store.getTables(dbName, null, TableType.MATERIALIZED_VIEW)));
-        for (Table mv : materializations) {
-          List<Table> tablesUsed =
-              store.getTableObjectsByName(dbName, ImmutableList.copyOf(mv.getCreationSignature().keySet()));
-          addMaterializedView(mv, ImmutableSet.copyOf(tablesUsed), false);
+        for (Table mv : store.getTableObjectsByName(dbName, store.getTables(dbName, null, TableType.MATERIALIZED_VIEW))) {
+          addMaterializedView(mv, ImmutableSet.copyOf(mv.getCreationSignature().keySet()), false);
         }
       }
     } catch (Exception e) {
@@ -110,7 +100,7 @@ public final class MaterializationsInvalidationCache {
    *
    * @param materializedViewTable the materialized view
    */
-  public void createMaterializedView(Table materializedViewTable, Set<Table> tablesUsed) {
+  public void createMaterializedView(Table materializedViewTable, Set<String> tablesUsed) {
     addMaterializedView(materializedViewTable, tablesUsed, true);
   }
 
@@ -119,41 +109,30 @@ public final class MaterializationsInvalidationCache {
    *
    * @param materializedViewTable the materialized view
    */
-  private void addMaterializedView(Table materializedViewTable, Set<Table> tablesUsed, boolean create) {
-    // Bail out if it is not enabled for rewriting
-    if (!materializedViewTable.isRewriteEnabled()) {
-      return;
-    }
+  private void addMaterializedView(Table materializedViewTable, Set<String> tablesUsed, boolean create) {
     // We are going to create the map for each view in the given database
-    ConcurrentMap<MaterializationKey, Materialization> cq =
-        new ConcurrentHashMap<MaterializationKey, Materialization>();
-    final ConcurrentMap<MaterializationKey, Materialization> prevCq = materializations.putIfAbsent(
+    ConcurrentMap<String, MaterializationInvalidationInfo> cq =
+        new ConcurrentHashMap<String, MaterializationInvalidationInfo>();
+    final ConcurrentMap<String, MaterializationInvalidationInfo> prevCq = materializations.putIfAbsent(
         materializedViewTable.getDbName(), cq);
     if (prevCq != null) {
       cq = prevCq;
     }
-    // Bail out if it already exists
-    final MaterializationKey vk = new MaterializationKey(
-        materializedViewTable.getTableName(), materializedViewTable.getCreateTime());
-    if (cq.containsKey(vk)) {
-      return;
-    }
     // Start the process to add materialization to the cache
-    final Materialization materialization = new Materialization(materializedViewTable, tablesUsed);
+    final MaterializationInvalidationInfo materialization = new MaterializationInvalidationInfo(materializedViewTable, tablesUsed);
     // Before loading the materialization in the cache, we need to update some
     // important information in the registry to account for rewriting invalidation
-    for (Table tableUsed : tablesUsed) {
-      final String qualifiedName = Warehouse.getQualifiedName(tableUsed.getDbName(), tableUsed.getTableName());
+    for (String qNameTableUsed : tablesUsed) {
       // First we insert a new tree set to keep table modifications, unless it already exists
       ConcurrentSkipListSet<TableModificationKey> modificationsTree = new ConcurrentSkipListSet<TableModificationKey>();
       final ConcurrentSkipListSet<TableModificationKey> prevModificationsTree = tableModifications.putIfAbsent(
-          qualifiedName, modificationsTree);
+          qNameTableUsed, modificationsTree);
       if (prevModificationsTree != null) {
         modificationsTree = prevModificationsTree;
       }
       // We obtain the access time to the table when the materialized view was created.
       // This is a map from table fully qualified name to last modification before MV creation.
-      BasicNotificationEvent e = materializedViewTable.getCreationSignature().get(qualifiedName);
+      BasicNotificationEvent e = materializedViewTable.getCreationSignature().get(qNameTableUsed);
       final TableModificationKey lastModificationBeforeCreation =
           new TableModificationKey(e.getEventId(), e.getEventTime());
       modificationsTree.add(lastModificationBeforeCreation);
@@ -161,8 +140,9 @@ public final class MaterializationsInvalidationCache {
         // If we are not creating the MV at this instant, but instead it was created previously
         // and we are loading it into the cache, we need to go through the event logs and
         // check if the MV is still valid.
+        String[] names =  qNameTableUsed.split("\\.");
         NotificationEvent event = store.getFirstNotificationEventForTableAfterEvent(
-            tableUsed.getDbName(), tableUsed.getTableName(), lastModificationBeforeCreation.eventId);
+            names[0], names[1], lastModificationBeforeCreation.eventId);
         if (event != null) {
           // We do not need to do anything more for current table, as we detected
           // a modification event that was in the metastore.
@@ -171,7 +151,7 @@ public final class MaterializationsInvalidationCache {
         }
       }
     }
-    cq.put(vk, materialization);
+    cq.put(materializedViewTable.getTableName(), materialization);
     if (LOG.isDebugEnabled()) {
       LOG.debug("Cached materialized view for rewriting: " + Warehouse.getQualifiedName(
           materializedViewTable.getDbName(), materializedViewTable.getTableName()));
@@ -200,13 +180,11 @@ public final class MaterializationsInvalidationCache {
    * @param materializedViewTable the materialized view to remove
    */
   public void dropMaterializedView(Table materializedViewTable) {
-    // Bail out if it is not enabled for rewriting
-    if (!materializedViewTable.isRewriteEnabled()) {
-      return;
-    }
-    final MaterializationKey vk = new MaterializationKey(
-        materializedViewTable.getTableName(), materializedViewTable.getCreateTime());
-    materializations.get(materializedViewTable.getDbName()).remove(vk);
+    dropMaterializedView(materializedViewTable.getDbName(), materializedViewTable.getTableName());
+  }
+
+  public void dropMaterializedView(String dbName, String tableName) {
+    materializations.get(dbName).remove(tableName);
   }
 
   /**
@@ -215,14 +193,13 @@ public final class MaterializationsInvalidationCache {
    * @param dbName the database
    * @return the collection of materialized views, or the empty collection if none
    */
-  public Map<String, Materialization> getRewritingMaterializations(String dbName) {
+  public Map<String, Materialization> getMaterializationInvalidationInfo(
+      String dbName, List<String> materializationNames) {
     if (materializations.get(dbName) != null) {
       ImmutableMap.Builder<String, Materialization> m = ImmutableMap.builder();
-      Collection<Entry<MaterializationKey,Materialization>> iterable =
-          Collections.unmodifiableCollection(materializations.get(dbName).entrySet());
-      for (Entry<MaterializationKey, Materialization> e : iterable) {
-        String materializationName = e.getKey().materializationName;
-        Materialization materialization = e.getValue();
+      for (String materializationName : materializationNames) {
+        MaterializationInvalidationInfo materialization =
+            materializations.get(dbName).get(materializationName);
         int invalidationTime = getInvalidationTime(materialization);
         // We need to check whether previous value is zero, as data modification
         // in another table used by the materialized view might have modified
@@ -239,6 +216,7 @@ public final class MaterializationsInvalidationCache {
             modified = true;
           }
         }
+        LOG.info("Jesus - this is my materialization name: " + materializationName);
         m.put(materializationName, materialization);
       }
       return m.build();
@@ -246,14 +224,13 @@ public final class MaterializationsInvalidationCache {
     return ImmutableMap.of();
   }
 
-  private int getInvalidationTime(Materialization materialization) {
+  private int getInvalidationTime(MaterializationInvalidationInfo materialization) {
     int firstModificationTimeAfterCreation = 0;
-    for (Table tableUsed : materialization.getTablesUsed()) {
-      final String qualifiedName = Warehouse.getQualifiedName(tableUsed.getDbName(), tableUsed.getTableName());
-      BasicNotificationEvent e = materialization.getMaterializationTable().getCreationSignature().get(qualifiedName);
+    for (String qNameTableUsed : materialization.getTablesUsed()) {
+      BasicNotificationEvent e = materialization.getMaterializationTable().getCreationSignature().get(qNameTableUsed);
       final TableModificationKey lastModificationBeforeCreation =
           new TableModificationKey(e.getEventId(), e.getEventTime());
-      final TableModificationKey post = tableModifications.get(qualifiedName)
+      final TableModificationKey post = tableModifications.get(qNameTableUsed)
           .higher(lastModificationBeforeCreation);
       if (post != null) {
         if (firstModificationTimeAfterCreation == 0 ||
@@ -263,41 +240,6 @@ public final class MaterializationsInvalidationCache {
       }
     }
     return firstModificationTimeAfterCreation;
-  }
-
-  private static class MaterializationKey {
-    private String materializationName;
-    private int creationDate;
-
-    private MaterializationKey(String materializationName, int creationTime) {
-      this.materializationName = materializationName;
-      this.creationDate = creationTime;
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-      if(this == obj) {
-        return true;
-      }
-      if((obj == null) || (obj.getClass() != this.getClass())) {
-        return false;
-      }
-      MaterializationKey viewKey = (MaterializationKey) obj;
-      return creationDate == viewKey.creationDate && Objects.equals(materializationName, viewKey.materializationName);
-    }
-
-    @Override
-    public int hashCode() {
-      int hash = 7;
-      hash = 31 * hash + creationDate;
-      hash = 31 * hash + materializationName.hashCode();
-      return hash;
-    }
-
-    @Override
-    public String toString() {
-      return "MaterializationKey{" + materializationName + "," + creationDate + "}";
-    }
   }
 
   private static class TableModificationKey implements Comparable<TableModificationKey> {

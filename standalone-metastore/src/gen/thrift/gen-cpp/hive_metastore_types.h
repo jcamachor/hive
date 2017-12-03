@@ -451,6 +451,8 @@ class CmRecycleResponse;
 
 class TableMeta;
 
+class Materialization;
+
 class WMResourcePlan;
 
 class WMPool;
@@ -8558,6 +8560,56 @@ class TableMeta {
 void swap(TableMeta &a, TableMeta &b);
 
 inline std::ostream& operator<<(std::ostream& out, const TableMeta& obj)
+{
+  obj.printTo(out);
+  return out;
+}
+
+
+class Materialization {
+ public:
+
+  Materialization(const Materialization&);
+  Materialization& operator=(const Materialization&);
+  Materialization() : invalidationTime(0) {
+  }
+
+  virtual ~Materialization() throw();
+  Table materializationTable;
+  std::set<std::string>  tablesUsed;
+  int32_t invalidationTime;
+
+  void __set_materializationTable(const Table& val);
+
+  void __set_tablesUsed(const std::set<std::string> & val);
+
+  void __set_invalidationTime(const int32_t val);
+
+  bool operator == (const Materialization & rhs) const
+  {
+    if (!(materializationTable == rhs.materializationTable))
+      return false;
+    if (!(tablesUsed == rhs.tablesUsed))
+      return false;
+    if (!(invalidationTime == rhs.invalidationTime))
+      return false;
+    return true;
+  }
+  bool operator != (const Materialization &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const Materialization & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(Materialization &a, Materialization &b);
+
+inline std::ostream& operator<<(std::ostream& out, const Materialization& obj)
 {
   obj.printTo(out);
   return out;

@@ -14528,6 +14528,112 @@ class TableMeta:
   def __ne__(self, other):
     return not (self == other)
 
+class Materialization:
+  """
+  Attributes:
+   - materializationTable
+   - tablesUsed
+   - invalidationTime
+  """
+
+  thrift_spec = (
+    None, # 0
+    (1, TType.STRUCT, 'materializationTable', (Table, Table.thrift_spec), None, ), # 1
+    (2, TType.SET, 'tablesUsed', (TType.STRING,None), None, ), # 2
+    (3, TType.I32, 'invalidationTime', None, None, ), # 3
+  )
+
+  def __init__(self, materializationTable=None, tablesUsed=None, invalidationTime=None,):
+    self.materializationTable = materializationTable
+    self.tablesUsed = tablesUsed
+    self.invalidationTime = invalidationTime
+
+  def read(self, iprot):
+    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
+      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
+      return
+    iprot.readStructBegin()
+    while True:
+      (fname, ftype, fid) = iprot.readFieldBegin()
+      if ftype == TType.STOP:
+        break
+      if fid == 1:
+        if ftype == TType.STRUCT:
+          self.materializationTable = Table()
+          self.materializationTable.read(iprot)
+        else:
+          iprot.skip(ftype)
+      elif fid == 2:
+        if ftype == TType.SET:
+          self.tablesUsed = set()
+          (_etype662, _size659) = iprot.readSetBegin()
+          for _i663 in xrange(_size659):
+            _elem664 = iprot.readString()
+            self.tablesUsed.add(_elem664)
+          iprot.readSetEnd()
+        else:
+          iprot.skip(ftype)
+      elif fid == 3:
+        if ftype == TType.I32:
+          self.invalidationTime = iprot.readI32()
+        else:
+          iprot.skip(ftype)
+      else:
+        iprot.skip(ftype)
+      iprot.readFieldEnd()
+    iprot.readStructEnd()
+
+  def write(self, oprot):
+    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
+      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
+      return
+    oprot.writeStructBegin('Materialization')
+    if self.materializationTable is not None:
+      oprot.writeFieldBegin('materializationTable', TType.STRUCT, 1)
+      self.materializationTable.write(oprot)
+      oprot.writeFieldEnd()
+    if self.tablesUsed is not None:
+      oprot.writeFieldBegin('tablesUsed', TType.SET, 2)
+      oprot.writeSetBegin(TType.STRING, len(self.tablesUsed))
+      for iter665 in self.tablesUsed:
+        oprot.writeString(iter665)
+      oprot.writeSetEnd()
+      oprot.writeFieldEnd()
+    if self.invalidationTime is not None:
+      oprot.writeFieldBegin('invalidationTime', TType.I32, 3)
+      oprot.writeI32(self.invalidationTime)
+      oprot.writeFieldEnd()
+    oprot.writeFieldStop()
+    oprot.writeStructEnd()
+
+  def validate(self):
+    if self.materializationTable is None:
+      raise TProtocol.TProtocolException(message='Required field materializationTable is unset!')
+    if self.tablesUsed is None:
+      raise TProtocol.TProtocolException(message='Required field tablesUsed is unset!')
+    if self.invalidationTime is None:
+      raise TProtocol.TProtocolException(message='Required field invalidationTime is unset!')
+    return
+
+
+  def __hash__(self):
+    value = 17
+    value = (value * 31) ^ hash(self.materializationTable)
+    value = (value * 31) ^ hash(self.tablesUsed)
+    value = (value * 31) ^ hash(self.invalidationTime)
+    return value
+
+  def __repr__(self):
+    L = ['%s=%r' % (key, value)
+      for key, value in self.__dict__.iteritems()]
+    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+  def __eq__(self, other):
+    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+  def __ne__(self, other):
+    return not (self == other)
+
 class WMResourcePlan:
   """
   Attributes:
@@ -15112,44 +15218,44 @@ class WMFullResourcePlan:
       elif fid == 2:
         if ftype == TType.LIST:
           self.pools = []
-          (_etype662, _size659) = iprot.readListBegin()
-          for _i663 in xrange(_size659):
-            _elem664 = WMPool()
-            _elem664.read(iprot)
-            self.pools.append(_elem664)
+          (_etype669, _size666) = iprot.readListBegin()
+          for _i670 in xrange(_size666):
+            _elem671 = WMPool()
+            _elem671.read(iprot)
+            self.pools.append(_elem671)
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
       elif fid == 3:
         if ftype == TType.LIST:
           self.mappings = []
-          (_etype668, _size665) = iprot.readListBegin()
-          for _i669 in xrange(_size665):
-            _elem670 = WMMapping()
-            _elem670.read(iprot)
-            self.mappings.append(_elem670)
+          (_etype675, _size672) = iprot.readListBegin()
+          for _i676 in xrange(_size672):
+            _elem677 = WMMapping()
+            _elem677.read(iprot)
+            self.mappings.append(_elem677)
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
       elif fid == 4:
         if ftype == TType.LIST:
           self.triggers = []
-          (_etype674, _size671) = iprot.readListBegin()
-          for _i675 in xrange(_size671):
-            _elem676 = WMTrigger()
-            _elem676.read(iprot)
-            self.triggers.append(_elem676)
+          (_etype681, _size678) = iprot.readListBegin()
+          for _i682 in xrange(_size678):
+            _elem683 = WMTrigger()
+            _elem683.read(iprot)
+            self.triggers.append(_elem683)
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
       elif fid == 5:
         if ftype == TType.LIST:
           self.poolTriggers = []
-          (_etype680, _size677) = iprot.readListBegin()
-          for _i681 in xrange(_size677):
-            _elem682 = WMPoolTrigger()
-            _elem682.read(iprot)
-            self.poolTriggers.append(_elem682)
+          (_etype687, _size684) = iprot.readListBegin()
+          for _i688 in xrange(_size684):
+            _elem689 = WMPoolTrigger()
+            _elem689.read(iprot)
+            self.poolTriggers.append(_elem689)
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
@@ -15170,29 +15276,29 @@ class WMFullResourcePlan:
     if self.pools is not None:
       oprot.writeFieldBegin('pools', TType.LIST, 2)
       oprot.writeListBegin(TType.STRUCT, len(self.pools))
-      for iter683 in self.pools:
-        iter683.write(oprot)
+      for iter690 in self.pools:
+        iter690.write(oprot)
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     if self.mappings is not None:
       oprot.writeFieldBegin('mappings', TType.LIST, 3)
       oprot.writeListBegin(TType.STRUCT, len(self.mappings))
-      for iter684 in self.mappings:
-        iter684.write(oprot)
+      for iter691 in self.mappings:
+        iter691.write(oprot)
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     if self.triggers is not None:
       oprot.writeFieldBegin('triggers', TType.LIST, 4)
       oprot.writeListBegin(TType.STRUCT, len(self.triggers))
-      for iter685 in self.triggers:
-        iter685.write(oprot)
+      for iter692 in self.triggers:
+        iter692.write(oprot)
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     if self.poolTriggers is not None:
       oprot.writeFieldBegin('poolTriggers', TType.LIST, 5)
       oprot.writeListBegin(TType.STRUCT, len(self.poolTriggers))
-      for iter686 in self.poolTriggers:
-        iter686.write(oprot)
+      for iter693 in self.poolTriggers:
+        iter693.write(oprot)
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
@@ -15653,11 +15759,11 @@ class WMGetAllResourcePlanResponse:
       if fid == 1:
         if ftype == TType.LIST:
           self.resourcePlans = []
-          (_etype690, _size687) = iprot.readListBegin()
-          for _i691 in xrange(_size687):
-            _elem692 = WMResourcePlan()
-            _elem692.read(iprot)
-            self.resourcePlans.append(_elem692)
+          (_etype697, _size694) = iprot.readListBegin()
+          for _i698 in xrange(_size694):
+            _elem699 = WMResourcePlan()
+            _elem699.read(iprot)
+            self.resourcePlans.append(_elem699)
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
@@ -15674,8 +15780,8 @@ class WMGetAllResourcePlanResponse:
     if self.resourcePlans is not None:
       oprot.writeFieldBegin('resourcePlans', TType.LIST, 1)
       oprot.writeListBegin(TType.STRUCT, len(self.resourcePlans))
-      for iter693 in self.resourcePlans:
-        iter693.write(oprot)
+      for iter700 in self.resourcePlans:
+        iter700.write(oprot)
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
@@ -16539,11 +16645,11 @@ class WMGetTriggersForResourePlanResponse:
       if fid == 1:
         if ftype == TType.LIST:
           self.triggers = []
-          (_etype697, _size694) = iprot.readListBegin()
-          for _i698 in xrange(_size694):
-            _elem699 = WMTrigger()
-            _elem699.read(iprot)
-            self.triggers.append(_elem699)
+          (_etype704, _size701) = iprot.readListBegin()
+          for _i705 in xrange(_size701):
+            _elem706 = WMTrigger()
+            _elem706.read(iprot)
+            self.triggers.append(_elem706)
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
@@ -16560,8 +16666,8 @@ class WMGetTriggersForResourePlanResponse:
     if self.triggers is not None:
       oprot.writeFieldBegin('triggers', TType.LIST, 1)
       oprot.writeListBegin(TType.STRUCT, len(self.triggers))
-      for iter700 in self.triggers:
-        iter700.write(oprot)
+      for iter707 in self.triggers:
+        iter707.write(oprot)
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     oprot.writeFieldStop()

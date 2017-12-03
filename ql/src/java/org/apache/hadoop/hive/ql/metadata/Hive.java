@@ -57,6 +57,7 @@ import java.util.stream.Collectors;
 
 import javax.jdo.JDODataStoreException;
 
+import org.apache.calcite.plan.RelOptMaterialization;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileChecksum;
@@ -81,6 +82,7 @@ import org.apache.hadoop.hive.metastore.HiveMetaHookLoader;
 import org.apache.hadoop.hive.metastore.HiveMetaStore;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
+import org.apache.hadoop.hive.metastore.MaterializationInvalidationInfo;
 import org.apache.hadoop.hive.metastore.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.PartitionDropOptions;
 import org.apache.hadoop.hive.metastore.RawStore;
@@ -110,6 +112,7 @@ import org.apache.hadoop.hive.metastore.api.HiveObjectType;
 import org.apache.hadoop.hive.metastore.api.Index;
 import org.apache.hadoop.hive.metastore.api.InsertEventRequestData;
 import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
+import org.apache.hadoop.hive.metastore.api.Materialization;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.MetadataPpdResult;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
@@ -144,7 +147,7 @@ import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.index.HiveIndexHandler;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.log.PerfLogger;
-import org.apache.hadoop.hive.ql.optimizer.calcite.Materialization;
+import org.apache.hadoop.hive.ql.optimizer.calcite.RelOptHiveTable;
 import org.apache.hadoop.hive.ql.optimizer.listbucketingpruner.ListBucketingPrunerUtils;
 import org.apache.hadoop.hive.ql.plan.AddPartitionDesc;
 import org.apache.hadoop.hive.ql.plan.DropTableDesc;
@@ -1420,6 +1423,17 @@ public class Hive {
   }
 
   /**
+   * Get materialized views for the specified database that have enabled rewriting.
+   * @param dbName
+   * @return List of materialized view table objects
+   * @throws HiveException
+   */
+  public List<String> getMaterializedViewsForRewriting(String dbName) throws HiveException {
+    // TODO
+    return getTablesByType(dbName, ".*", TableType.MATERIALIZED_VIEW);
+  }
+
+  /**
    * Get all materialized views for the specified database.
    * @param dbName
    * @return List of materialized view table objects
@@ -1432,6 +1446,21 @@ public class Hive {
   private List<Table> getTableObjects(String dbName, String pattern, TableType tableType) throws HiveException {
     try {
       return Lists.transform(getMSC().getTableObjectsByName(dbName, getTablesByType(dbName, pattern, tableType)),
+        new com.google.common.base.Function<org.apache.hadoop.hive.metastore.api.Table, Table>() {
+          @Override
+          public Table apply(org.apache.hadoop.hive.metastore.api.Table table) {
+            return new Table(table);
+          }
+        }
+      );
+    } catch (Exception e) {
+      throw new HiveException(e);
+    }
+  }
+
+  private List<Table> getTableObjects(String dbName, List<String> tableNames) throws HiveException {
+    try {
+      return Lists.transform(getMSC().getTableObjectsByName(dbName, tableNames),
         new com.google.common.base.Function<org.apache.hadoop.hive.metastore.api.Table, Table>() {
           @Override
           public Table apply(org.apache.hadoop.hive.metastore.api.Table table) {
@@ -1528,50 +1557,57 @@ public class Hive {
    * @return the list of materialized views available for rewriting
    * @throws HiveException
    */
-  public List<Materialization> getRewritingMaterializedViews() throws HiveException {
-    long minTime = System.currentTimeMillis() -
-        conf.getLongVar(HiveConf.ConfVars.HIVE_MATERIALIZED_VIEW_REWRITING_TIME_WINDOW);
+  public List<RelOptMaterialization> getRewritingMaterializedViews() throws HiveException {
+    final int diff = conf.getIntVar(HiveConf.ConfVars.HIVE_MATERIALIZED_VIEW_REWRITING_TIME_WINDOW);
+    final int minTime = (int) (System.currentTimeMillis() / 1000) - diff;
     try {
       // Final result
-      List<Materialization> result = new ArrayList<>();
+      List<RelOptMaterialization> result = new ArrayList<>();
       for (String dbName : getMSC().getAllDatabases()) {
         // From metastore (for security)
-        List<String> tables = getAllMaterializedViews(dbName);
-        // Cached views (includes all)
-        Collection<Materialization> cachedViews =
-            HiveMaterializedViewsRegistry.get().getRewritingMaterializedViews(dbName);
-        if (cachedViews.isEmpty()) {
+        List<String> materializedViewNames = getMaterializedViewsForRewriting(dbName);
+        if (materializedViewNames.isEmpty()) {
           // Bail out: empty list
           continue;
         }
-        Map<String, Materialization> qualifiedNameToView =
-            new HashMap<String, Materialization>();
-        for (Materialization materialization : cachedViews) {
-          int invalidationTime = materialization.getInvalidationTime();
-          // If the limit is not met, we do not add the materialized view
-          if (invalidationTime == 0 || minTime <= invalidationTime) {
-            qualifiedNameToView.put(materialization.qualifiedTableName.get(0), materialization);
-          } else {
-            LOG.info("Materialized view " + materialization.qualifiedTableName.get(0) +
-                " ignored for rewriting as its contents are outdated");
-          }
-        }
-        for (String table : tables) {
+        List<Table> materializedViewTables = getTableObjects(dbName, materializedViewNames);
+        // Cached views (includes all)
+        Map<String, RelOptMaterialization> cachedViews =
+            HiveMaterializedViewsRegistry.get().getRewritingMaterializedViews(dbName);
+        Map<String, Materialization> info = getMSC().getMaterializationsInvalidationInfo(
+            dbName, materializedViewNames);
+        for (Table materializedViewTable : materializedViewTables) {
           // Compose qualified name
-          String fullyQualifiedName = dbName;
-          if (fullyQualifiedName != null && !fullyQualifiedName.isEmpty()) {
-            fullyQualifiedName = fullyQualifiedName + "." + table;
+          String fullyQualifiedName = materializedViewTable.getFullyQualifiedName();
+          // Check whether the materialized view is invalidated
+          int invalidationTime = info.get(materializedViewTable.getTableName()).getInvalidationTime();
+          // If the limit is not met, we do not add the materialized view
+          if (diff == 0) {
+            if (invalidationTime != 0) {
+              // If parameter is zero, materialized view cannot be outdated at all
+              LOG.info("Materialized view " + fullyQualifiedName +
+                  " ignored for rewriting as its contents are outdated");
+              continue;
+            }
           } else {
-            fullyQualifiedName = table;
+            if (invalidationTime != 0 && minTime > invalidationTime) {
+              LOG.info("Materialized view " + fullyQualifiedName +
+                  " ignored for rewriting as its contents are outdated");
+              continue;
+            }
           }
-          Materialization materialization = qualifiedNameToView.get(fullyQualifiedName);
-          if (materialization != null) {
-            // Add to final result set
+          // It passed the test, load
+          RelOptMaterialization materialization = cachedViews.get(fullyQualifiedName);
+          if (materialization != null ) {//&&
+//              ((RelOptHiveTable) materialization.tableRel.getTable()).getHiveTableMD().getCreateTime() == materializedViewTable.getCreateTime()) {
+            // It is cached, add to final result set
             result.add(materialization);
           } else {
             // It is not in the cache
-            LOG.warn("Materialized view " + fullyQualifiedName +
-                " could not be added as there was a problem loading it");
+            if (LOG.isWarnEnabled()) {
+              LOG.warn("Materialized view " + fullyQualifiedName + " was not in the cache");
+            }
+            result.add(HiveMaterializedViewsRegistry.get().addMaterializedView(materializedViewTable));
           }
         }
       }

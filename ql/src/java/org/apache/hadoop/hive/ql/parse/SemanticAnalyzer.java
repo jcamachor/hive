@@ -12685,24 +12685,26 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     unparseTranslator.enable();
 
     if (isMaterialized) {
-      // Create signature consisting of the tables that the materialized view
-      // is reading and the time at which the table was accessed last
-      Map<String, BasicNotificationEvent> signature = new HashMap<>();
-      for (String alias : qb.getTabAliases()) {
-        try {
-          String tableName = qb.getTabNameForAlias(alias);
-          Table table = getTableObjectByName(tableName);
-          if (!table.isMaterializedTable() && !table.isView()) {
-            // Add to signature
-            NotificationEvent lastEvent =
-                db.getMSC().getLastNotificationEventForTable(table.getDbName(), table.getTableName());
-            signature.put(tableName,
-                new BasicNotificationEvent(lastEvent.getEventId(), lastEvent.getEventTime()));
-          }
-        } catch (Exception ex) {
-          throw new SemanticException(ex);
-        }
-      }
+//      // Create signature consisting of the tables that the materialized view
+//      // is reading and the time at which the table was accessed last
+//      Map<String, BasicNotificationEvent> signature = new HashMap<>();
+//      for (String alias : qb.getTabAliases()) {
+//        try {
+//          String tableName = qb.getTabNameForAlias(alias);
+//          LOG.info("Jesus -tableName: " + tableName);
+//          Table table = getTableObjectByName(tableName);
+//          if (!table.isMaterializedTable() && !table.isView()) {
+//            // Add to signature
+//            NotificationEvent lastEvent =
+//                db.getMSC().getLastNotificationEventForTable(table.getDbName(), table.getTableName());
+//            signature.put(tableName,
+//                new BasicNotificationEvent(lastEvent.getEventId(), lastEvent.getEventTime()));
+//          }
+//        } catch (Exception ex) {
+//          throw new SemanticException(ex);
+//        }
+//      }
+//      LOG.info("Jesus - This is my signature: " + signature);
       createVwDesc = new CreateViewDesc(
           dbDotTable, cols, comment, tblProps, partColNames,
           ifNotExists, isRebuild, rewriteEnabled, isAlterViewAs,

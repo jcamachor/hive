@@ -1130,6 +1130,11 @@ public class ObjectStore implements RawStore, Configurable {
       }
       pm.makePersistentAll(toPersistPrivObjs);
       commited = commitTransaction();
+
+      if (tbl.getTableType().equals(TableType.MATERIALIZED_VIEW.toString())) {
+        // Add to the invalidation cache
+        MaterializationsInvalidationCache.get().createMaterializedView(tbl, tbl.getCreationSignature().keySet());
+      }
     } finally {
       if (!commited) {
         rollbackTransaction();
@@ -1173,12 +1178,14 @@ public class ObjectStore implements RawStore, Configurable {
   @Override
   public boolean dropTable(String dbName, String tableName) throws MetaException,
     NoSuchObjectException, InvalidObjectException, InvalidInputException {
+    boolean materializedView = false;
     boolean success = false;
     try {
       openTransaction();
       MTable tbl = getMTable(dbName, tableName);
       pm.retrieve(tbl);
       if (tbl != null) {
+        materializedView = tbl.getTableType().equals(TableType.MATERIALIZED_VIEW.toString());
         // first remove all the grants
         List<MTablePrivilege> tabGrants = listAllTableGrants(dbName, tableName);
         if (CollectionUtils.isNotEmpty(tabGrants)) {
@@ -1222,6 +1229,10 @@ public class ObjectStore implements RawStore, Configurable {
     } finally {
       if (!success) {
         rollbackTransaction();
+      } else {
+        if (materializedView) {
+          MaterializationsInvalidationCache.get().dropMaterializedView(dbName, tableName);
+        }
       }
     }
     return success;
@@ -8873,6 +8884,14 @@ public class ObjectStore implements RawStore, Configurable {
       }
       pm.makePersistent(translateThriftToDb(entry));
       commited = commitTransaction();
+
+      // Update registry with modifications
+      String dbName = entry.getDbName();
+      String tableName = entry.getTableName();
+      if (dbName != null && tableName != null) {
+        MaterializationsInvalidationCache.get().notifyTableModification(
+            dbName, tableName, entry.getEventId(), entry.getEventTime());
+      }
     } catch (Exception e) {
       LOG.error("couldnot get lock for update", e);
     } finally {

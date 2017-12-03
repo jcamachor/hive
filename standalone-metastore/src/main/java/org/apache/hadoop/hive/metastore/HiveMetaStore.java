@@ -2489,6 +2489,11 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       return tables;
     }
 
+    @Override
+    public Map<String, Materialization> get_materialization_invalidation_info(final String dbName, final List<String> tableNames) {
+      return MaterializationsInvalidationCache.get().getMaterializationInvalidationInfo(dbName, tableNames);
+    }
+
     private void assertClientHasCapability(ClientCapabilities client,
         ClientCapability value, String what, String call) throws MetaException {
       if (!doesClientHaveCapability(client, value)) {
