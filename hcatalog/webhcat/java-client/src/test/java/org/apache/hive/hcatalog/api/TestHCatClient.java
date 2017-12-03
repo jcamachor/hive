@@ -34,12 +34,12 @@ import com.google.common.collect.Iterables;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.MetaStoreTestUtils;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NotificationEvent;
 import org.apache.hadoop.hive.metastore.api.PartitionEventType;
+import org.apache.hadoop.hive.metastore.messaging.EventUtils.NotificationFilter;
 import org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat;
 import org.apache.hadoop.hive.ql.io.RCFileInputFormat;
 import org.apache.hadoop.hive.ql.io.RCFileOutputFormat;
@@ -887,7 +887,7 @@ public class TestHCatClient {
     // do rest of tests on db we just picked up above.
 
     List<HCatNotificationEvent> notifs = sourceMetastore.getNextNotification(
-        0, 0, new IMetaStoreClient.NotificationFilter() {
+        0, 0, new NotificationFilter() {
       @Override
       public boolean accept(NotificationEvent event) {
         return true;

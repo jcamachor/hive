@@ -15,30 +15,40 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.hadoop.hive.ql.optimizer.calcite;
+package org.apache.hadoop.hive.metastore;
 
-import java.util.List;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.apache.calcite.plan.RelOptMaterialization;
-import org.apache.calcite.plan.RelOptTable;
-import org.apache.calcite.rel.RelNode;
+import org.apache.hadoop.hive.metastore.api.Table;
+
+import com.google.common.collect.ImmutableSet;
 
 /**
  * 
  *
  */
-public class RelOptHiveMaterialization extends RelOptMaterialization {
+public class Materialization {
 
+  private final Table materializationTable;
+  private final Set<Table> tablesUsed;
   /*
    * 
    */
   private AtomicInteger invalidationTime;
 
-  public RelOptHiveMaterialization(RelNode tableRel, RelNode queryRel,
-      RelOptTable starRelOptTable, List<String> qualifiedTableName) {
-    super(tableRel, queryRel, starRelOptTable, qualifiedTableName);
-    invalidationTime = new AtomicInteger();
+  public Materialization(Table materializationTable, Set<Table> tablesUsed) {
+    this.materializationTable = materializationTable;
+    this.tablesUsed = ImmutableSet.copyOf(tablesUsed);
+    this.invalidationTime = new AtomicInteger();
+  }
+
+  public Table getMaterializationTable() {
+    return materializationTable;
+  }
+
+  public Set<Table> getTablesUsed() {
+    return tablesUsed;
   }
 
   public boolean compareAndSetInvalidationTime(int expect, int update) {

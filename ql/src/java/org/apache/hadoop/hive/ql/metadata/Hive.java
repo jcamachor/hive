@@ -144,7 +144,7 @@ import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.index.HiveIndexHandler;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.log.PerfLogger;
-import org.apache.hadoop.hive.ql.optimizer.calcite.RelOptHiveMaterialization;
+import org.apache.hadoop.hive.ql.optimizer.calcite.Materialization;
 import org.apache.hadoop.hive.ql.optimizer.listbucketingpruner.ListBucketingPrunerUtils;
 import org.apache.hadoop.hive.ql.plan.AddPartitionDesc;
 import org.apache.hadoop.hive.ql.plan.DropTableDesc;
@@ -1528,25 +1528,25 @@ public class Hive {
    * @return the list of materialized views available for rewriting
    * @throws HiveException
    */
-  public List<RelOptHiveMaterialization> getRewritingMaterializedViews() throws HiveException {
+  public List<Materialization> getRewritingMaterializedViews() throws HiveException {
     long minTime = System.currentTimeMillis() -
         conf.getLongVar(HiveConf.ConfVars.HIVE_MATERIALIZED_VIEW_REWRITING_TIME_WINDOW);
     try {
       // Final result
-      List<RelOptHiveMaterialization> result = new ArrayList<>();
+      List<Materialization> result = new ArrayList<>();
       for (String dbName : getMSC().getAllDatabases()) {
         // From metastore (for security)
         List<String> tables = getAllMaterializedViews(dbName);
         // Cached views (includes all)
-        Collection<RelOptHiveMaterialization> cachedViews =
+        Collection<Materialization> cachedViews =
             HiveMaterializedViewsRegistry.get().getRewritingMaterializedViews(dbName);
         if (cachedViews.isEmpty()) {
           // Bail out: empty list
           continue;
         }
-        Map<String, RelOptHiveMaterialization> qualifiedNameToView =
-            new HashMap<String, RelOptHiveMaterialization>();
-        for (RelOptHiveMaterialization materialization : cachedViews) {
+        Map<String, Materialization> qualifiedNameToView =
+            new HashMap<String, Materialization>();
+        for (Materialization materialization : cachedViews) {
           int invalidationTime = materialization.getInvalidationTime();
           // If the limit is not met, we do not add the materialized view
           if (invalidationTime == 0 || minTime <= invalidationTime) {
@@ -1564,7 +1564,7 @@ public class Hive {
           } else {
             fullyQualifiedName = table;
           }
-          RelOptHiveMaterialization materialization = qualifiedNameToView.get(fullyQualifiedName);
+          Materialization materialization = qualifiedNameToView.get(fullyQualifiedName);
           if (materialization != null) {
             // Add to final result set
             result.add(materialization);

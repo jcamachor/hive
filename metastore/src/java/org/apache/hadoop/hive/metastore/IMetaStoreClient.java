@@ -90,6 +90,7 @@ import org.apache.hadoop.hive.metastore.api.PrincipalType;
 import org.apache.hadoop.hive.metastore.api.PrivilegeBag;
 import org.apache.hadoop.hive.metastore.api.WMResourcePlan;
 import org.apache.hadoop.hive.metastore.api.WMTrigger;
+import org.apache.hadoop.hive.metastore.messaging.EventUtils.NotificationFilter;
 import org.apache.hadoop.hive.metastore.api.Role;
 import org.apache.hadoop.hive.metastore.api.SQLForeignKey;
 import org.apache.hadoop.hive.metastore.api.SQLNotNullConstraint;
@@ -1604,20 +1605,6 @@ public interface IMetaStoreClient {
    * @throws MetaException
    */
   void insertTable(Table table, boolean overwrite) throws MetaException;
-
-  /**
-   * A filter provided by the client that determines if a given notification event should be
-   * returned.
-   */
-  @InterfaceAudience.LimitedPrivate({"HCatalog"})
-  interface NotificationFilter {
-    /**
-     * Whether a notification event should be accepted
-     * @param event
-     * @return if true, event will be added to list, if false it will be ignored
-     */
-    boolean accept(NotificationEvent event);
-  }
 
   /**
    * Get the next set of notifications from the database.

@@ -856,6 +856,12 @@ public class DummyRawStoreFailEvent implements RawStore, Configurable {
   }
 
   @Override
+  public NotificationEvent getLastNotificationEventForTable(String inputDbName,
+      String inputTableName) {
+    return objectStore.getLastNotificationEventForTable(inputDbName, inputTableName);
+  }
+
+  @Override
   public NotificationEventsCountResponse getNotificationEventsCount(NotificationEventsCountRequest rqst) {
     return objectStore.getNotificationEventsCount(rqst);
   }
@@ -1043,4 +1049,5 @@ public class DummyRawStoreFailEvent implements RawStore, Configurable {
       throws NoSuchObjectException, MetaException {
     return objectStore.getTriggersForResourcePlan(resourcePlanName);
   }
+
 }

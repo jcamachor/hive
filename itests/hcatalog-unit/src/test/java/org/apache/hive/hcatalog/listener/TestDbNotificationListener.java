@@ -28,7 +28,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Stack;
@@ -91,6 +90,7 @@ import org.apache.hadoop.hive.metastore.messaging.DropIndexMessage;
 import org.apache.hadoop.hive.metastore.messaging.DropPartitionMessage;
 import org.apache.hadoop.hive.metastore.messaging.DropTableMessage;
 import org.apache.hadoop.hive.metastore.messaging.EventMessage.EventType;
+import org.apache.hadoop.hive.metastore.messaging.EventUtils.NotificationFilter;
 import org.apache.hadoop.hive.metastore.messaging.InsertMessage;
 import org.apache.hadoop.hive.metastore.messaging.MessageDeserializer;
 import org.apache.hadoop.hive.metastore.messaging.MessageFactory;
@@ -1323,7 +1323,7 @@ public class TestDbNotificationListener {
     msClient.createDatabase(db);
     msClient.dropDatabase("f2");
 
-    IMetaStoreClient.NotificationFilter filter = new IMetaStoreClient.NotificationFilter() {
+    NotificationFilter filter = new NotificationFilter() {
       @Override
       public boolean accept(NotificationEvent event) {
         return event.getEventType().equals(EventType.DROP_DATABASE.toString());
@@ -1344,7 +1344,7 @@ public class TestDbNotificationListener {
     msClient.createDatabase(db);
     msClient.dropDatabase("f11");
 
-    IMetaStoreClient.NotificationFilter filter = new IMetaStoreClient.NotificationFilter() {
+    NotificationFilter filter = new NotificationFilter() {
       @Override
       public boolean accept(NotificationEvent event) {
         return event.getEventType().equals(EventType.CREATE_DATABASE.toString());

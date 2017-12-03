@@ -36,8 +36,8 @@ import org.apache.hive.hcatalog.messaging.MessageFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.api.NotificationEvent;
+import org.apache.hadoop.hive.metastore.messaging.EventUtils.NotificationFilter;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hive.hcatalog.common.HCatConstants;
 import org.apache.hive.hcatalog.data.schema.HCatFieldSchema;
@@ -274,7 +274,7 @@ public class TestHCatClientNotification {
     hCatClient.createDatabase(HCatCreateDBDesc.create("hcatf2").build());
     hCatClient.dropDatabase("hcatf2", false, HCatClient.DropDBMode.RESTRICT);
 
-    IMetaStoreClient.NotificationFilter filter = new IMetaStoreClient.NotificationFilter() {
+    NotificationFilter filter = new NotificationFilter() {
       @Override
       public boolean accept(NotificationEvent event) {
         return event.getEventType().equals(HCatConstants.HCAT_DROP_DATABASE_EVENT);
@@ -291,7 +291,7 @@ public class TestHCatClientNotification {
     hCatClient.createDatabase(HCatCreateDBDesc.create("hcatm2").build());
     hCatClient.dropDatabase("hcatm2", false, HCatClient.DropDBMode.RESTRICT);
 
-    IMetaStoreClient.NotificationFilter filter = new IMetaStoreClient.NotificationFilter() {
+    NotificationFilter filter = new NotificationFilter() {
       @Override
       public boolean accept(NotificationEvent event) {
         return event.getEventType().equals(HCatConstants.HCAT_CREATE_DATABASE_EVENT);

@@ -20,8 +20,8 @@
 package org.apache.hive.hcatalog.api.repl;
 
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.api.NotificationEvent;
+import org.apache.hadoop.hive.metastore.messaging.EventUtils.NotificationFilter;
 import org.apache.hive.hcatalog.api.HCatClient;
 import org.apache.hive.hcatalog.api.HCatNotificationEvent;
 import org.apache.hive.hcatalog.common.HCatException;
@@ -31,7 +31,7 @@ import java.util.List;
 
 public class HCatReplicationTaskIterator implements Iterator<ReplicationTask>{
 
-  private class HCatReplicationTaskIteratorNotificationFilter implements IMetaStoreClient.NotificationFilter {
+  private class HCatReplicationTaskIteratorNotificationFilter implements NotificationFilter {
 
     private String dbName;
     private String tableName;
@@ -62,7 +62,7 @@ public class HCatReplicationTaskIterator implements Iterator<ReplicationTask>{
   }
 
   private HCatClient hcatClient;
-  private IMetaStoreClient.NotificationFilter filter;
+  private NotificationFilter filter;
   private int maxEvents;
 
   private int batchSize;
@@ -83,13 +83,13 @@ public class HCatReplicationTaskIterator implements Iterator<ReplicationTask>{
 
   public HCatReplicationTaskIterator(
       HCatClient hcatClient, long eventFrom, int maxEvents,
-      IMetaStoreClient.NotificationFilter filter) throws HCatException{
+      NotificationFilter filter) throws HCatException{
     init(hcatClient,eventFrom,maxEvents,filter);
   }
 
   private void init(
       HCatClient hcatClient, long eventFrom, int maxEvents,
-      IMetaStoreClient.NotificationFilter filter) throws HCatException {
+      NotificationFilter filter) throws HCatException {
     // Simple implementation for now, this will later expand to do DAG evaluation.
     this.hcatClient = hcatClient;
     this.filter = filter;

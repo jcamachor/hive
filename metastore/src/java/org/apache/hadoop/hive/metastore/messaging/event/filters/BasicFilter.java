@@ -17,8 +17,8 @@
  */
 package org.apache.hadoop.hive.metastore.messaging.event.filters;
 
-import org.apache.hadoop.hive.metastore.IMetaStoreClient.NotificationFilter;
 import org.apache.hadoop.hive.metastore.api.NotificationEvent;
+import org.apache.hadoop.hive.metastore.messaging.EventUtils.NotificationFilter;
 
 public abstract class BasicFilter implements NotificationFilter {
   @Override

@@ -152,7 +152,7 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.HivePlannerContext;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelFactories;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRexExecutorImpl;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveTypeSystemImpl;
-import org.apache.hadoop.hive.ql.optimizer.calcite.RelOptHiveMaterialization;
+import org.apache.hadoop.hive.ql.optimizer.calcite.Materialization;
 import org.apache.hadoop.hive.ql.optimizer.calcite.RelOptHiveTable;
 import org.apache.hadoop.hive.ql.optimizer.calcite.TraitsUtil;
 import org.apache.hadoop.hive.ql.optimizer.calcite.cost.HiveAlgorithmsConf;
@@ -1492,15 +1492,15 @@ public class CalcitePlanner extends SemanticAnalyzer {
         RelMetadataQuery.THREAD_PROVIDERS.set(JaninoRelMetadataProvider.of(calciteMdProvider));
         planner.registerMetadataProviders(Lists.newArrayList(calciteMdProvider));
         // Add views to planner
-        List<RelOptHiveMaterialization> materializations = new ArrayList<>();
+        List<Materialization> materializations = new ArrayList<>();
         try {
           materializations = Hive.get().getRewritingMaterializedViews();
           // We need to use the current cluster for the scan operator on views,
           // otherwise the planner will throw an Exception (different planners)
           materializations = Lists.transform(materializations,
-              new Function<RelOptHiveMaterialization, RelOptHiveMaterialization>() {
+              new Function<Materialization, Materialization>() {
                 @Override
-                public RelOptHiveMaterialization apply(RelOptHiveMaterialization materialization) {
+                public Materialization apply(Materialization materialization) {
                   final RelNode viewScan = materialization.tableRel;
                   final RelNode newViewScan;
                   if (viewScan instanceof Project) {
@@ -1511,7 +1511,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
                   } else {
                     newViewScan = copyNodeScan(viewScan);
                   }
-                  return new RelOptHiveMaterialization(newViewScan, materialization.queryRel, null,
+                  return new Materialization(newViewScan, materialization.queryRel, null,
                       materialization.qualifiedTableName);
                 }
 
