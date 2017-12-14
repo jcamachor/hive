@@ -148,7 +148,6 @@ STAGE PLANS:
               bucket_count -1
               column.name.delimiter ,
               columns x
-              columns.comments 
               columns.types int
 #### A masked pattern was here ####
               name default.fact_daily
@@ -169,7 +168,6 @@ STAGE PLANS:
                 bucket_count -1
                 column.name.delimiter ,
                 columns x
-                columns.comments 
                 columns.types int
 #### A masked pattern was here ####
                 name default.fact_daily
@@ -229,7 +227,6 @@ STAGE PLANS:
               bucket_count -1
               column.name.delimiter ,
               columns x
-              columns.comments 
               columns.types int
 #### A masked pattern was here ####
               name default.fact_daily
@@ -250,7 +247,6 @@ STAGE PLANS:
                 bucket_count -1
                 column.name.delimiter ,
                 columns x
-                columns.comments 
                 columns.types int
 #### A masked pattern was here ####
                 name default.fact_daily
@@ -310,7 +306,6 @@ STAGE PLANS:
               bucket_count -1
               column.name.delimiter ,
               columns x
-              columns.comments 
               columns.types int
 #### A masked pattern was here ####
               name default.fact_daily
@@ -331,7 +326,6 @@ STAGE PLANS:
                 bucket_count -1
                 column.name.delimiter ,
                 columns x
-                columns.comments 
                 columns.types int
 #### A masked pattern was here ####
                 name default.fact_daily

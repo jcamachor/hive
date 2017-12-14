@@ -182,7 +182,6 @@ STAGE PLANS:
                     bucket_count -1
                     column.name.delimiter ,
                     columns key,value
-                    columns.comments 'default','default'
                     columns.types string:string
 #### A masked pattern was here ####
                     name default.src
@@ -203,7 +202,6 @@ STAGE PLANS:
                       bucket_count -1
                       column.name.delimiter ,
                       columns key,value
-                      columns.comments 'default','default'
                       columns.types string:string
 #### A masked pattern was here ####
                       name default.src
@@ -224,19 +222,19 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: srcpart
-                  Statistics: Num rows: 2000 Data size: 174000 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 2000 Data size: 174000 Basic stats: COMPLETE Column stats: PARTIAL
                   GatherStats: false
                   Select Operator
                     expressions: key (type: string)
                     outputColumnNames: _col0
-                    Statistics: Num rows: 2000 Data size: 174000 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 2000 Data size: 174000 Basic stats: COMPLETE Column stats: PARTIAL
                     Limit
                       Number of rows: 0
-                      Statistics: Num rows: 1 Data size: 87 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 1 Data size: 87 Basic stats: COMPLETE Column stats: PARTIAL
                       Reduce Output Operator
                         null sort order: 
                         sort order: 
-                        Statistics: Num rows: 1 Data size: 87 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 1 Data size: 87 Basic stats: COMPLETE Column stats: PARTIAL
                         tag: -1
                         value expressions: _col0 (type: string)
                         auto parallelism: false
@@ -260,7 +258,6 @@ STAGE PLANS:
                     bucket_count -1
                     column.name.delimiter ,
                     columns key,value
-                    columns.comments 'default','default'
                     columns.types string:string
 #### A masked pattern was here ####
                     name default.srcpart
@@ -282,7 +279,6 @@ STAGE PLANS:
                       bucket_count -1
                       column.name.delimiter ,
                       columns key,value
-                      columns.comments 'default','default'
                       columns.types string:string
 #### A masked pattern was here ####
                       name default.srcpart
@@ -307,7 +303,6 @@ STAGE PLANS:
                     bucket_count -1
                     column.name.delimiter ,
                     columns key,value
-                    columns.comments 'default','default'
                     columns.types string:string
 #### A masked pattern was here ####
                     name default.srcpart
@@ -329,7 +324,6 @@ STAGE PLANS:
                       bucket_count -1
                       column.name.delimiter ,
                       columns key,value
-                      columns.comments 'default','default'
                       columns.types string:string
 #### A masked pattern was here ####
                       name default.srcpart
@@ -354,7 +348,6 @@ STAGE PLANS:
                     bucket_count -1
                     column.name.delimiter ,
                     columns key,value
-                    columns.comments 'default','default'
                     columns.types string:string
 #### A masked pattern was here ####
                     name default.srcpart
@@ -376,7 +369,6 @@ STAGE PLANS:
                       bucket_count -1
                       column.name.delimiter ,
                       columns key,value
-                      columns.comments 'default','default'
                       columns.types string:string
 #### A masked pattern was here ####
                       name default.srcpart
@@ -401,7 +393,6 @@ STAGE PLANS:
                     bucket_count -1
                     column.name.delimiter ,
                     columns key,value
-                    columns.comments 'default','default'
                     columns.types string:string
 #### A masked pattern was here ####
                     name default.srcpart
@@ -423,7 +414,6 @@ STAGE PLANS:
                       bucket_count -1
                       column.name.delimiter ,
                       columns key,value
-                      columns.comments 'default','default'
                       columns.types string:string
 #### A masked pattern was here ####
                       name default.srcpart
@@ -453,13 +443,13 @@ STAGE PLANS:
                   1 _col0 (type: string)
                 outputColumnNames: _col0, _col1
                 Position of Big Table: 0
-                Statistics: Num rows: 1 Data size: 174 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 1 Data size: 174 Basic stats: COMPLETE Column stats: PARTIAL
                 File Output Operator
                   compressed: false
                   GlobalTableId: 0
 #### A masked pattern was here ####
                   NumFilesPerFileSink: 1
-                  Statistics: Num rows: 1 Data size: 174 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 1 Data size: 174 Basic stats: COMPLETE Column stats: PARTIAL
 #### A masked pattern was here ####
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
@@ -483,16 +473,16 @@ STAGE PLANS:
               Select Operator
                 expressions: VALUE._col0 (type: string)
                 outputColumnNames: _col0
-                Statistics: Num rows: 1 Data size: 87 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 1 Data size: 87 Basic stats: COMPLETE Column stats: PARTIAL
                 Limit
                   Number of rows: 0
-                  Statistics: Num rows: 1 Data size: 87 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 1 Data size: 87 Basic stats: COMPLETE Column stats: PARTIAL
                   Reduce Output Operator
                     key expressions: _col0 (type: string)
                     null sort order: a
                     sort order: +
                     Map-reduce partition columns: _col0 (type: string)
-                    Statistics: Num rows: 1 Data size: 87 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 1 Data size: 87 Basic stats: COMPLETE Column stats: PARTIAL
                     tag: 1
                     auto parallelism: true
 
@@ -575,7 +565,6 @@ STAGE PLANS:
                     bucket_count -1
                     column.name.delimiter ,
                     columns key,value
-                    columns.comments 'default','default'
                     columns.types string:string
 #### A masked pattern was here ####
                     name default.src
@@ -596,7 +585,6 @@ STAGE PLANS:
                       bucket_count -1
                       column.name.delimiter ,
                       columns key,value
-                      columns.comments 'default','default'
                       columns.types string:string
 #### A masked pattern was here ####
                       name default.src
@@ -617,21 +605,21 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: srcpart
-                  Statistics: Num rows: 2000 Data size: 174000 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 2000 Data size: 174000 Basic stats: COMPLETE Column stats: PARTIAL
                   GatherStats: false
                   Select Operator
                     expressions: key (type: string)
                     outputColumnNames: key
-                    Statistics: Num rows: 2000 Data size: 174000 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 2000 Data size: 174000 Basic stats: COMPLETE Column stats: PARTIAL
                     Group By Operator
                       aggregations: count(key)
                       mode: hash
                       outputColumnNames: _col0
-                      Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: PARTIAL
                       Reduce Output Operator
                         null sort order: 
                         sort order: 
-                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: PARTIAL
                         tag: -1
                         value expressions: _col0 (type: bigint)
                         auto parallelism: false
@@ -653,7 +641,6 @@ STAGE PLANS:
                     bucket_count -1
                     column.name.delimiter ,
                     columns key,value
-                    columns.comments 'default','default'
                     columns.types string:string
 #### A masked pattern was here ####
                     name default.srcpart
@@ -675,7 +662,6 @@ STAGE PLANS:
                       bucket_count -1
                       column.name.delimiter ,
                       columns key,value
-                      columns.comments 'default','default'
                       columns.types string:string
 #### A masked pattern was here ####
                       name default.srcpart
@@ -701,7 +687,6 @@ STAGE PLANS:
                     bucket_count -1
                     column.name.delimiter ,
                     columns key,value
-                    columns.comments 'default','default'
                     columns.types string:string
 #### A masked pattern was here ####
                     name default.srcpart
@@ -723,7 +708,6 @@ STAGE PLANS:
                       bucket_count -1
                       column.name.delimiter ,
                       columns key,value
-                      columns.comments 'default','default'
                       columns.types string:string
 #### A masked pattern was here ####
                       name default.srcpart
@@ -749,7 +733,6 @@ STAGE PLANS:
                     bucket_count -1
                     column.name.delimiter ,
                     columns key,value
-                    columns.comments 'default','default'
                     columns.types string:string
 #### A masked pattern was here ####
                     name default.srcpart
@@ -771,7 +754,6 @@ STAGE PLANS:
                       bucket_count -1
                       column.name.delimiter ,
                       columns key,value
-                      columns.comments 'default','default'
                       columns.types string:string
 #### A masked pattern was here ####
                       name default.srcpart
@@ -797,7 +779,6 @@ STAGE PLANS:
                     bucket_count -1
                     column.name.delimiter ,
                     columns key,value
-                    columns.comments 'default','default'
                     columns.types string:string
 #### A masked pattern was here ####
                     name default.srcpart
@@ -819,7 +800,6 @@ STAGE PLANS:
                       bucket_count -1
                       column.name.delimiter ,
                       columns key,value
-                      columns.comments 'default','default'
                       columns.types string:string
 #### A masked pattern was here ####
                       name default.srcpart
@@ -851,7 +831,7 @@ STAGE PLANS:
                   GlobalTableId: 0
 #### A masked pattern was here ####
                   NumFilesPerFileSink: 1
-                  Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: PARTIAL
 #### A masked pattern was here ####
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
@@ -876,13 +856,13 @@ STAGE PLANS:
                 aggregations: count(VALUE._col0)
                 mode: mergepartial
                 outputColumnNames: _col0
-                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: PARTIAL
                 File Output Operator
                   compressed: false
                   GlobalTableId: 0
 #### A masked pattern was here ####
                   NumFilesPerFileSink: 1
-                  Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: PARTIAL
 #### A masked pattern was here ####
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
@@ -983,7 +963,6 @@ STAGE PLANS:
                     bucket_count -1
                     column.name.delimiter ,
                     columns key,value
-                    columns.comments 'default','default'
                     columns.types string:string
 #### A masked pattern was here ####
                     name default.src
@@ -1004,7 +983,6 @@ STAGE PLANS:
                       bucket_count -1
                       column.name.delimiter ,
                       columns key,value
-                      columns.comments 'default','default'
                       columns.types string:string
 #### A masked pattern was here ####
                       name default.src
@@ -1025,19 +1003,19 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: srcpart
-                  Statistics: Num rows: 2000 Data size: 182000 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 2000 Data size: 182000 Basic stats: COMPLETE Column stats: PARTIAL
                   GatherStats: false
                   Select Operator
                     expressions: value (type: string)
                     outputColumnNames: _col0
-                    Statistics: Num rows: 2000 Data size: 182000 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 2000 Data size: 182000 Basic stats: COMPLETE Column stats: PARTIAL
                     Limit
                       Number of rows: 0
-                      Statistics: Num rows: 1 Data size: 91 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 1 Data size: 91 Basic stats: COMPLETE Column stats: PARTIAL
                       Reduce Output Operator
                         null sort order: 
                         sort order: 
-                        Statistics: Num rows: 1 Data size: 91 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 1 Data size: 91 Basic stats: COMPLETE Column stats: PARTIAL
                         tag: -1
                         value expressions: _col0 (type: string)
                         auto parallelism: false
@@ -1061,7 +1039,6 @@ STAGE PLANS:
                     bucket_count -1
                     column.name.delimiter ,
                     columns key,value
-                    columns.comments 'default','default'
                     columns.types string:string
 #### A masked pattern was here ####
                     name default.srcpart
@@ -1083,7 +1060,6 @@ STAGE PLANS:
                       bucket_count -1
                       column.name.delimiter ,
                       columns key,value
-                      columns.comments 'default','default'
                       columns.types string:string
 #### A masked pattern was here ####
                       name default.srcpart
@@ -1108,7 +1084,6 @@ STAGE PLANS:
                     bucket_count -1
                     column.name.delimiter ,
                     columns key,value
-                    columns.comments 'default','default'
                     columns.types string:string
 #### A masked pattern was here ####
                     name default.srcpart
@@ -1130,7 +1105,6 @@ STAGE PLANS:
                       bucket_count -1
                       column.name.delimiter ,
                       columns key,value
-                      columns.comments 'default','default'
                       columns.types string:string
 #### A masked pattern was here ####
                       name default.srcpart
@@ -1155,7 +1129,6 @@ STAGE PLANS:
                     bucket_count -1
                     column.name.delimiter ,
                     columns key,value
-                    columns.comments 'default','default'
                     columns.types string:string
 #### A masked pattern was here ####
                     name default.srcpart
@@ -1177,7 +1150,6 @@ STAGE PLANS:
                       bucket_count -1
                       column.name.delimiter ,
                       columns key,value
-                      columns.comments 'default','default'
                       columns.types string:string
 #### A masked pattern was here ####
                       name default.srcpart
@@ -1202,7 +1174,6 @@ STAGE PLANS:
                     bucket_count -1
                     column.name.delimiter ,
                     columns key,value
-                    columns.comments 'default','default'
                     columns.types string:string
 #### A masked pattern was here ####
                     name default.srcpart
@@ -1224,7 +1195,6 @@ STAGE PLANS:
                       bucket_count -1
                       column.name.delimiter ,
                       columns key,value
-                      columns.comments 'default','default'
                       columns.types string:string
 #### A masked pattern was here ####
                       name default.srcpart
@@ -1254,13 +1224,13 @@ STAGE PLANS:
                   1 
                 outputColumnNames: _col0, _col1
                 Position of Big Table: 0
-                Statistics: Num rows: 1 Data size: 178 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 1 Data size: 178 Basic stats: COMPLETE Column stats: PARTIAL
                 File Output Operator
                   compressed: false
                   GlobalTableId: 0
 #### A masked pattern was here ####
                   NumFilesPerFileSink: 1
-                  Statistics: Num rows: 1 Data size: 178 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 1 Data size: 178 Basic stats: COMPLETE Column stats: PARTIAL
 #### A masked pattern was here ####
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
@@ -1284,14 +1254,14 @@ STAGE PLANS:
               Select Operator
                 expressions: VALUE._col0 (type: string)
                 outputColumnNames: _col0
-                Statistics: Num rows: 1 Data size: 91 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 1 Data size: 91 Basic stats: COMPLETE Column stats: PARTIAL
                 Limit
                   Number of rows: 0
-                  Statistics: Num rows: 1 Data size: 91 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 1 Data size: 91 Basic stats: COMPLETE Column stats: PARTIAL
                   Reduce Output Operator
                     null sort order: 
                     sort order: 
-                    Statistics: Num rows: 1 Data size: 91 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 1 Data size: 91 Basic stats: COMPLETE Column stats: PARTIAL
                     tag: 1
                     value expressions: _col0 (type: string)
                     auto parallelism: false
@@ -1391,7 +1361,6 @@ STAGE PLANS:
                     bucket_count -1
                     column.name.delimiter ,
                     columns key,value
-                    columns.comments 'default','default'
                     columns.types string:string
 #### A masked pattern was here ####
                     name default.src
@@ -1412,7 +1381,6 @@ STAGE PLANS:
                       bucket_count -1
                       column.name.delimiter ,
                       columns key,value
-                      columns.comments 'default','default'
                       columns.types string:string
 #### A masked pattern was here ####
                       name default.src
@@ -1461,7 +1429,6 @@ STAGE PLANS:
                     bucket_count -1
                     column.name.delimiter ,
                     columns key,value
-                    columns.comments 'default','default'
                     columns.types string:string
 #### A masked pattern was here ####
                     name default.src
@@ -1482,7 +1449,6 @@ STAGE PLANS:
                       bucket_count -1
                       column.name.delimiter ,
                       columns key,value
-                      columns.comments 'default','default'
                       columns.types string:string
 #### A masked pattern was here ####
                       name default.src
@@ -1624,7 +1590,6 @@ STAGE PLANS:
                     bucket_count -1
                     column.name.delimiter ,
                     columns key,value
-                    columns.comments 'default','default'
                     columns.types string:string
 #### A masked pattern was here ####
                     name default.src
@@ -1645,7 +1610,6 @@ STAGE PLANS:
                       bucket_count -1
                       column.name.delimiter ,
                       columns key,value
-                      columns.comments 'default','default'
                       columns.types string:string
 #### A masked pattern was here ####
                       name default.src
@@ -1695,7 +1659,6 @@ STAGE PLANS:
                     bucket_count -1
                     column.name.delimiter ,
                     columns key,value
-                    columns.comments 'default','default'
                     columns.types string:string
 #### A masked pattern was here ####
                     name default.src
@@ -1716,7 +1679,6 @@ STAGE PLANS:
                       bucket_count -1
                       column.name.delimiter ,
                       columns key,value
-                      columns.comments 'default','default'
                       columns.types string:string
 #### A masked pattern was here ####
                       name default.src
@@ -1841,7 +1803,6 @@ STAGE PLANS:
                     bucket_count -1
                     column.name.delimiter ,
                     columns key,value
-                    columns.comments 'default','default'
                     columns.types string:string
 #### A masked pattern was here ####
                     name default.src
@@ -1862,7 +1823,6 @@ STAGE PLANS:
                       bucket_count -1
                       column.name.delimiter ,
                       columns key,value
-                      columns.comments 'default','default'
                       columns.types string:string
 #### A masked pattern was here ####
                       name default.src

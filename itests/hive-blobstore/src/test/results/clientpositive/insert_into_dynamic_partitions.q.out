@@ -112,7 +112,6 @@ STAGE PLANS:
               bucket_count -1
               column.name.delimiter ,
               columns tmp_values_col1,tmp_values_col2
-              columns.comments 
               columns.types string:string
 #### A masked pattern was here ####
               name default.values__tmp__table__3
@@ -127,7 +126,6 @@ STAGE PLANS:
                 bucket_count -1
                 column.name.delimiter ,
                 columns tmp_values_col1,tmp_values_col2
-                columns.comments 
                 columns.types string:string
 #### A masked pattern was here ####
                 name default.values__tmp__table__3
@@ -161,7 +159,6 @@ STAGE PLANS:
                   bucket_field_name id
                   column.name.delimiter ,
                   columns id
-                  columns.comments 
                   columns.types int
 #### A masked pattern was here ####
                   location ### test.blobstore.path ###/table1
@@ -193,7 +190,6 @@ STAGE PLANS:
                 bucket_field_name id
                 column.name.delimiter ,
                 columns id
-                columns.comments 
                 columns.types int
 #### A masked pattern was here ####
                 location ### test.blobstore.path ###/table1

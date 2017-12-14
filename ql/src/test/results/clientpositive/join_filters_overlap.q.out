@@ -94,7 +94,6 @@ STAGE PLANS:
               bucket_count -1
               column.name.delimiter ,
               columns key,value
-              columns.comments 
               columns.types int:int
 #### A masked pattern was here ####
               name default.a
@@ -115,7 +114,6 @@ STAGE PLANS:
                 bucket_count -1
                 column.name.delimiter ,
                 columns key,value
-                columns.comments 
                 columns.types int:int
 #### A masked pattern was here ####
                 name default.a
@@ -285,7 +283,6 @@ STAGE PLANS:
               bucket_count -1
               column.name.delimiter ,
               columns key,value
-              columns.comments 
               columns.types int:int
 #### A masked pattern was here ####
               name default.a
@@ -306,7 +303,6 @@ STAGE PLANS:
                 bucket_count -1
                 column.name.delimiter ,
                 columns key,value
-                columns.comments 
                 columns.types int:int
 #### A masked pattern was here ####
                 name default.a
@@ -476,7 +472,6 @@ STAGE PLANS:
               bucket_count -1
               column.name.delimiter ,
               columns key,value
-              columns.comments 
               columns.types int:int
 #### A masked pattern was here ####
               name default.a
@@ -497,7 +492,6 @@ STAGE PLANS:
                 bucket_count -1
                 column.name.delimiter ,
                 columns key,value
-                columns.comments 
                 columns.types int:int
 #### A masked pattern was here ####
                 name default.a
@@ -684,7 +678,6 @@ STAGE PLANS:
               bucket_count -1
               column.name.delimiter ,
               columns key,value
-              columns.comments 
               columns.types int:int
 #### A masked pattern was here ####
               name default.a
@@ -705,7 +698,6 @@ STAGE PLANS:
                 bucket_count -1
                 column.name.delimiter ,
                 columns key,value
-                columns.comments 
                 columns.types int:int
 #### A masked pattern was here ####
                 name default.a
@@ -891,7 +883,6 @@ STAGE PLANS:
               bucket_count -1
               column.name.delimiter ,
               columns key,value
-              columns.comments 
               columns.types int:int
 #### A masked pattern was here ####
               name default.a
@@ -912,7 +903,6 @@ STAGE PLANS:
                 bucket_count -1
                 column.name.delimiter ,
                 columns key,value
-                columns.comments 
                 columns.types int:int
 #### A masked pattern was here ####
                 name default.a

@@ -127,7 +127,6 @@ STAGE PLANS:
               bucket_count -1
               column.name.delimiter ,
               columns d_date
-              columns.comments 
               columns.types date
 #### A masked pattern was here ####
               name default.date_dim
@@ -149,7 +148,6 @@ STAGE PLANS:
                 bucket_count -1
                 column.name.delimiter ,
                 columns d_date
-                columns.comments 
                 columns.types date
 #### A masked pattern was here ####
                 name default.date_dim
@@ -172,7 +170,6 @@ STAGE PLANS:
               bucket_count -1
               column.name.delimiter ,
               columns d_date
-              columns.comments 
               columns.types date
 #### A masked pattern was here ####
               name default.date_dim
@@ -194,7 +191,6 @@ STAGE PLANS:
                 bucket_count -1
                 column.name.delimiter ,
                 columns d_date
-                columns.comments 
                 columns.types date
 #### A masked pattern was here ####
                 name default.date_dim
@@ -217,7 +213,6 @@ STAGE PLANS:
               bucket_count -1
               column.name.delimiter ,
               columns d_date
-              columns.comments 
               columns.types date
 #### A masked pattern was here ####
               name default.date_dim
@@ -239,7 +234,6 @@ STAGE PLANS:
                 bucket_count -1
                 column.name.delimiter ,
                 columns d_date
-                columns.comments 
                 columns.types date
 #### A masked pattern was here ####
                 name default.date_dim
@@ -262,7 +256,6 @@ STAGE PLANS:
               bucket_count -1
               column.name.delimiter ,
               columns d_date
-              columns.comments 
               columns.types date
 #### A masked pattern was here ####
               name default.date_dim
@@ -284,7 +277,6 @@ STAGE PLANS:
                 bucket_count -1
                 column.name.delimiter ,
                 columns d_date
-                columns.comments 
                 columns.types date
 #### A masked pattern was here ####
                 name default.date_dim

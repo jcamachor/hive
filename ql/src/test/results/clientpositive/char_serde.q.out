@@ -112,8 +112,8 @@ POSTHOOK: query: insert overwrite table char_serde_lb
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@char_serde_regex
 POSTHOOK: Output: default@char_serde_lb
-POSTHOOK: Lineage: char_serde_lb.key SIMPLE [(char_serde_regex)char_serde_regex.FieldSchema(name:key, type:char(15), comment:), ]
-POSTHOOK: Lineage: char_serde_lb.value SIMPLE [(char_serde_regex)char_serde_regex.FieldSchema(name:value, type:char(20), comment:), ]
+POSTHOOK: Lineage: char_serde_lb.key SIMPLE [(char_serde_regex)char_serde_regex.FieldSchema(name:key, type:char(15), comment:from deserializer), ]
+POSTHOOK: Lineage: char_serde_lb.value SIMPLE [(char_serde_regex)char_serde_regex.FieldSchema(name:value, type:char(20), comment:from deserializer), ]
 PREHOOK: query: select * from char_serde_lb limit 5
 PREHOOK: type: QUERY
 PREHOOK: Input: default@char_serde_lb

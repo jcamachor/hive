@@ -257,8 +257,8 @@ POSTHOOK: query: insert overwrite table date_serde_lb
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@date_serde_regex
 POSTHOOK: Output: default@date_serde_lb
-POSTHOOK: Lineage: date_serde_lb.c1 SIMPLE [(date_serde_regex)date_serde_regex.FieldSchema(name:fl_date, type:date, comment:), ]
-POSTHOOK: Lineage: date_serde_lb.c2 SIMPLE [(date_serde_regex)date_serde_regex.FieldSchema(name:fl_num, type:int, comment:), ]
+POSTHOOK: Lineage: date_serde_lb.c1 SIMPLE [(date_serde_regex)date_serde_regex.FieldSchema(name:fl_date, type:date, comment:from deserializer), ]
+POSTHOOK: Lineage: date_serde_lb.c2 SIMPLE [(date_serde_regex)date_serde_regex.FieldSchema(name:fl_num, type:int, comment:from deserializer), ]
 PREHOOK: query: select * from date_serde_lb
 PREHOOK: type: QUERY
 PREHOOK: Input: default@date_serde_lb

@@ -22,8 +22,8 @@ PREHOOK: Input: default@hbase_table_1
 POSTHOOK: query: DESCRIBE EXTENDED hbase_table_1
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@hbase_table_1
-key                 	int                 	It is a column key  
-value               	string              	It is the column string value
+key                 	int                 	                    
+value               	string              	                    
 	 	 
 #### A masked pattern was here ####
 PREHOOK: query: select * from hbase_table_1
@@ -106,8 +106,8 @@ POSTHOOK: query: desc formatted hbase_table_1
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@hbase_table_1
 # col_name            	data_type           	comment             
-key                 	int                 	It is a column key  
-value               	string              	It is the column string value
+key                 	int                 	                    
+value               	string              	                    
 	 	 
 # Detailed Table Information	 	 
 Database:           	default             	 
@@ -152,8 +152,8 @@ POSTHOOK: query: desc formatted hbase_table_1
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@hbase_table_1
 # col_name            	data_type           	comment             
-key                 	int                 	It is a column key  
-value               	string              	It is the column string value
+key                 	int                 	                    
+value               	string              	                    
 	 	 
 # Detailed Table Information	 	 
 Database:           	default             	 

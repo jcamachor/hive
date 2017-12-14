@@ -1235,7 +1235,6 @@ public class MetaStoreUtils {
 
     StringBuilder colNameBuf = new StringBuilder();
     StringBuilder colTypeBuf = new StringBuilder();
-    StringBuilder colComment = new StringBuilder();
 
     boolean first = true;
     String columnNameDelimiter = getColumnNameDelimiter(cols);
@@ -1243,11 +1242,9 @@ public class MetaStoreUtils {
       if (!first) {
         colNameBuf.append(columnNameDelimiter);
         colTypeBuf.append(":");
-        colComment.append('\0');
       }
       colNameBuf.append(col.getName());
       colTypeBuf.append(col.getType());
-      colComment.append((null != col.getComment()) ? col.getComment() : StringUtils.EMPTY);
       first = false;
     }
     schema.setProperty(
@@ -1258,7 +1255,6 @@ public class MetaStoreUtils {
     schema.setProperty(
         org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.META_TABLE_COLUMN_TYPES,
         colTypes);
-    schema.setProperty("columns.comments", colComment.toString());
 
     return schema;
 

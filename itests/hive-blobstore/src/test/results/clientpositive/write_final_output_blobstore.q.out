@@ -72,7 +72,6 @@ STAGE PLANS:
               bucket_count -1
               column.name.delimiter ,
               columns key
-              columns.comments 
               columns.types int
 #### A masked pattern was here ####
               name default.hdfs_table
@@ -93,7 +92,6 @@ STAGE PLANS:
                 bucket_count -1
                 column.name.delimiter ,
                 columns key
-                columns.comments 
                 columns.types int
 #### A masked pattern was here ####
                 name default.hdfs_table
@@ -196,7 +194,6 @@ STAGE PLANS:
                   bucket_count -1
                   column.name.delimiter ,
                   columns key
-                  columns.comments 
                   columns.types int
 #### A masked pattern was here ####
                   location ### test.blobstore.path ###/write_final_output_blobstore
@@ -263,7 +260,6 @@ STAGE PLANS:
                 bucket_count -1
                 column.name.delimiter ,
                 columns key
-                columns.comments 
                 columns.types int
 #### A masked pattern was here ####
                 location ### test.blobstore.path ###/write_final_output_blobstore
@@ -337,7 +333,6 @@ STAGE PLANS:
               bucket_count -1
               column.name.delimiter ,
               columns key
-              columns.comments 
               columns.types int
 #### A masked pattern was here ####
               name default.hdfs_table
@@ -358,7 +353,6 @@ STAGE PLANS:
                 bucket_count -1
                 column.name.delimiter ,
                 columns key
-                columns.comments 
                 columns.types int
 #### A masked pattern was here ####
                 name default.hdfs_table
@@ -461,7 +455,6 @@ STAGE PLANS:
                   bucket_count -1
                   column.name.delimiter ,
                   columns key
-                  columns.comments 
                   columns.types int
 #### A masked pattern was here ####
                   location ### test.blobstore.path ###/write_final_output_blobstore
@@ -528,7 +521,6 @@ STAGE PLANS:
                 bucket_count -1
                 column.name.delimiter ,
                 columns key
-                columns.comments 
                 columns.types int
 #### A masked pattern was here ####
                 location ### test.blobstore.path ###/write_final_output_blobstore

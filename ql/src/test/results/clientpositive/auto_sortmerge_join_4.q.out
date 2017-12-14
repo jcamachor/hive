@@ -154,7 +154,6 @@ STAGE PLANS:
               bucket_field_name key
               column.name.delimiter ,
               columns key,value
-              columns.comments 
               columns.types string:string
 #### A masked pattern was here ####
               name default.bucket_big
@@ -178,7 +177,6 @@ STAGE PLANS:
                 bucket_field_name key
                 column.name.delimiter ,
                 columns key,value
-                columns.comments 
                 columns.types string:string
 #### A masked pattern was here ####
                 name default.bucket_big
@@ -301,7 +299,6 @@ STAGE PLANS:
               bucket_field_name key
               column.name.delimiter ,
               columns key,value
-              columns.comments 
               columns.types string:string
 #### A masked pattern was here ####
               name default.bucket_big
@@ -325,7 +322,6 @@ STAGE PLANS:
                 bucket_field_name key
                 column.name.delimiter ,
                 columns key,value
-                columns.comments 
                 columns.types string:string
 #### A masked pattern was here ####
                 name default.bucket_big
@@ -425,7 +421,6 @@ STAGE PLANS:
                     bucket_field_name key
                     column.name.delimiter ,
                     columns key,value
-                    columns.comments 
                     columns.types string:string
 #### A masked pattern was here ####
                     name default.bucket_small
@@ -449,7 +444,6 @@ STAGE PLANS:
                       bucket_field_name key
                       column.name.delimiter ,
                       columns key,value
-                      columns.comments 
                       columns.types string:string
 #### A masked pattern was here ####
                       name default.bucket_small
@@ -472,7 +466,6 @@ STAGE PLANS:
                     bucket_field_name key
                     column.name.delimiter ,
                     columns key,value
-                    columns.comments 
                     columns.types string:string
 #### A masked pattern was here ####
                     name default.bucket_small
@@ -496,7 +489,6 @@ STAGE PLANS:
                       bucket_field_name key
                       column.name.delimiter ,
                       columns key,value
-                      columns.comments 
                       columns.types string:string
 #### A masked pattern was here ####
                       name default.bucket_small
@@ -578,7 +570,6 @@ STAGE PLANS:
               bucket_field_name key
               column.name.delimiter ,
               columns key,value
-              columns.comments 
               columns.types string:string
 #### A masked pattern was here ####
               name default.bucket_big
@@ -602,7 +593,6 @@ STAGE PLANS:
                 bucket_field_name key
                 column.name.delimiter ,
                 columns key,value
-                columns.comments 
                 columns.types string:string
 #### A masked pattern was here ####
                 name default.bucket_big
@@ -626,7 +616,6 @@ STAGE PLANS:
               bucket_field_name key
               column.name.delimiter ,
               columns key,value
-              columns.comments 
               columns.types string:string
 #### A masked pattern was here ####
               name default.bucket_small
@@ -650,7 +639,6 @@ STAGE PLANS:
                 bucket_field_name key
                 column.name.delimiter ,
                 columns key,value
-                columns.comments 
                 columns.types string:string
 #### A masked pattern was here ####
                 name default.bucket_small
@@ -674,7 +662,6 @@ STAGE PLANS:
               bucket_field_name key
               column.name.delimiter ,
               columns key,value
-              columns.comments 
               columns.types string:string
 #### A masked pattern was here ####
               name default.bucket_small
@@ -698,7 +685,6 @@ STAGE PLANS:
                 bucket_field_name key
                 column.name.delimiter ,
                 columns key,value
-                columns.comments 
                 columns.types string:string
 #### A masked pattern was here ####
                 name default.bucket_small
@@ -759,7 +745,6 @@ STAGE PLANS:
                     bucket_field_name key
                     column.name.delimiter ,
                     columns key,value
-                    columns.comments 
                     columns.types string:string
 #### A masked pattern was here ####
                     name default.bucket_big
@@ -783,7 +768,6 @@ STAGE PLANS:
                       bucket_field_name key
                       column.name.delimiter ,
                       columns key,value
-                      columns.comments 
                       columns.types string:string
 #### A masked pattern was here ####
                       name default.bucket_big
@@ -865,7 +849,6 @@ STAGE PLANS:
               bucket_field_name key
               column.name.delimiter ,
               columns key,value
-              columns.comments 
               columns.types string:string
 #### A masked pattern was here ####
               name default.bucket_big
@@ -889,7 +872,6 @@ STAGE PLANS:
                 bucket_field_name key
                 column.name.delimiter ,
                 columns key,value
-                columns.comments 
                 columns.types string:string
 #### A masked pattern was here ####
                 name default.bucket_big
@@ -913,7 +895,6 @@ STAGE PLANS:
               bucket_field_name key
               column.name.delimiter ,
               columns key,value
-              columns.comments 
               columns.types string:string
 #### A masked pattern was here ####
               name default.bucket_small
@@ -937,7 +918,6 @@ STAGE PLANS:
                 bucket_field_name key
                 column.name.delimiter ,
                 columns key,value
-                columns.comments 
                 columns.types string:string
 #### A masked pattern was here ####
                 name default.bucket_small
@@ -961,7 +941,6 @@ STAGE PLANS:
               bucket_field_name key
               column.name.delimiter ,
               columns key,value
-              columns.comments 
               columns.types string:string
 #### A masked pattern was here ####
               name default.bucket_small
@@ -985,7 +964,6 @@ STAGE PLANS:
                 bucket_field_name key
                 column.name.delimiter ,
                 columns key,value
-                columns.comments 
                 columns.types string:string
 #### A masked pattern was here ####
                 name default.bucket_small
@@ -1077,7 +1055,6 @@ STAGE PLANS:
               bucket_field_name key
               column.name.delimiter ,
               columns key,value
-              columns.comments 
               columns.types string:string
 #### A masked pattern was here ####
               name default.bucket_big
@@ -1101,7 +1078,6 @@ STAGE PLANS:
                 bucket_field_name key
                 column.name.delimiter ,
                 columns key,value
-                columns.comments 
                 columns.types string:string
 #### A masked pattern was here ####
                 name default.bucket_big

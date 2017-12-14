@@ -106,7 +106,6 @@ STAGE PLANS:
                     bucket_field_name key
                     column.name.delimiter ,
                     columns key,value
-                    columns.comments 
                     columns.types int:string
 #### A masked pattern was here ####
                     name default.test_table1
@@ -130,7 +129,6 @@ STAGE PLANS:
                       bucket_field_name key
                       column.name.delimiter ,
                       columns key,value
-                      columns.comments 
                       columns.types int:string
 #### A masked pattern was here ####
                       name default.test_table1
@@ -168,7 +166,6 @@ STAGE PLANS:
                         bucket_field_name key
                         column.name.delimiter ,
                         columns key,value
-                        columns.comments 
                         columns.types int:string
 #### A masked pattern was here ####
                         name default.test_table3
@@ -199,7 +196,6 @@ STAGE PLANS:
                 bucket_field_name key
                 column.name.delimiter ,
                 columns key,value
-                columns.comments 
                 columns.types int:string
 #### A masked pattern was here ####
                 name default.test_table3
@@ -1804,7 +1800,6 @@ STAGE PLANS:
               bucket_field_name key
               column.name.delimiter ,
               columns key,value
-              columns.comments 
               columns.types int:string
 #### A masked pattern was here ####
               name default.test_table1
@@ -1828,7 +1823,6 @@ STAGE PLANS:
                 bucket_field_name key
                 column.name.delimiter ,
                 columns key,value
-                columns.comments 
                 columns.types int:string
 #### A masked pattern was here ####
                 name default.test_table1
@@ -1877,7 +1871,6 @@ STAGE PLANS:
               bucket_field_name key
               column.name.delimiter ,
               columns key,value
-              columns.comments 
               columns.types int:string
 #### A masked pattern was here ####
               name default.test_table3
@@ -1900,7 +1893,6 @@ STAGE PLANS:
                 bucket_field_name key
                 column.name.delimiter ,
                 columns key,value
-                columns.comments 
                 columns.types int:string
 #### A masked pattern was here ####
                 name default.test_table3

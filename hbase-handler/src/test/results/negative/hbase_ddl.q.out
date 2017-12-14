@@ -22,8 +22,8 @@ PREHOOK: Input: default@hbase_table_1
 POSTHOOK: query: DESCRIBE EXTENDED hbase_table_1
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@hbase_table_1
-key                 	int                 	It is a column key  
-value               	string              	It is the column string value
+key                 	int                 	                    
+value               	string              	                    
 	 	 
 #### A masked pattern was here ####
 FAILED: SemanticException [Error 10134]: ALTER TABLE can only be used for [ADDPROPS, DROPPROPS] to a non-native table  hbase_table_1

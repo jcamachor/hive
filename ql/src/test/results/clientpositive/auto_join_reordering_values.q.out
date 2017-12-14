@@ -145,7 +145,6 @@ STAGE PLANS:
               bucket_count -1
               column.name.delimiter ,
               columns dealid,date,time,cityid,userid
-              columns.comments 
               columns.types int:string:string:int:int
 #### A masked pattern was here ####
               name default.orderpayment_small
@@ -166,7 +165,6 @@ STAGE PLANS:
                 bucket_count -1
                 column.name.delimiter ,
                 columns dealid,date,time,cityid,userid
-                columns.comments 
                 columns.types int:string:string:int:int
 #### A masked pattern was here ####
                 name default.orderpayment_small
@@ -281,7 +279,6 @@ STAGE PLANS:
               bucket_count -1
               column.name.delimiter ,
               columns dealid,date,time,cityid,userid
-              columns.comments 
               columns.types int:string:string:int:int
 #### A masked pattern was here ####
               name default.orderpayment_small
@@ -302,7 +299,6 @@ STAGE PLANS:
                 bucket_count -1
                 column.name.delimiter ,
                 columns dealid,date,time,cityid,userid
-                columns.comments 
                 columns.types int:string:string:int:int
 #### A masked pattern was here ####
                 name default.orderpayment_small
@@ -418,7 +414,6 @@ STAGE PLANS:
               bucket_count -1
               column.name.delimiter ,
               columns dealid,date,time,cityid,userid
-              columns.comments 
               columns.types int:string:string:int:int
 #### A masked pattern was here ####
               name default.orderpayment_small
@@ -439,7 +434,6 @@ STAGE PLANS:
                 bucket_count -1
                 column.name.delimiter ,
                 columns dealid,date,time,cityid,userid
-                columns.comments 
                 columns.types int:string:string:int:int
 #### A masked pattern was here ####
                 name default.orderpayment_small
@@ -555,7 +549,6 @@ STAGE PLANS:
               bucket_count -1
               column.name.delimiter ,
               columns userid
-              columns.comments 
               columns.types int
 #### A masked pattern was here ####
               name default.user_small
@@ -576,7 +569,6 @@ STAGE PLANS:
                 bucket_count -1
                 column.name.delimiter ,
                 columns userid
-                columns.comments 
                 columns.types int
 #### A masked pattern was here ####
                 name default.user_small

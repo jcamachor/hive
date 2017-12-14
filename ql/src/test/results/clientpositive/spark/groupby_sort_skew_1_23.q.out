@@ -87,7 +87,6 @@ STAGE PLANS:
                                 bucket_count -1
                                 column.name.delimiter ,
                                 columns key,cnt
-                                columns.comments 
                                 columns.types int:int
 #### A masked pattern was here ####
                                 name default.outputtbl1
@@ -119,7 +118,6 @@ STAGE PLANS:
                     bucket_field_name key
                     column.name.delimiter ,
                     columns key,val
-                    columns.comments 
                     columns.types string:string
 #### A masked pattern was here ####
                     name default.t1
@@ -142,7 +140,6 @@ STAGE PLANS:
                       bucket_field_name key
                       column.name.delimiter ,
                       columns key,val
-                      columns.comments 
                       columns.types string:string
 #### A masked pattern was here ####
                       name default.t1
@@ -173,7 +170,6 @@ STAGE PLANS:
                 bucket_count -1
                 column.name.delimiter ,
                 columns key,cnt
-                columns.comments 
                 columns.types int:int
 #### A masked pattern was here ####
                 name default.outputtbl1
@@ -287,7 +283,6 @@ STAGE PLANS:
                     bucket_field_name key
                     column.name.delimiter ,
                     columns key,val
-                    columns.comments 
                     columns.types string:string
 #### A masked pattern was here ####
                     name default.t1
@@ -310,7 +305,6 @@ STAGE PLANS:
                       bucket_field_name key
                       column.name.delimiter ,
                       columns key,val
-                      columns.comments 
                       columns.types string:string
 #### A masked pattern was here ####
                       name default.t1
@@ -373,7 +367,6 @@ STAGE PLANS:
                           bucket_count -1
                           column.name.delimiter ,
                           columns key1,key2,cnt
-                          columns.comments 
                           columns.types int:string:int
 #### A masked pattern was here ####
                           name default.outputtbl2
@@ -404,7 +397,6 @@ STAGE PLANS:
                 bucket_count -1
                 column.name.delimiter ,
                 columns key1,key2,cnt
-                columns.comments 
                 columns.types int:string:int
 #### A masked pattern was here ####
                 name default.outputtbl2
@@ -504,7 +496,6 @@ STAGE PLANS:
                                 bucket_count -1
                                 column.name.delimiter ,
                                 columns key,cnt
-                                columns.comments 
                                 columns.types int:int
 #### A masked pattern was here ####
                                 name default.outputtbl1
@@ -536,7 +527,6 @@ STAGE PLANS:
                     bucket_field_name key
                     column.name.delimiter ,
                     columns key,val
-                    columns.comments 
                     columns.types string:string
 #### A masked pattern was here ####
                     name default.t1
@@ -559,7 +549,6 @@ STAGE PLANS:
                       bucket_field_name key
                       column.name.delimiter ,
                       columns key,val
-                      columns.comments 
                       columns.types string:string
 #### A masked pattern was here ####
                       name default.t1
@@ -590,7 +579,6 @@ STAGE PLANS:
                 bucket_count -1
                 column.name.delimiter ,
                 columns key,cnt
-                columns.comments 
                 columns.types int:int
 #### A masked pattern was here ####
                 name default.outputtbl1
@@ -688,7 +676,6 @@ STAGE PLANS:
                                 bucket_count -1
                                 column.name.delimiter ,
                                 columns key,cnt
-                                columns.comments 
                                 columns.types int:int
 #### A masked pattern was here ####
                                 name default.outputtbl1
@@ -720,7 +707,6 @@ STAGE PLANS:
                     bucket_field_name key
                     column.name.delimiter ,
                     columns key,val
-                    columns.comments 
                     columns.types string:string
 #### A masked pattern was here ####
                     name default.t1
@@ -743,7 +729,6 @@ STAGE PLANS:
                       bucket_field_name key
                       column.name.delimiter ,
                       columns key,val
-                      columns.comments 
                       columns.types string:string
 #### A masked pattern was here ####
                       name default.t1
@@ -774,7 +759,6 @@ STAGE PLANS:
                 bucket_count -1
                 column.name.delimiter ,
                 columns key,cnt
-                columns.comments 
                 columns.types int:int
 #### A masked pattern was here ####
                 name default.outputtbl1
@@ -880,7 +864,6 @@ STAGE PLANS:
                                 bucket_count -1
                                 column.name.delimiter ,
                                 columns key1,key2,cnt
-                                columns.comments 
                                 columns.types int:int:int
 #### A masked pattern was here ####
                                 name default.outputtbl3
@@ -912,7 +895,6 @@ STAGE PLANS:
                     bucket_field_name key
                     column.name.delimiter ,
                     columns key,val
-                    columns.comments 
                     columns.types string:string
 #### A masked pattern was here ####
                     name default.t1
@@ -935,7 +917,6 @@ STAGE PLANS:
                       bucket_field_name key
                       column.name.delimiter ,
                       columns key,val
-                      columns.comments 
                       columns.types string:string
 #### A masked pattern was here ####
                       name default.t1
@@ -966,7 +947,6 @@ STAGE PLANS:
                 bucket_count -1
                 column.name.delimiter ,
                 columns key1,key2,cnt
-                columns.comments 
                 columns.types int:int:int
 #### A masked pattern was here ####
                 name default.outputtbl3
@@ -1081,7 +1061,6 @@ STAGE PLANS:
                     bucket_field_name key
                     column.name.delimiter ,
                     columns key,val
-                    columns.comments 
                     columns.types string:string
 #### A masked pattern was here ####
                     name default.t1
@@ -1104,7 +1083,6 @@ STAGE PLANS:
                       bucket_field_name key
                       column.name.delimiter ,
                       columns key,val
-                      columns.comments 
                       columns.types string:string
 #### A masked pattern was here ####
                       name default.t1
@@ -1167,7 +1145,6 @@ STAGE PLANS:
                           bucket_count -1
                           column.name.delimiter ,
                           columns key1,key2,key3,cnt
-                          columns.comments 
                           columns.types int:int:string:int
 #### A masked pattern was here ####
                           name default.outputtbl4
@@ -1198,7 +1175,6 @@ STAGE PLANS:
                 bucket_count -1
                 column.name.delimiter ,
                 columns key1,key2,key3,cnt
-                columns.comments 
                 columns.types int:int:string:int
 #### A masked pattern was here ####
                 name default.outputtbl4
@@ -1307,7 +1283,6 @@ STAGE PLANS:
                     bucket_field_name key
                     column.name.delimiter ,
                     columns key,val
-                    columns.comments 
                     columns.types string:string
 #### A masked pattern was here ####
                     name default.t1
@@ -1330,7 +1305,6 @@ STAGE PLANS:
                       bucket_field_name key
                       column.name.delimiter ,
                       columns key,val
-                      columns.comments 
                       columns.types string:string
 #### A masked pattern was here ####
                       name default.t1
@@ -1393,7 +1367,6 @@ STAGE PLANS:
                           bucket_count -1
                           column.name.delimiter ,
                           columns key1,key2,cnt
-                          columns.comments 
                           columns.types int:int:int
 #### A masked pattern was here ####
                           name default.outputtbl3
@@ -1424,7 +1397,6 @@ STAGE PLANS:
                 bucket_count -1
                 column.name.delimiter ,
                 columns key1,key2,cnt
-                columns.comments 
                 columns.types int:int:int
 #### A masked pattern was here ####
                 name default.outputtbl3
@@ -1545,7 +1517,6 @@ STAGE PLANS:
                     bucket_field_name key
                     column.name.delimiter ,
                     columns key,val
-                    columns.comments 
                     columns.types string:string
 #### A masked pattern was here ####
                     name default.t1
@@ -1568,7 +1539,6 @@ STAGE PLANS:
                       bucket_field_name key
                       column.name.delimiter ,
                       columns key,val
-                      columns.comments 
                       columns.types string:string
 #### A masked pattern was here ####
                       name default.t1
@@ -1631,7 +1601,6 @@ STAGE PLANS:
                           bucket_count -1
                           column.name.delimiter ,
                           columns key,cnt
-                          columns.comments 
                           columns.types int:int
 #### A masked pattern was here ####
                           name default.outputtbl1
@@ -1662,7 +1631,6 @@ STAGE PLANS:
                 bucket_count -1
                 column.name.delimiter ,
                 columns key,cnt
-                columns.comments 
                 columns.types int:int
 #### A masked pattern was here ####
                 name default.outputtbl1
@@ -1772,7 +1740,6 @@ STAGE PLANS:
                                 bucket_count -1
                                 column.name.delimiter ,
                                 columns key,cnt
-                                columns.comments 
                                 columns.types int:int
 #### A masked pattern was here ####
                                 name default.outputtbl1
@@ -1804,7 +1771,6 @@ STAGE PLANS:
                     bucket_field_name key
                     column.name.delimiter ,
                     columns key,val
-                    columns.comments 
                     columns.types string:string
 #### A masked pattern was here ####
                     name default.t1
@@ -1827,7 +1793,6 @@ STAGE PLANS:
                       bucket_field_name key
                       column.name.delimiter ,
                       columns key,val
-                      columns.comments 
                       columns.types string:string
 #### A masked pattern was here ####
                       name default.t1
@@ -1879,7 +1844,6 @@ STAGE PLANS:
                                 bucket_count -1
                                 column.name.delimiter ,
                                 columns key,cnt
-                                columns.comments 
                                 columns.types int:int
 #### A masked pattern was here ####
                                 name default.outputtbl1
@@ -1911,7 +1875,6 @@ STAGE PLANS:
                     bucket_field_name key
                     column.name.delimiter ,
                     columns key,val
-                    columns.comments 
                     columns.types string:string
 #### A masked pattern was here ####
                     name default.t1
@@ -1934,7 +1897,6 @@ STAGE PLANS:
                       bucket_field_name key
                       column.name.delimiter ,
                       columns key,val
-                      columns.comments 
                       columns.types string:string
 #### A masked pattern was here ####
                       name default.t1
@@ -1965,7 +1927,6 @@ STAGE PLANS:
                 bucket_count -1
                 column.name.delimiter ,
                 columns key,cnt
-                columns.comments 
                 columns.types int:int
 #### A masked pattern was here ####
                 name default.outputtbl1
@@ -2087,7 +2048,6 @@ STAGE PLANS:
                                 bucket_count -1
                                 column.name.delimiter ,
                                 columns key,cnt
-                                columns.comments 
                                 columns.types int:int
 #### A masked pattern was here ####
                                 name default.outputtbl1
@@ -2119,7 +2079,6 @@ STAGE PLANS:
                     bucket_field_name key
                     column.name.delimiter ,
                     columns key,val
-                    columns.comments 
                     columns.types string:string
 #### A masked pattern was here ####
                     name default.t1
@@ -2142,7 +2101,6 @@ STAGE PLANS:
                       bucket_field_name key
                       column.name.delimiter ,
                       columns key,val
-                      columns.comments 
                       columns.types string:string
 #### A masked pattern was here ####
                       name default.t1
@@ -2199,7 +2157,6 @@ STAGE PLANS:
                     bucket_field_name key
                     column.name.delimiter ,
                     columns key,val
-                    columns.comments 
                     columns.types string:string
 #### A masked pattern was here ####
                     name default.t1
@@ -2222,7 +2179,6 @@ STAGE PLANS:
                       bucket_field_name key
                       column.name.delimiter ,
                       columns key,val
-                      columns.comments 
                       columns.types string:string
 #### A masked pattern was here ####
                       name default.t1
@@ -2289,7 +2245,6 @@ STAGE PLANS:
                             bucket_count -1
                             column.name.delimiter ,
                             columns key,cnt
-                            columns.comments 
                             columns.types int:int
 #### A masked pattern was here ####
                             name default.outputtbl1
@@ -2320,7 +2275,6 @@ STAGE PLANS:
                 bucket_count -1
                 column.name.delimiter ,
                 columns key,cnt
-                columns.comments 
                 columns.types int:int
 #### A masked pattern was here ####
                 name default.outputtbl1
@@ -2446,7 +2400,6 @@ STAGE PLANS:
                     bucket_field_name key
                     column.name.delimiter ,
                     columns key,val
-                    columns.comments 
                     columns.types string:string
 #### A masked pattern was here ####
                     name default.t1
@@ -2469,7 +2422,6 @@ STAGE PLANS:
                       bucket_field_name key
                       column.name.delimiter ,
                       columns key,val
-                      columns.comments 
                       columns.types string:string
 #### A masked pattern was here ####
                       name default.t1
@@ -2526,7 +2478,6 @@ STAGE PLANS:
                     bucket_field_name key
                     column.name.delimiter ,
                     columns key,val
-                    columns.comments 
                     columns.types string:string
 #### A masked pattern was here ####
                     name default.t1
@@ -2549,7 +2500,6 @@ STAGE PLANS:
                       bucket_field_name key
                       column.name.delimiter ,
                       columns key,val
-                      columns.comments 
                       columns.types string:string
 #### A masked pattern was here ####
                       name default.t1
@@ -2596,7 +2546,6 @@ STAGE PLANS:
                           bucket_count -1
                           column.name.delimiter ,
                           columns key,cnt
-                          columns.comments 
                           columns.types int:int
 #### A masked pattern was here ####
                           name default.outputtbl1
@@ -2627,7 +2576,6 @@ STAGE PLANS:
                 bucket_count -1
                 column.name.delimiter ,
                 columns key,cnt
-                columns.comments 
                 columns.types int:int
 #### A masked pattern was here ####
                 name default.outputtbl1
@@ -2747,7 +2695,6 @@ STAGE PLANS:
                     bucket_field_name key
                     column.name.delimiter ,
                     columns key,val
-                    columns.comments 
                     columns.types string:string
 #### A masked pattern was here ####
                     name default.t1
@@ -2770,7 +2717,6 @@ STAGE PLANS:
                       bucket_field_name key
                       column.name.delimiter ,
                       columns key,val
-                      columns.comments 
                       columns.types string:string
 #### A masked pattern was here ####
                       name default.t1
@@ -2827,7 +2773,6 @@ STAGE PLANS:
                     bucket_field_name key
                     column.name.delimiter ,
                     columns key,val
-                    columns.comments 
                     columns.types string:string
 #### A masked pattern was here ####
                     name default.t1
@@ -2850,7 +2795,6 @@ STAGE PLANS:
                       bucket_field_name key
                       column.name.delimiter ,
                       columns key,val
-                      columns.comments 
                       columns.types string:string
 #### A masked pattern was here ####
                       name default.t1
@@ -3025,7 +2969,6 @@ STAGE PLANS:
                     bucket_field_name key
                     column.name.delimiter ,
                     columns key,val
-                    columns.comments 
                     columns.types string:string
 #### A masked pattern was here ####
                     name default.t2
@@ -3048,7 +2991,6 @@ STAGE PLANS:
                       bucket_field_name key
                       column.name.delimiter ,
                       columns key,val
-                      columns.comments 
                       columns.types string:string
 #### A masked pattern was here ####
                       name default.t2
@@ -3111,7 +3053,6 @@ STAGE PLANS:
                           bucket_count -1
                           column.name.delimiter ,
                           columns key,cnt
-                          columns.comments 
                           columns.types int:int
 #### A masked pattern was here ####
                           name default.outputtbl1
@@ -3142,7 +3083,6 @@ STAGE PLANS:
                 bucket_count -1
                 column.name.delimiter ,
                 columns key,cnt
-                columns.comments 
                 columns.types int:int
 #### A masked pattern was here ####
                 name default.outputtbl1
@@ -3240,7 +3180,6 @@ STAGE PLANS:
                                 bucket_count -1
                                 column.name.delimiter ,
                                 columns key1,key2,key3,cnt
-                                columns.comments 
                                 columns.types int:int:string:int
 #### A masked pattern was here ####
                                 name default.outputtbl4
@@ -3272,7 +3211,6 @@ STAGE PLANS:
                     bucket_field_name key
                     column.name.delimiter ,
                     columns key,val
-                    columns.comments 
                     columns.types string:string
 #### A masked pattern was here ####
                     name default.t2
@@ -3295,7 +3233,6 @@ STAGE PLANS:
                       bucket_field_name key
                       column.name.delimiter ,
                       columns key,val
-                      columns.comments 
                       columns.types string:string
 #### A masked pattern was here ####
                       name default.t2
@@ -3326,7 +3263,6 @@ STAGE PLANS:
                 bucket_count -1
                 column.name.delimiter ,
                 columns key1,key2,key3,cnt
-                columns.comments 
                 columns.types int:int:string:int
 #### A masked pattern was here ####
                 name default.outputtbl4
@@ -3435,7 +3371,6 @@ STAGE PLANS:
                                 bucket_count -1
                                 column.name.delimiter ,
                                 columns key1,key2,key3,key4,cnt
-                                columns.comments 
                                 columns.types int:int:string:int:int
 #### A masked pattern was here ####
                                 name default.outputtbl5
@@ -3467,7 +3402,6 @@ STAGE PLANS:
                     bucket_field_name key
                     column.name.delimiter ,
                     columns key,val
-                    columns.comments 
                     columns.types string:string
 #### A masked pattern was here ####
                     name default.t2
@@ -3490,7 +3424,6 @@ STAGE PLANS:
                       bucket_field_name key
                       column.name.delimiter ,
                       columns key,val
-                      columns.comments 
                       columns.types string:string
 #### A masked pattern was here ####
                       name default.t2
@@ -3521,7 +3454,6 @@ STAGE PLANS:
                 bucket_count -1
                 column.name.delimiter ,
                 columns key1,key2,key3,key4,cnt
-                columns.comments 
                 columns.types int:int:string:int:int
 #### A masked pattern was here ####
                 name default.outputtbl5
@@ -3629,7 +3561,6 @@ STAGE PLANS:
                                 bucket_count -1
                                 column.name.delimiter ,
                                 columns key1,key2,key3,cnt
-                                columns.comments 
                                 columns.types int:int:string:int
 #### A masked pattern was here ####
                                 name default.outputtbl4
@@ -3661,7 +3592,6 @@ STAGE PLANS:
                     bucket_field_name key
                     column.name.delimiter ,
                     columns key,val
-                    columns.comments 
                     columns.types string:string
 #### A masked pattern was here ####
                     name default.t2
@@ -3684,7 +3614,6 @@ STAGE PLANS:
                       bucket_field_name key
                       column.name.delimiter ,
                       columns key,val
-                      columns.comments 
                       columns.types string:string
 #### A masked pattern was here ####
                       name default.t2
@@ -3715,7 +3644,6 @@ STAGE PLANS:
                 bucket_count -1
                 column.name.delimiter ,
                 columns key1,key2,key3,cnt
-                columns.comments 
                 columns.types int:int:string:int
 #### A masked pattern was here ####
                 name default.outputtbl4
@@ -3830,7 +3758,6 @@ STAGE PLANS:
                                 bucket_count -1
                                 column.name.delimiter ,
                                 columns key1,key2,key3,cnt
-                                columns.comments 
                                 columns.types int:int:string:int
 #### A masked pattern was here ####
                                 name default.outputtbl4
@@ -3862,7 +3789,6 @@ STAGE PLANS:
                     bucket_field_name key
                     column.name.delimiter ,
                     columns key,val
-                    columns.comments 
                     columns.types string:string
 #### A masked pattern was here ####
                     name default.t2
@@ -3885,7 +3811,6 @@ STAGE PLANS:
                       bucket_field_name key
                       column.name.delimiter ,
                       columns key,val
-                      columns.comments 
                       columns.types string:string
 #### A masked pattern was here ####
                       name default.t2
@@ -3916,7 +3841,6 @@ STAGE PLANS:
                 bucket_count -1
                 column.name.delimiter ,
                 columns key1,key2,key3,cnt
-                columns.comments 
                 columns.types int:int:string:int
 #### A masked pattern was here ####
                 name default.outputtbl4

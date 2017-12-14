@@ -111,7 +111,6 @@ STAGE PLANS:
               bucket_count -1
               column.name.delimiter ,
               columns id,key
-              columns.comments 
               columns.types int:string
               field.delim ,
 #### A masked pattern was here ####
@@ -133,7 +132,6 @@ STAGE PLANS:
                 bucket_count -1
                 column.name.delimiter ,
                 columns id,key
-                columns.comments 
                 columns.types int:string
                 field.delim ,
 #### A masked pattern was here ####
@@ -362,7 +360,6 @@ STAGE PLANS:
               bucket_count -1
               column.name.delimiter ,
               columns id,key
-              columns.comments 
               columns.types int:string
               field.delim ,
 #### A masked pattern was here ####
@@ -384,7 +381,6 @@ STAGE PLANS:
                 bucket_count -1
                 column.name.delimiter ,
                 columns id,key
-                columns.comments 
                 columns.types int:string
                 field.delim ,
 #### A masked pattern was here ####

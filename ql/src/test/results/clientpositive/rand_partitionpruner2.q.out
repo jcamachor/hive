@@ -55,7 +55,6 @@ STAGE PLANS:
                         bucket_count -1
                         column.name.delimiter ,
                         columns key,value,hr,ds
-                        columns.comments 
                         columns.types string:string:string:string
 #### A masked pattern was here ####
                         name default.tmptable
@@ -104,7 +103,6 @@ STAGE PLANS:
               bucket_count -1
               column.name.delimiter ,
               columns key,value
-              columns.comments 'default','default'
               columns.types string:string
 #### A masked pattern was here ####
               name default.srcpart
@@ -126,7 +124,6 @@ STAGE PLANS:
                 bucket_count -1
                 column.name.delimiter ,
                 columns key,value
-                columns.comments 'default','default'
                 columns.types string:string
 #### A masked pattern was here ####
                 name default.srcpart
@@ -152,7 +149,6 @@ STAGE PLANS:
               bucket_count -1
               column.name.delimiter ,
               columns key,value
-              columns.comments 'default','default'
               columns.types string:string
 #### A masked pattern was here ####
               name default.srcpart
@@ -174,7 +170,6 @@ STAGE PLANS:
                 bucket_count -1
                 column.name.delimiter ,
                 columns key,value
-                columns.comments 'default','default'
                 columns.types string:string
 #### A masked pattern was here ####
                 name default.srcpart
@@ -242,7 +237,6 @@ STAGE PLANS:
                 bucket_count -1
                 column.name.delimiter ,
                 columns key,value,hr,ds
-                columns.comments 
                 columns.types string:string:string:string
 #### A masked pattern was here ####
                 name default.tmptable
@@ -285,7 +279,6 @@ STAGE PLANS:
                     bucket_count -1
                     column.name.delimiter ,
                     columns key,value,hr,ds
-                    columns.comments 
                     columns.types string:string:string:string
 #### A masked pattern was here ####
                     name default.tmptable
@@ -315,7 +308,6 @@ STAGE PLANS:
               bucket_count -1
               column.name.delimiter ,
               columns key,value,hr,ds
-              columns.comments 
               columns.types string:string:string:string
 #### A masked pattern was here ####
               name default.tmptable
@@ -336,7 +328,6 @@ STAGE PLANS:
                 bucket_count -1
                 column.name.delimiter ,
                 columns key,value,hr,ds
-                columns.comments 
                 columns.types string:string:string:string
 #### A masked pattern was here ####
                 name default.tmptable
@@ -372,7 +363,6 @@ STAGE PLANS:
                     bucket_count -1
                     column.name.delimiter ,
                     columns key,value,hr,ds
-                    columns.comments 
                     columns.types string:string:string:string
 #### A masked pattern was here ####
                     name default.tmptable
@@ -402,7 +392,6 @@ STAGE PLANS:
               bucket_count -1
               column.name.delimiter ,
               columns key,value,hr,ds
-              columns.comments 
               columns.types string:string:string:string
 #### A masked pattern was here ####
               name default.tmptable
@@ -423,7 +412,6 @@ STAGE PLANS:
                 bucket_count -1
                 column.name.delimiter ,
                 columns key,value,hr,ds
-                columns.comments 
                 columns.types string:string:string:string
 #### A masked pattern was here ####
                 name default.tmptable

@@ -22,8 +22,8 @@ PREHOOK: Input: default@hbase_table_1
 POSTHOOK: query: DESCRIBE EXTENDED hbase_table_1
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@hbase_table_1
-key                 	int                 	It is a column key  
-value               	string              	It is the column string value
+key                 	int                 	                    
+value               	string              	                    
 	 	 
 #### A masked pattern was here ####
 PREHOOK: query: select * from hbase_table_1
@@ -917,8 +917,8 @@ PREHOOK: Input: default@hbase_table_1_like
 POSTHOOK: query: DESCRIBE EXTENDED hbase_table_1_like
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@hbase_table_1_like
-key                 	int                 	It is a column key  
-value               	string              	It is the column string value
+key                 	int                 	                    
+value               	string              	                    
 	 	 
 #### A masked pattern was here ####
 PREHOOK: query: INSERT OVERWRITE TABLE hbase_table_1_like SELECT * FROM hbase_table_1
@@ -945,8 +945,8 @@ POSTHOOK: query: SHOW CREATE TABLE hbase_table_1_like
 POSTHOOK: type: SHOW_CREATETABLE
 POSTHOOK: Input: default@hbase_table_1_like
 CREATE EXTERNAL TABLE `hbase_table_1_like`(
-  `key` int COMMENT 'It is a column key', 
-  `value` string COMMENT 'It is the column string value')
+  `key` int COMMENT '', 
+  `value` string COMMENT '')
 ROW FORMAT SERDE 
   'org.apache.hadoop.hive.hbase.HBaseSerDe' 
 STORED BY 

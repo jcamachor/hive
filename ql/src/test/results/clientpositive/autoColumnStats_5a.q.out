@@ -50,7 +50,6 @@ STAGE PLANS:
                       bucket_count -1
                       column.name.delimiter ,
                       columns a,b
-                      columns.comments 
                       columns.types int:string
 #### A masked pattern was here ####
                       name default.partitioned1
@@ -95,7 +94,6 @@ STAGE PLANS:
               bucket_count -1
               column.name.delimiter ,
               columns tmp_values_col1,tmp_values_col2
-              columns.comments 
               columns.types string:string
 #### A masked pattern was here ####
               name default.values__tmp__table__1
@@ -110,7 +108,6 @@ STAGE PLANS:
                 bucket_count -1
                 column.name.delimiter ,
                 columns tmp_values_col1,tmp_values_col2
-                columns.comments 
                 columns.types string:string
 #### A masked pattern was here ####
                 name default.values__tmp__table__1
@@ -180,7 +177,6 @@ STAGE PLANS:
                 bucket_count -1
                 column.name.delimiter ,
                 columns a,b
-                columns.comments 
                 columns.types int:string
 #### A masked pattern was here ####
                 name default.partitioned1
@@ -219,7 +215,6 @@ STAGE PLANS:
                     bucket_count -1
                     column.name.delimiter ,
                     columns a,b
-                    columns.comments 
                     columns.types int:string
 #### A masked pattern was here ####
                     name default.partitioned1
@@ -246,7 +241,6 @@ STAGE PLANS:
               bucket_count -1
               column.name.delimiter ,
               columns a,b
-              columns.comments 
               columns.types int:string
 #### A masked pattern was here ####
               name default.partitioned1
@@ -263,7 +257,6 @@ STAGE PLANS:
                 bucket_count -1
                 column.name.delimiter ,
                 columns a,b
-                columns.comments 
                 columns.types int:string
 #### A masked pattern was here ####
                 name default.partitioned1
@@ -295,7 +288,6 @@ STAGE PLANS:
                     bucket_count -1
                     column.name.delimiter ,
                     columns a,b
-                    columns.comments 
                     columns.types int:string
 #### A masked pattern was here ####
                     name default.partitioned1
@@ -322,7 +314,6 @@ STAGE PLANS:
               bucket_count -1
               column.name.delimiter ,
               columns a,b
-              columns.comments 
               columns.types int:string
 #### A masked pattern was here ####
               name default.partitioned1
@@ -339,7 +330,6 @@ STAGE PLANS:
                 bucket_count -1
                 column.name.delimiter ,
                 columns a,b
-                columns.comments 
                 columns.types int:string
 #### A masked pattern was here ####
                 name default.partitioned1
@@ -451,7 +441,6 @@ STAGE PLANS:
                       bucket_count -1
                       column.name.delimiter ,
                       columns a,b
-                      columns.comments 
                       columns.types int:string
 #### A masked pattern was here ####
                       name default.partitioned1
@@ -496,7 +485,6 @@ STAGE PLANS:
               bucket_count -1
               column.name.delimiter ,
               columns tmp_values_col1,tmp_values_col2
-              columns.comments 
               columns.types string:string
 #### A masked pattern was here ####
               name default.values__tmp__table__3
@@ -511,7 +499,6 @@ STAGE PLANS:
                 bucket_count -1
                 column.name.delimiter ,
                 columns tmp_values_col1,tmp_values_col2
-                columns.comments 
                 columns.types string:string
 #### A masked pattern was here ####
                 name default.values__tmp__table__3
@@ -581,7 +568,6 @@ STAGE PLANS:
                 bucket_count -1
                 column.name.delimiter ,
                 columns a,b
-                columns.comments 
                 columns.types int:string
 #### A masked pattern was here ####
                 name default.partitioned1
@@ -620,7 +606,6 @@ STAGE PLANS:
                     bucket_count -1
                     column.name.delimiter ,
                     columns a,b
-                    columns.comments 
                     columns.types int:string
 #### A masked pattern was here ####
                     name default.partitioned1
@@ -647,7 +632,6 @@ STAGE PLANS:
               bucket_count -1
               column.name.delimiter ,
               columns a,b
-              columns.comments 
               columns.types int:string
 #### A masked pattern was here ####
               name default.partitioned1
@@ -664,7 +648,6 @@ STAGE PLANS:
                 bucket_count -1
                 column.name.delimiter ,
                 columns a,b
-                columns.comments 
                 columns.types int:string
 #### A masked pattern was here ####
                 name default.partitioned1
@@ -696,7 +679,6 @@ STAGE PLANS:
                     bucket_count -1
                     column.name.delimiter ,
                     columns a,b
-                    columns.comments 
                     columns.types int:string
 #### A masked pattern was here ####
                     name default.partitioned1
@@ -723,7 +705,6 @@ STAGE PLANS:
               bucket_count -1
               column.name.delimiter ,
               columns a,b
-              columns.comments 
               columns.types int:string
 #### A masked pattern was here ####
               name default.partitioned1
@@ -740,7 +721,6 @@ STAGE PLANS:
                 bucket_count -1
                 column.name.delimiter ,
                 columns a,b
-                columns.comments 
                 columns.types int:string
 #### A masked pattern was here ####
                 name default.partitioned1

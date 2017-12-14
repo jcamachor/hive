@@ -302,10 +302,10 @@ PREHOOK: Input: default@testavrocomments4
 POSTHOOK: query: DESCRIBE testAvroComments4
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@testavrocomments4
-number              	int                 	Order of playing the role
-first_name          	string              	first name of actor playing role
-last_name           	string              	last name of actor playing role
-extra_field         	string              	an extra field not in the original file
+number              	int                 	                    
+first_name          	string              	                    
+last_name           	string              	                    
+extra_field         	string              	                    
 PREHOOK: query: DROP TABLE testAvroComments4
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@testavrocomments4
@@ -342,9 +342,9 @@ PREHOOK: Input: default@testavrocomments5
 POSTHOOK: query: DESCRIBE testAvroComments5
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@testavrocomments5
-number              	int                 	Order of playing the role
+number              	int                 	                    
 first_name          	string              	                    
-last_name           	string              	last name of actor playing role
+last_name           	string              	                    
 extra_field         	string              	                    
 PREHOOK: query: DROP TABLE testAvroComments5
 PREHOOK: type: DROPTABLE

@@ -115,7 +115,6 @@ STAGE PLANS:
                     bucket_field_name key
                     column.name.delimiter ,
                     columns key,value
-                    columns.comments 
                     columns.types int:string
 #### A masked pattern was here ####
                     name default.srcbucket_mapjoin_part_2
@@ -138,7 +137,6 @@ STAGE PLANS:
                       bucket_field_name key
                       column.name.delimiter ,
                       columns key,value
-                      columns.comments 
                       columns.types int:string
 #### A masked pattern was here ####
                       name default.srcbucket_mapjoin_part_2
@@ -210,7 +208,6 @@ STAGE PLANS:
                     bucket_field_name value
                     column.name.delimiter ,
                     columns key,value
-                    columns.comments 
                     columns.types int:string
 #### A masked pattern was here ####
                     name default.srcbucket_mapjoin_part_1
@@ -233,7 +230,6 @@ STAGE PLANS:
                       bucket_field_name key
                       column.name.delimiter ,
                       columns key,value
-                      columns.comments 
                       columns.types int:string
 #### A masked pattern was here ####
                       name default.srcbucket_mapjoin_part_1
@@ -259,7 +255,6 @@ STAGE PLANS:
                     bucket_field_name key
                     column.name.delimiter ,
                     columns key,value
-                    columns.comments 
                     columns.types int:string
 #### A masked pattern was here ####
                     name default.srcbucket_mapjoin_part_1
@@ -282,7 +277,6 @@ STAGE PLANS:
                       bucket_field_name key
                       column.name.delimiter ,
                       columns key,value
-                      columns.comments 
                       columns.types int:string
 #### A masked pattern was here ####
                       name default.srcbucket_mapjoin_part_1
@@ -414,7 +408,6 @@ STAGE PLANS:
                     bucket_field_name key
                     column.name.delimiter ,
                     columns key,value
-                    columns.comments 
                     columns.types int:string
 #### A masked pattern was here ####
                     name default.srcbucket_mapjoin_part_2
@@ -437,7 +430,6 @@ STAGE PLANS:
                       bucket_field_name key
                       column.name.delimiter ,
                       columns key,value
-                      columns.comments 
                       columns.types int:string
 #### A masked pattern was here ####
                       name default.srcbucket_mapjoin_part_2
@@ -515,7 +507,6 @@ STAGE PLANS:
                     bucket_field_name key
                     column.name.delimiter ,
                     columns key,value
-                    columns.comments 
                     columns.types int:string
 #### A masked pattern was here ####
                     name default.srcbucket_mapjoin_part_1
@@ -538,7 +529,6 @@ STAGE PLANS:
                       bucket_field_name key
                       column.name.delimiter ,
                       columns key,value
-                      columns.comments 
                       columns.types int:string
 #### A masked pattern was here ####
                       name default.srcbucket_mapjoin_part_1
@@ -675,7 +665,6 @@ STAGE PLANS:
                     bucket_field_name key
                     column.name.delimiter ,
                     columns key,value
-                    columns.comments 
                     columns.types int:string
 #### A masked pattern was here ####
                     name default.srcbucket_mapjoin_part_2
@@ -698,7 +687,6 @@ STAGE PLANS:
                       bucket_field_name key
                       column.name.delimiter ,
                       columns key,value
-                      columns.comments 
                       columns.types int:string
 #### A masked pattern was here ####
                       name default.srcbucket_mapjoin_part_2
@@ -776,7 +764,6 @@ STAGE PLANS:
                     bucket_field_name key
                     column.name.delimiter ,
                     columns key,value
-                    columns.comments 
                     columns.types int:string
 #### A masked pattern was here ####
                     name default.srcbucket_mapjoin_part_1
@@ -799,7 +786,6 @@ STAGE PLANS:
                       bucket_field_name key
                       column.name.delimiter ,
                       columns key,value
-                      columns.comments 
                       columns.types int:string
 #### A masked pattern was here ####
                       name default.srcbucket_mapjoin_part_1
@@ -936,7 +922,6 @@ STAGE PLANS:
                     bucket_field_name key
                     column.name.delimiter ,
                     columns key,value
-                    columns.comments 
                     columns.types int:string
 #### A masked pattern was here ####
                     name default.srcbucket_mapjoin_part_2
@@ -959,7 +944,6 @@ STAGE PLANS:
                       bucket_field_name key
                       column.name.delimiter ,
                       columns key,value
-                      columns.comments 
                       columns.types int:string
 #### A masked pattern was here ####
                       name default.srcbucket_mapjoin_part_2
@@ -1037,7 +1021,6 @@ STAGE PLANS:
                     bucket_field_name key
                     column.name.delimiter ,
                     columns key,value
-                    columns.comments 
                     columns.types int:string
 #### A masked pattern was here ####
                     name default.srcbucket_mapjoin_part_1
@@ -1060,7 +1043,6 @@ STAGE PLANS:
                       bucket_field_name value
                       column.name.delimiter ,
                       columns key,value
-                      columns.comments 
                       columns.types int:string
 #### A masked pattern was here ####
                       name default.srcbucket_mapjoin_part_1

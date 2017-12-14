@@ -22,8 +22,8 @@ PREHOOK: Input: default@avro_dec_old
 POSTHOOK: query: DESC avro_dec_old
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@avro_dec_old
-name                	string              	from deserializer   
-value               	decimal(4,1)        	from deserializer   
+name                	string              	                    
+value               	decimal(4,1)        	                    
 PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/dec_old.avro' into TABLE avro_dec_old
 PREHOOK: type: LOAD
 #### A masked pattern was here ####

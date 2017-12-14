@@ -162,7 +162,6 @@ STAGE PLANS:
               bucket_count -1
               column.name.delimiter ,
               columns sourceip,desturl,visitdate,adrevenue,useragent,ccode,lcode,skeyword,avgtimeonsite
-              columns.comments 
               columns.types string:string:string:float:string:string:string:string:int
               field.delim |
 #### A masked pattern was here ####
@@ -183,7 +182,6 @@ STAGE PLANS:
                 bucket_count -1
                 column.name.delimiter ,
                 columns sourceip,desturl,visitdate,adrevenue,useragent,ccode,lcode,skeyword,avgtimeonsite
-                columns.comments 
                 columns.types string:string:string:float:string:string:string:string:int
                 field.delim |
 #### A masked pattern was here ####

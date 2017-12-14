@@ -105,7 +105,7 @@ public class TestSerDe extends AbstractSerDe {
     } else {
       columnNames = Arrays.asList(columnProperty.split(","));
       cachedObjectInspector = MetadataListStructObjectInspector
-          .getInstance(columnNames,Lists.newArrayList(Splitter.on('\0').split(tbl.getProperty(COLUMNS_COMMENTS))));
+          .getInstance(columnNames);
     }
     LOG.info(getClass().getName() + ": initialized with columnNames: "
         + columnNames);

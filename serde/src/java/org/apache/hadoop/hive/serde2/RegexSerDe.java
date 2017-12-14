@@ -149,8 +149,7 @@ public class RegexSerDe extends AbstractSerDe {
      }
 
     // StandardStruct uses ArrayList to store the row.
-    rowOI = ObjectInspectorFactory.getStandardStructObjectInspector(
-        columnNames,columnOIs,Lists.newArrayList(Splitter.on('\0').split(tbl.getProperty("columns.comments"))));
+    rowOI = ObjectInspectorFactory.getStandardStructObjectInspector(columnNames,columnOIs);
 
     row = new ArrayList<Object>(numColumns);
     // Constructing the row object, etc, which will be reused for all rows.

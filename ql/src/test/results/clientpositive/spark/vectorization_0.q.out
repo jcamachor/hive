@@ -1806,7 +1806,6 @@ STAGE PLANS:
                     bucket_count -1
                     column.name.delimiter ,
                     columns ctinyint,csmallint,cint,cbigint,cfloat,cdouble,cstring1,cstring2,ctimestamp1,ctimestamp2,cboolean1,cboolean2
-                    columns.comments 
                     columns.types tinyint:smallint:int:bigint:float:double:string:string:timestamp:timestamp:boolean:boolean
 #### A masked pattern was here ####
                     name default.alltypesorc
@@ -1827,7 +1826,6 @@ STAGE PLANS:
                       bucket_count -1
                       column.name.delimiter ,
                       columns ctinyint,csmallint,cint,cbigint,cfloat,cdouble,cstring1,cstring2,ctimestamp1,ctimestamp2,cboolean1,cboolean2
-                      columns.comments 
                       columns.types tinyint:smallint:int:bigint:float:double:string:string:timestamp:timestamp:boolean:boolean
 #### A masked pattern was here ####
                       name default.alltypesorc
@@ -30626,7 +30624,6 @@ STAGE PLANS:
                     bucket_count -1
                     column.name.delimiter ,
                     columns ctinyint,csmallint,cint,cbigint,cfloat,cdouble,cstring1,cstring2,ctimestamp1,ctimestamp2,cboolean1,cboolean2
-                    columns.comments 
                     columns.types tinyint:smallint:int:bigint:float:double:string:string:timestamp:timestamp:boolean:boolean
 #### A masked pattern was here ####
                     name default.alltypesorc
@@ -30647,7 +30644,6 @@ STAGE PLANS:
                       bucket_count -1
                       column.name.delimiter ,
                       columns ctinyint,csmallint,cint,cbigint,cfloat,cdouble,cstring1,cstring2,ctimestamp1,ctimestamp2,cboolean1,cboolean2
-                      columns.comments 
                       columns.types tinyint:smallint:int:bigint:float:double:string:string:timestamp:timestamp:boolean:boolean
 #### A masked pattern was here ####
                       name default.alltypesorc
@@ -30739,7 +30735,6 @@ STAGE PLANS:
                     bucket_count -1
                     column.name.delimiter ,
                     columns ctinyint,csmallint,cint,cbigint,cfloat,cdouble,cstring1,cstring2,ctimestamp1,ctimestamp2,cboolean1,cboolean2
-                    columns.comments 
                     columns.types tinyint:smallint:int:bigint:float:double:string:string:timestamp:timestamp:boolean:boolean
 #### A masked pattern was here ####
                     name default.alltypesorc
@@ -30760,7 +30755,6 @@ STAGE PLANS:
                       bucket_count -1
                       column.name.delimiter ,
                       columns ctinyint,csmallint,cint,cbigint,cfloat,cdouble,cstring1,cstring2,ctimestamp1,ctimestamp2,cboolean1,cboolean2
-                      columns.comments 
                       columns.types tinyint:smallint:int:bigint:float:double:string:string:timestamp:timestamp:boolean:boolean
 #### A masked pattern was here ####
                       name default.alltypesorc
@@ -30853,7 +30847,6 @@ STAGE PLANS:
                     bucket_count -1
                     column.name.delimiter ,
                     columns ctinyint,csmallint,cint,cbigint,cfloat,cdouble,cstring1,cstring2,ctimestamp1,ctimestamp2,cboolean1,cboolean2
-                    columns.comments 
                     columns.types tinyint:smallint:int:bigint:float:double:string:string:timestamp:timestamp:boolean:boolean
 #### A masked pattern was here ####
                     name default.alltypesorc
@@ -30874,7 +30867,6 @@ STAGE PLANS:
                       bucket_count -1
                       column.name.delimiter ,
                       columns ctinyint,csmallint,cint,cbigint,cfloat,cdouble,cstring1,cstring2,ctimestamp1,ctimestamp2,cboolean1,cboolean2
-                      columns.comments 
                       columns.types tinyint:smallint:int:bigint:float:double:string:string:timestamp:timestamp:boolean:boolean
 #### A masked pattern was here ####
                       name default.alltypesorc
@@ -30957,7 +30949,6 @@ STAGE PLANS:
                     bucket_count -1
                     column.name.delimiter ,
                     columns ctinyint,csmallint,cint,cbigint,cfloat,cdouble,cstring1,cstring2,ctimestamp1,ctimestamp2,cboolean1,cboolean2
-                    columns.comments 
                     columns.types tinyint:smallint:int:bigint:float:double:string:string:timestamp:timestamp:boolean:boolean
 #### A masked pattern was here ####
                     name default.alltypesorc
@@ -30978,7 +30969,6 @@ STAGE PLANS:
                       bucket_count -1
                       column.name.delimiter ,
                       columns ctinyint,csmallint,cint,cbigint,cfloat,cdouble,cstring1,cstring2,ctimestamp1,ctimestamp2,cboolean1,cboolean2
-                      columns.comments 
                       columns.types tinyint:smallint:int:bigint:float:double:string:string:timestamp:timestamp:boolean:boolean
 #### A masked pattern was here ####
                       name default.alltypesorc

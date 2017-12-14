@@ -256,7 +256,6 @@ STAGE PLANS:
               bucket_count -1
               column.name.delimiter ,
               columns __time,robot,namespace,anonymous,unpatrolled,page,language,newpage,user,count,added,delta,variation,deleted
-              columns.comments 'from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer'
               columns.types timestamp with local time zone:string:string:string:string:string:string:string:string:float:float:float:float:float
               druid.datasource wikipedia
               druid.query.json {"queryType":"select","dataSource":"wikipedia","descending":false,"intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"],"filter":{"type":"not","field":{"type":"selector","dimension":"language","value":null}},"dimensions":["robot","language"],"metrics":[],"granularity":"all","pagingSpec":{"threshold":16384,"fromNext":true},"context":{"druid.query.fetch":false}}
@@ -282,7 +281,6 @@ STAGE PLANS:
                 bucket_count -1
                 column.name.delimiter ,
                 columns __time,robot,namespace,anonymous,unpatrolled,page,language,newpage,user,count,added,delta,variation,deleted
-                columns.comments 'from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer'
                 columns.types timestamp with local time zone:string:string:string:string:string:string:string:string:float:float:float:float:float
                 druid.datasource wikipedia
                 druid.query.json {"queryType":"select","dataSource":"wikipedia","descending":false,"intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"],"filter":{"type":"not","field":{"type":"selector","dimension":"language","value":null}},"dimensions":["language"],"metrics":[],"granularity":"all","pagingSpec":{"threshold":16384,"fromNext":true},"context":{"druid.query.fetch":false}}
@@ -424,7 +422,6 @@ STAGE PLANS:
               bucket_count -1
               column.name.delimiter ,
               columns __time,robot,namespace,anonymous,unpatrolled,page,language,newpage,user,count,added,delta,variation,deleted
-              columns.comments 'from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer'
               columns.types timestamp with local time zone:string:string:string:string:string:string:string:string:float:float:float:float:float
               druid.datasource wikipedia
               druid.query.json {"queryType":"select","dataSource":"wikipedia","descending":false,"intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"],"filter":{"type":"selector","dimension":"language","value":"en"},"dimensions":[],"metrics":[],"granularity":"all","pagingSpec":{"threshold":16384,"fromNext":true},"context":{"druid.query.fetch":false}}
@@ -450,7 +447,6 @@ STAGE PLANS:
                 bucket_count -1
                 column.name.delimiter ,
                 columns __time,robot,namespace,anonymous,unpatrolled,page,language,newpage,user,count,added,delta,variation,deleted
-                columns.comments 'from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer'
                 columns.types timestamp with local time zone:string:string:string:string:string:string:string:string:float:float:float:float:float
                 druid.datasource wikipedia
                 druid.query.json {"queryType":"select","dataSource":"wikipedia","descending":false,"intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"],"filter":{"type":"selector","dimension":"language","value":"en"},"dimensions":["robot"],"metrics":[],"granularity":"all","pagingSpec":{"threshold":16384,"fromNext":true},"context":{"druid.query.fetch":false}}
@@ -571,7 +567,6 @@ STAGE PLANS:
               bucket_count -1
               column.name.delimiter ,
               columns __time,robot,namespace,anonymous,unpatrolled,page,language,newpage,user,count,added,delta,variation,deleted
-              columns.comments 'from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer'
               columns.types timestamp with local time zone:string:string:string:string:string:string:string:string:float:float:float:float:float
               druid.datasource wikipedia
               druid.query.json {"queryType":"groupBy","dataSource":"wikipedia","granularity":"all","dimensions":[{"type":"default","dimension":"robot"},{"type":"default","dimension":"language"},{"type":"extraction","dimension":"__time","outputName":"floor_day","extractionFn":{"type":"timeFormat","format":"yyyy-MM-dd'T'HH:mm:ss.SSS'Z'","granularity":"day","timeZone":"US/Pacific","locale":"en-US"}}],"limitSpec":{"type":"default"},"aggregations":[{"type":"doubleMax","name":"$f3","fieldName":"added"},{"type":"doubleSum","name":"$f4","fieldName":"delta"}],"intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"]}
@@ -597,7 +592,6 @@ STAGE PLANS:
                 bucket_count -1
                 column.name.delimiter ,
                 columns __time,robot,namespace,anonymous,unpatrolled,page,language,newpage,user,count,added,delta,variation,deleted
-                columns.comments 'from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer'
                 columns.types timestamp with local time zone:string:string:string:string:string:string:string:string:float:float:float:float:float
                 druid.datasource wikipedia
                 druid.query.json {"queryType":"groupBy","dataSource":"wikipedia","granularity":"all","dimensions":[{"type":"default","dimension":"robot"},{"type":"default","dimension":"language"},{"type":"extraction","dimension":"__time","outputName":"floor_day","extractionFn":{"type":"timeFormat","format":"yyyy-MM-dd'T'HH:mm:ss.SSS'Z'","granularity":"day","timeZone":"US/Pacific","locale":"en-US"}}],"limitSpec":{"type":"default"},"aggregations":[{"type":"doubleMax","name":"$f3","fieldName":"added"},{"type":"doubleSum","name":"$f4","fieldName":"delta"}],"intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"]}
@@ -953,7 +947,6 @@ STAGE PLANS:
               bucket_count -1
               column.name.delimiter ,
               columns __time,robot,namespace,anonymous,unpatrolled,page,language,newpage,user,count,added,delta,variation,deleted
-              columns.comments 'from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer'
               columns.types timestamp with local time zone:string:string:string:string:string:string:string:string:float:float:float:float:float
               druid.datasource wikipedia
 #### A masked pattern was here ####
@@ -977,7 +970,6 @@ STAGE PLANS:
                 bucket_count -1
                 column.name.delimiter ,
                 columns __time,robot,namespace,anonymous,unpatrolled,page,language,newpage,user,count,added,delta,variation,deleted
-                columns.comments 'from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer'
                 columns.types timestamp with local time zone:string:string:string:string:string:string:string:string:float:float:float:float:float
                 druid.datasource wikipedia
 #### A masked pattern was here ####

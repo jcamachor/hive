@@ -138,8 +138,8 @@ PREHOOK: Input: default@alter1
 POSTHOOK: query: describe extended alter1
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@alter1
-a                   	string              	                    
-b                   	string              	                    
+a                   	string              	from deserializer   
+b                   	string              	from deserializer   
 	 	 
 #### A masked pattern was here ####
 PREHOOK: query: alter table alter1 set serde 'org.apache.hadoop.hive.serde2.MetadataTypedColumnsetSerDe'
@@ -156,8 +156,8 @@ PREHOOK: Input: default@alter1
 POSTHOOK: query: describe extended alter1
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@alter1
-a                   	string              	                    
-b                   	string              	                    
+a                   	string              	from deserializer   
+b                   	string              	from deserializer   
 	 	 
 #### A masked pattern was here ####
 PREHOOK: query: alter table alter1 replace columns (a int, b int, c string)
@@ -359,8 +359,8 @@ PREHOOK: Input: alter1_db@alter1
 POSTHOOK: query: DESCRIBE EXTENDED alter1_db.alter1
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: alter1_db@alter1
-a                   	string              	                    
-b                   	string              	                    
+a                   	string              	from deserializer   
+b                   	string              	from deserializer   
 	 	 
 #### A masked pattern was here ####
 PREHOOK: query: ALTER TABLE alter1_db.alter1 SET SERDE 'org.apache.hadoop.hive.serde2.MetadataTypedColumnsetSerDe'
@@ -377,8 +377,8 @@ PREHOOK: Input: alter1_db@alter1
 POSTHOOK: query: DESCRIBE EXTENDED alter1_db.alter1
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: alter1_db@alter1
-a                   	string              	                    
-b                   	string              	                    
+a                   	string              	from deserializer   
+b                   	string              	from deserializer   
 	 	 
 #### A masked pattern was here ####
 PREHOOK: query: ALTER TABLE alter1_db.alter1 REPLACE COLUMNS (a int, b int, c string)

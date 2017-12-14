@@ -441,7 +441,6 @@ STAGE PLANS:
                     bucket_field_name key
                     column.name.delimiter ,
                     columns key,value
-                    columns.comments 
                     columns.types int:string
 #### A masked pattern was here ####
                     name default.srcbucket_mapjoin
@@ -462,7 +461,6 @@ STAGE PLANS:
                       bucket_field_name key
                       column.name.delimiter ,
                       columns key,value
-                      columns.comments 
                       columns.types int:string
 #### A masked pattern was here ####
                       name default.srcbucket_mapjoin
@@ -519,7 +517,6 @@ STAGE PLANS:
                     bucket_field_name key
                     column.name.delimiter ,
                     columns key,value
-                    columns.comments 
                     columns.types int:string
 #### A masked pattern was here ####
                     name default.srcbucket_mapjoin_part
@@ -542,7 +539,6 @@ STAGE PLANS:
                       bucket_field_name key
                       column.name.delimiter ,
                       columns key,value
-                      columns.comments 
                       columns.types int:string
 #### A masked pattern was here ####
                       name default.srcbucket_mapjoin_part
@@ -589,7 +585,6 @@ STAGE PLANS:
                           bucket_count -1
                           column.name.delimiter ,
                           columns key,value1,value2
-                          columns.comments 
                           columns.types string:string:string
 #### A masked pattern was here ####
                           name default.bucketmapjoin_tmp_result
@@ -670,7 +665,6 @@ STAGE PLANS:
                 bucket_count -1
                 column.name.delimiter ,
                 columns key,value1,value2
-                columns.comments 
                 columns.types string:string:string
 #### A masked pattern was here ####
                 name default.bucketmapjoin_tmp_result
@@ -861,7 +855,6 @@ STAGE PLANS:
                     bucket_field_name key
                     column.name.delimiter ,
                     columns key,value
-                    columns.comments 
                     columns.types int:string
 #### A masked pattern was here ####
                     name default.srcbucket_mapjoin
@@ -882,7 +875,6 @@ STAGE PLANS:
                       bucket_field_name key
                       column.name.delimiter ,
                       columns key,value
-                      columns.comments 
                       columns.types int:string
 #### A masked pattern was here ####
                       name default.srcbucket_mapjoin
@@ -939,7 +931,6 @@ STAGE PLANS:
                     bucket_field_name key
                     column.name.delimiter ,
                     columns key,value
-                    columns.comments 
                     columns.types int:string
 #### A masked pattern was here ####
                     name default.srcbucket_mapjoin_part
@@ -962,7 +953,6 @@ STAGE PLANS:
                       bucket_field_name key
                       column.name.delimiter ,
                       columns key,value
-                      columns.comments 
                       columns.types int:string
 #### A masked pattern was here ####
                       name default.srcbucket_mapjoin_part
@@ -1009,7 +999,6 @@ STAGE PLANS:
                           bucket_count -1
                           column.name.delimiter ,
                           columns key,value1,value2
-                          columns.comments 
                           columns.types string:string:string
 #### A masked pattern was here ####
                           name default.bucketmapjoin_tmp_result
@@ -1090,7 +1079,6 @@ STAGE PLANS:
                 bucket_count -1
                 column.name.delimiter ,
                 columns key,value1,value2
-                columns.comments 
                 columns.types string:string:string
 #### A masked pattern was here ####
                 name default.bucketmapjoin_tmp_result

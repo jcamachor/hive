@@ -140,7 +140,6 @@ STAGE PLANS:
               bucket_count -1
               column.name.delimiter ,
               columns key,value
-              columns.comments 
               columns.types int:string
 #### A masked pattern was here ####
               name default.pcr_t1
@@ -162,7 +161,6 @@ STAGE PLANS:
                 bucket_count -1
                 column.name.delimiter ,
                 columns key,value
-                columns.comments 
                 columns.types int:string
 #### A masked pattern was here ####
                 name default.pcr_t1
@@ -187,7 +185,6 @@ STAGE PLANS:
               bucket_count -1
               column.name.delimiter ,
               columns key,value
-              columns.comments 
               columns.types int:string
 #### A masked pattern was here ####
               name default.pcr_t1
@@ -209,7 +206,6 @@ STAGE PLANS:
                 bucket_count -1
                 column.name.delimiter ,
                 columns key,value
-                columns.comments 
                 columns.types int:string
 #### A masked pattern was here ####
                 name default.pcr_t1
@@ -338,7 +334,6 @@ STAGE PLANS:
               bucket_count -1
               column.name.delimiter ,
               columns key,value
-              columns.comments 
               columns.types int:string
 #### A masked pattern was here ####
               name default.pcr_t1
@@ -360,7 +355,6 @@ STAGE PLANS:
                 bucket_count -1
                 column.name.delimiter ,
                 columns key,value
-                columns.comments 
                 columns.types int:string
 #### A masked pattern was here ####
                 name default.pcr_t1
@@ -561,7 +555,6 @@ STAGE PLANS:
               bucket_count -1
               column.name.delimiter ,
               columns key,value
-              columns.comments 
               columns.types int:string
 #### A masked pattern was here ####
               name default.pcr_t1
@@ -583,7 +576,6 @@ STAGE PLANS:
                 bucket_count -1
                 column.name.delimiter ,
                 columns key,value
-                columns.comments 
                 columns.types int:string
 #### A masked pattern was here ####
                 name default.pcr_t1
@@ -608,7 +600,6 @@ STAGE PLANS:
               bucket_count -1
               column.name.delimiter ,
               columns key,value
-              columns.comments 
               columns.types int:string
 #### A masked pattern was here ####
               name default.pcr_t1
@@ -630,7 +621,6 @@ STAGE PLANS:
                 bucket_count -1
                 column.name.delimiter ,
                 columns key,value
-                columns.comments 
                 columns.types int:string
 #### A masked pattern was here ####
                 name default.pcr_t1
@@ -825,7 +815,6 @@ STAGE PLANS:
               bucket_count -1
               column.name.delimiter ,
               columns key,value
-              columns.comments 
               columns.types int:string
 #### A masked pattern was here ####
               name default.pcr_t1
@@ -847,7 +836,6 @@ STAGE PLANS:
                 bucket_count -1
                 column.name.delimiter ,
                 columns key,value
-                columns.comments 
                 columns.types int:string
 #### A masked pattern was here ####
                 name default.pcr_t1
@@ -872,7 +860,6 @@ STAGE PLANS:
               bucket_count -1
               column.name.delimiter ,
               columns key,value
-              columns.comments 
               columns.types int:string
 #### A masked pattern was here ####
               name default.pcr_t1
@@ -894,7 +881,6 @@ STAGE PLANS:
                 bucket_count -1
                 column.name.delimiter ,
                 columns key,value
-                columns.comments 
                 columns.types int:string
 #### A masked pattern was here ####
                 name default.pcr_t1
@@ -917,7 +903,6 @@ STAGE PLANS:
               bucket_count -1
               column.name.delimiter ,
               columns ds,key,value
-              columns.comments 
               columns.types string:int:string
 #### A masked pattern was here ####
               name default.pcr_t2
@@ -938,7 +923,6 @@ STAGE PLANS:
                 bucket_count -1
                 column.name.delimiter ,
                 columns ds,key,value
-                columns.comments 
                 columns.types string:int:string
 #### A masked pattern was here ####
                 name default.pcr_t2
@@ -1140,7 +1124,6 @@ STAGE PLANS:
               bucket_count -1
               column.name.delimiter ,
               columns key,value
-              columns.comments 
               columns.types int:string
 #### A masked pattern was here ####
               name default.pcr_t1
@@ -1162,7 +1145,6 @@ STAGE PLANS:
                 bucket_count -1
                 column.name.delimiter ,
                 columns key,value
-                columns.comments 
                 columns.types int:string
 #### A masked pattern was here ####
                 name default.pcr_t1
@@ -1187,7 +1169,6 @@ STAGE PLANS:
               bucket_count -1
               column.name.delimiter ,
               columns key,value
-              columns.comments 
               columns.types int:string
 #### A masked pattern was here ####
               name default.pcr_t1
@@ -1209,7 +1190,6 @@ STAGE PLANS:
                 bucket_count -1
                 column.name.delimiter ,
                 columns key,value
-                columns.comments 
                 columns.types int:string
 #### A masked pattern was here ####
                 name default.pcr_t1
@@ -1234,7 +1214,6 @@ STAGE PLANS:
               bucket_count -1
               column.name.delimiter ,
               columns key,value
-              columns.comments 
               columns.types int:string
 #### A masked pattern was here ####
               name default.pcr_t1
@@ -1256,7 +1235,6 @@ STAGE PLANS:
                 bucket_count -1
                 column.name.delimiter ,
                 columns key,value
-                columns.comments 
                 columns.types int:string
 #### A masked pattern was here ####
                 name default.pcr_t1
@@ -1279,7 +1257,6 @@ STAGE PLANS:
               bucket_count -1
               column.name.delimiter ,
               columns ds,key,value
-              columns.comments 
               columns.types string:int:string
 #### A masked pattern was here ####
               name default.pcr_t2
@@ -1300,7 +1277,6 @@ STAGE PLANS:
                 bucket_count -1
                 column.name.delimiter ,
                 columns ds,key,value
-                columns.comments 
                 columns.types string:int:string
 #### A masked pattern was here ####
                 name default.pcr_t2
