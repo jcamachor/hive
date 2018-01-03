@@ -179,10 +179,10 @@ Stage-0
                           <-Reducer 15 [SIMPLE_EDGE]
                             SHUFFLE [RS_73]
                               PartitionCols:_col0
-                              Merge Join Operator [MERGEJOIN_218] (rows=80353 width=1119)
-                                Conds:RS_105._col1=RS_106._col0(Inner),Output:["_col0"]
+                              Merge Join Operator [MERGEJOIN_212] (rows=80353 width=1119)
+                                Conds:RS_25._col1=RS_26._col0(Inner),Output:["_col0"]
                               <-Map 14 [SIMPLE_EDGE]
-                                SHUFFLE [RS_105]
+                                SHUFFLE [RS_25]
                                   PartitionCols:_col1
                                   Select Operator [SEL_8] (rows=73049 width=1119)
                                     Output:["_col0","_col1"]
@@ -191,19 +191,19 @@ Stage-0
                                       TableScan [TS_6] (rows=73049 width=1119)
                                         default@date_dim,date_dim,Tbl:COMPLETE,Col:NONE,Output:["d_date_sk","d_date"]
                               <-Reducer 18 [ONE_TO_ONE_EDGE]
-                                FORWARD [RS_106]
+                                FORWARD [RS_26]
                                   PartitionCols:_col0
-                                  Group By Operator [GBY_103] (rows=40176 width=1119)
+                                  Group By Operator [GBY_23] (rows=40176 width=1119)
                                     Output:["_col0"],keys:KEY._col0
                                   <-Reducer 17 [SIMPLE_EDGE]
-                                    SHUFFLE [RS_102]
+                                    SHUFFLE [RS_22]
                                       PartitionCols:_col0
-                                      Group By Operator [GBY_61] (rows=80353 width=1119)
+                                      Group By Operator [GBY_21] (rows=80353 width=1119)
                                         Output:["_col0"],keys:_col0
-                                        Merge Join Operator [MERGEJOIN_214] (rows=80353 width=1119)
-                                          Conds:RS_57._col1=RS_58._col0(Left Semi),Output:["_col0"]
+                                        Merge Join Operator [MERGEJOIN_211] (rows=80353 width=1119)
+                                          Conds:RS_17._col1=RS_18._col0(Left Semi),Output:["_col0"]
                                         <-Map 16 [SIMPLE_EDGE]
-                                          SHUFFLE [RS_57]
+                                          SHUFFLE [RS_17]
                                             PartitionCols:_col1
                                             Select Operator [SEL_11] (rows=73049 width=1119)
                                               Output:["_col0","_col1"]
@@ -212,7 +212,7 @@ Stage-0
                                                 TableScan [TS_9] (rows=73049 width=1119)
                                                   default@date_dim,date_dim,Tbl:COMPLETE,Col:NONE,Output:["d_date","d_week_seq"]
                                         <-Map 19 [SIMPLE_EDGE]
-                                          SHUFFLE [RS_58]
+                                          SHUFFLE [RS_18]
                                             PartitionCols:_col0
                                             Group By Operator [GBY_16] (rows=36525 width=1119)
                                               Output:["_col0"],keys:_col0
@@ -260,7 +260,7 @@ Stage-0
                           <-Reducer 15 [SIMPLE_EDGE]
                             SHUFFLE [RS_113]
                               PartitionCols:_col0
-                               Please refer to the previous Merge Join Operator [MERGEJOIN_218]
+                               Please refer to the previous Merge Join Operator [MERGEJOIN_212]
                           <-Reducer 11 [SIMPLE_EDGE]
                             SHUFFLE [RS_112]
                               PartitionCols:_col0
@@ -294,7 +294,7 @@ Stage-0
                           <-Reducer 15 [SIMPLE_EDGE]
                             SHUFFLE [RS_33]
                               PartitionCols:_col0
-                               Please refer to the previous Merge Join Operator [MERGEJOIN_218]
+                               Please refer to the previous Merge Join Operator [MERGEJOIN_212]
                           <-Reducer 2 [SIMPLE_EDGE]
                             SHUFFLE [RS_32]
                               PartitionCols:_col0

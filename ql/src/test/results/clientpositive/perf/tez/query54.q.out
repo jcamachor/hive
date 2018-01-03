@@ -225,10 +225,10 @@ Stage-0
                                             Conds:(Left Outer),Output:["_col2","_col4","_col10","_col13"]
                                           <-Reducer 26 [CUSTOM_SIMPLE_EDGE]
                                             PARTITION_ONLY_SHUFFLE [RS_106]
-                                              Group By Operator [GBY_94] (rows=9131 width=1119)
+                                              Group By Operator [GBY_79] (rows=9131 width=1119)
                                                 Output:["_col0"],keys:KEY._col0
                                               <-Map 25 [SIMPLE_EDGE]
-                                                SHUFFLE [RS_93]
+                                                SHUFFLE [RS_78]
                                                   PartitionCols:_col0
                                                   Group By Operator [GBY_77] (rows=18262 width=1119)
                                                     Output:["_col0"],keys:_col0
@@ -251,7 +251,7 @@ Stage-0
                                                           Group By Operator [GBY_82] (rows=1 width=8)
                                                             Output:["_col0"],aggregations:["count()"]
                                                             Select Operator [SEL_80] (rows=9131 width=1119)
-                                                               Please refer to the previous Group By Operator [GBY_94]
+                                                               Please refer to the previous Group By Operator [GBY_79]
                                               <-Reducer 3 [CUSTOM_SIMPLE_EDGE]
                                                 PARTITION_ONLY_SHUFFLE [RS_102]
                                                   Merge Join Operator [MERGEJOIN_182] (rows=696954748 width=88)

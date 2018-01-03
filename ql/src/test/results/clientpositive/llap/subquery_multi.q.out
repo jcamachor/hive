@@ -2121,8 +2121,8 @@ STAGE PLANS:
 #### A masked pattern was here ####
       Edges:
         Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 5 (SIMPLE_EDGE)
-        Reducer 3 <- Reducer 2 (SIMPLE_EDGE), Reducer 9 (ONE_TO_ONE_EDGE)
-        Reducer 4 <- Reducer 3 (SIMPLE_EDGE), Reducer 8 (ONE_TO_ONE_EDGE)
+        Reducer 3 <- Reducer 2 (SIMPLE_EDGE), Reducer 8 (ONE_TO_ONE_EDGE)
+        Reducer 4 <- Reducer 3 (SIMPLE_EDGE), Reducer 9 (ONE_TO_ONE_EDGE)
         Reducer 7 <- Map 10 (SIMPLE_EDGE), Map 6 (SIMPLE_EDGE)
         Reducer 8 <- Reducer 7 (SIMPLE_EDGE)
         Reducer 9 <- Reducer 7 (SIMPLE_EDGE)
@@ -2287,16 +2287,6 @@ STAGE PLANS:
                 outputColumnNames: _col1, _col2
                 Statistics: Num rows: 14 Data size: 2744 Basic stats: COMPLETE Column stats: COMPLETE
                 Group By Operator
-                  keys: _col2 (type: string), _col1 (type: string)
-                  mode: hash
-                  outputColumnNames: _col0, _col1
-                  Statistics: Num rows: 7 Data size: 1372 Basic stats: COMPLETE Column stats: COMPLETE
-                  Reduce Output Operator
-                    key expressions: _col0 (type: string), _col1 (type: string)
-                    sort order: ++
-                    Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
-                    Statistics: Num rows: 7 Data size: 1372 Basic stats: COMPLETE Column stats: COMPLETE
-                Group By Operator
                   aggregations: count(), count(_col2)
                   keys: _col1 (type: string)
                   mode: hash
@@ -2308,7 +2298,32 @@ STAGE PLANS:
                     Map-reduce partition columns: _col0 (type: string)
                     Statistics: Num rows: 7 Data size: 840 Basic stats: COMPLETE Column stats: COMPLETE
                     value expressions: _col1 (type: bigint), _col2 (type: bigint)
+                Group By Operator
+                  keys: _col2 (type: string), _col1 (type: string)
+                  mode: hash
+                  outputColumnNames: _col0, _col1
+                  Statistics: Num rows: 7 Data size: 1372 Basic stats: COMPLETE Column stats: COMPLETE
+                  Reduce Output Operator
+                    key expressions: _col0 (type: string), _col1 (type: string)
+                    sort order: ++
+                    Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
+                    Statistics: Num rows: 7 Data size: 1372 Basic stats: COMPLETE Column stats: COMPLETE
         Reducer 8 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0), count(VALUE._col1)
+                keys: KEY._col0 (type: string)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1, _col2
+                Statistics: Num rows: 7 Data size: 840 Basic stats: COMPLETE Column stats: COMPLETE
+                Reduce Output Operator
+                  key expressions: _col0 (type: string)
+                  sort order: +
+                  Map-reduce partition columns: _col0 (type: string)
+                  Statistics: Num rows: 7 Data size: 840 Basic stats: COMPLETE Column stats: COMPLETE
+                  value expressions: _col1 (type: bigint), _col2 (type: bigint)
+        Reducer 9 
             Execution mode: llap
             Reduce Operator Tree:
               Group By Operator
@@ -2329,21 +2344,6 @@ STAGE PLANS:
                       Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
                       Statistics: Num rows: 7 Data size: 1400 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: _col2 (type: boolean)
-        Reducer 9 
-            Execution mode: llap
-            Reduce Operator Tree:
-              Group By Operator
-                aggregations: count(VALUE._col0), count(VALUE._col1)
-                keys: KEY._col0 (type: string)
-                mode: mergepartial
-                outputColumnNames: _col0, _col1, _col2
-                Statistics: Num rows: 7 Data size: 840 Basic stats: COMPLETE Column stats: COMPLETE
-                Reduce Output Operator
-                  key expressions: _col0 (type: string)
-                  sort order: +
-                  Map-reduce partition columns: _col0 (type: string)
-                  Statistics: Num rows: 7 Data size: 840 Basic stats: COMPLETE Column stats: COMPLETE
-                  value expressions: _col1 (type: bigint), _col2 (type: bigint)
 
   Stage: Stage-0
     Fetch Operator

@@ -264,6 +264,7 @@ public class SharedWorkOptimizer extends Transform {
                       !sr.discardableInputOps.contains(sjbi.getTsOp())) {
                 GenTezUtils.removeSemiJoinOperator(
                         pctx, (ReduceSinkOperator) op, sjbi.getTsOp());
+                optimizerCache.tableScanToDPPSource.remove(sjbi.getTsOp(), op);
               }
             } else if (op instanceof AppMasterEventOperator) {
               DynamicPruningEventDesc dped = (DynamicPruningEventDesc) op.getConf();
@@ -271,6 +272,7 @@ public class SharedWorkOptimizer extends Transform {
                       !sr.discardableInputOps.contains(dped.getTableScan())) {
                 GenTezUtils.removeSemiJoinOperator(
                         pctx, (AppMasterEventOperator) op, dped.getTableScan());
+                optimizerCache.tableScanToDPPSource.remove(dped.getTableScan(), op);
               }
             }
             LOG.debug("Input operator removed: {}", op);
@@ -294,10 +296,12 @@ public class SharedWorkOptimizer extends Transform {
                   GenTezUtils.removeSemiJoinOperator(pctx,
                           (ReduceSinkOperator) dppSource,
                           (TableScanOperator) sr.retainableOps.get(0));
+                  optimizerCache.tableScanToDPPSource.remove(sr.retainableOps.get(0), op);
                 } else if (dppSource instanceof AppMasterEventOperator) {
                   GenTezUtils.removeSemiJoinOperator(pctx,
                           (AppMasterEventOperator) dppSource,
                           (TableScanOperator) sr.retainableOps.get(0));
+                  optimizerCache.tableScanToDPPSource.remove(sr.retainableOps.get(0), op);
                 }
               }
             }
@@ -334,13 +338,11 @@ public class SharedWorkOptimizer extends Transform {
       // Gather RS operators that 1) belong to root works, i.e., works containing TS operators,
       // and 2) share the same input operator.
       // These will be the first target for extended shared work optimization
-      Multimap<Operator<?>, ReduceSinkOperator> parentToRsOps = HashMultimap.create();
+      Multimap<Operator<?>, ReduceSinkOperator> parentToRsOps = ArrayListMultimap.create();
+      Set<Operator<?>> visited = new HashSet<>();
       for (Entry<String, TableScanOperator> e : topOps.entrySet()) {
-        for (Operator<?> op : findWorkOperators(optimizerCache, e.getValue())) {
-          if (op instanceof ReduceSinkOperator && op.getParentOperators().get(0).getNumChild() > 1) {
-            parentToRsOps.put(op.getParentOperators().get(0), (ReduceSinkOperator) op);
-          }
-        }
+        gatherReduceSinkOpsByInput(parentToRsOps,  visited,
+            findWorkOperators(optimizerCache, e.getValue()));
       }
 
       while (!parentToRsOps.isEmpty()) {
@@ -354,7 +356,6 @@ public class SharedWorkOptimizer extends Transform {
         // If they are merged, RS operators in the resulting work will be considered
         // mergeable in next loop iteration.
         Multimap<Operator<?>, ReduceSinkOperator> existingRsOps = ArrayListMultimap.create();
-        removedOps = new HashSet<>();
         for (Entry<Operator<?>, Long> rsGroupInfo : sortedRSGroups) {
           Operator<?> rsParent = rsGroupInfo.getKey();
           for (ReduceSinkOperator discardableRsOp : parentToRsOps.get(rsParent)) {
@@ -381,6 +382,9 @@ public class SharedWorkOptimizer extends Transform {
                 LOG.debug("{} and {} cannot be merged", retainableRsOp, discardableRsOp);
                 continue;
               }
+
+              LOG.debug("Checking additional conditions for merging subtree starting at {} into subtree starting at {}",
+                  discardableRsOp, retainableRsOp);
 
               // Secondly, we extract information about the part of the tree that can be merged
               // as well as some structural information (memory consumption) that needs to be
@@ -432,6 +436,7 @@ public class SharedWorkOptimizer extends Transform {
                           !sr.discardableInputOps.contains(sjbi.getTsOp())) {
                     GenTezUtils.removeSemiJoinOperator(
                             pctx, (ReduceSinkOperator) op, sjbi.getTsOp());
+                    optimizerCache.tableScanToDPPSource.remove(sjbi.getTsOp(), op);
                   }
                 } else if (op instanceof AppMasterEventOperator) {
                   DynamicPruningEventDesc dped = (DynamicPruningEventDesc) op.getConf();
@@ -439,6 +444,7 @@ public class SharedWorkOptimizer extends Transform {
                           !sr.discardableInputOps.contains(dped.getTableScan())) {
                     GenTezUtils.removeSemiJoinOperator(
                             pctx, (AppMasterEventOperator) op, dped.getTableScan());
+                    optimizerCache.tableScanToDPPSource.remove(dped.getTableScan(), op);
                   }
                 }
                 LOG.debug("Input operator removed: {}", op);
@@ -472,13 +478,16 @@ public class SharedWorkOptimizer extends Transform {
         }
 
         // We gather the operators that will be used for next iteration of extended optimization (if any)
-        parentToRsOps = HashMultimap.create();
+        parentToRsOps = ArrayListMultimap.create();
+        visited = new HashSet<>();
         for (Entry<Operator<?>, ReduceSinkOperator> e : existingRsOps.entries()) {
-          for (Operator<?> op : findWorkOperators(optimizerCache, e.getValue().getChildOperators().get(0))) {
-            if (op instanceof ReduceSinkOperator && op.getParentOperators().get(0).getNumChild() > 1) {
-              parentToRsOps.put(op.getParentOperators().get(0), (ReduceSinkOperator) op);
-            }
+          if (removedOps.contains(e.getValue()) || e.getValue().getNumChild() < 1) {
+            // If 1) RS has been removed, or 2) it does not have a child (for instance, it is a semijoin RS),
+            // we can quickly skip this one
+            continue;
           }
+          gatherReduceSinkOpsByInput(parentToRsOps,  visited,
+              findWorkOperators(optimizerCache, e.getValue().getChildOperators().get(0)));
         }
       }
 
@@ -582,14 +591,34 @@ public class SharedWorkOptimizer extends Transform {
       }
     }
     List<Entry<String, Long>> sortedTables =
-            new LinkedList<>(tableToTotalSize.entrySet());
+        new LinkedList<>(tableToTotalSize.entrySet());
     Collections.sort(sortedTables, Collections.reverseOrder(
-            new Comparator<Map.Entry<String, Long>>() {
-              public int compare(Map.Entry<String, Long> o1, Map.Entry<String, Long> o2) {
-                return (o1.getValue()).compareTo(o2.getValue());
-              }
-            }));
+        new Comparator<Map.Entry<String, Long>>() {
+          public int compare(Map.Entry<String, Long> o1, Map.Entry<String, Long> o2) {
+            return (o1.getValue()).compareTo(o2.getValue());
+          }
+        }));
     return sortedTables;
+  }
+
+  private static void gatherReduceSinkOpsByInput(Multimap<Operator<?>, ReduceSinkOperator> parentToRsOps,
+      Set<Operator<?>> visited, Set<Operator<?>> ops) {
+    for (Operator<?> op : ops) {
+      // If the RS has other RS siblings, we will add it to be considered in next iteration
+      if (op instanceof ReduceSinkOperator && !visited.contains(op)) {
+        Operator<?> parent = op.getParentOperators().get(0);
+        Set<ReduceSinkOperator> s = new LinkedHashSet<>();
+        for (Operator<?> c : parent.getChildOperators()) {
+          if (c instanceof ReduceSinkOperator) {
+            s.add((ReduceSinkOperator) c);
+            visited.add(c);
+          }
+        }
+        if (s.size() > 1) {
+          parentToRsOps.putAll(parent, s);
+        }
+      }
+    }
   }
 
   private static List<Entry<Operator<?>, Long>> rankOpsByAccumulatedSize(Set<Operator<?>> opsSet) {
@@ -601,13 +630,17 @@ public class SharedWorkOptimizer extends Transform {
           StatsUtils.safeMult(op.getChildOperators().size(), size));
     }
     List<Entry<Operator<?>, Long>> sortedOps =
-            new LinkedList<>(opToTotalSize.entrySet());
+        new LinkedList<>(opToTotalSize.entrySet());
     Collections.sort(sortedOps, Collections.reverseOrder(
-            new Comparator<Map.Entry<Operator<?>, Long>>() {
-              public int compare(Map.Entry<Operator<?>, Long> o1, Map.Entry<Operator<?>, Long> o2) {
-                return (o1.getValue()).compareTo(o2.getValue());
-              }
-            }));
+        new Comparator<Map.Entry<Operator<?>, Long>>() {
+          public int compare(Map.Entry<Operator<?>, Long> o1, Map.Entry<Operator<?>, Long> o2) {
+            int valCmp = o1.getValue().compareTo(o2.getValue());
+            if (valCmp == 0) {
+              return o1.getKey().toString().compareTo(o2.getKey().toString());
+            }
+            return valCmp;
+          }
+        }));
     return sortedOps;
   }
 
@@ -950,6 +983,11 @@ public class SharedWorkOptimizer extends Transform {
       return false;
     }
 
+    if (gather && op2.getChildOperators().size() > 1) {
+      // If the second operator has more than one child, we stop gathering
+      gather = false;
+    }
+
     if (gather) {
       result.add(op2);
     }
@@ -963,12 +1001,8 @@ public class SharedWorkOptimizer extends Transform {
       for (int i = 0; i < op1ParentOperators.size(); i++) {
         Operator<?> op1ParentOp = op1ParentOperators.get(i);
         Operator<?> op2ParentOp = op2ParentOperators.get(i);
-        boolean mergeable;
-        if (gather && op2ParentOp.getChildOperators().size() < 2) {
-          mergeable = compareAndGatherOps(pctx, op1ParentOp, op2ParentOp, result, true);
-        } else {
-          mergeable = compareAndGatherOps(pctx, op1ParentOp, op2ParentOp, result, false);
-        }
+        boolean mergeable =
+            compareAndGatherOps(pctx, op1ParentOp, op2ParentOp, result, gather);
         if (!mergeable) {
           return false;
         }
