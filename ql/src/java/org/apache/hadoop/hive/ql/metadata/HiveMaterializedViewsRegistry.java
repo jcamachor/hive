@@ -27,6 +27,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.calcite.adapter.druid.DruidQuery;
@@ -91,8 +92,11 @@ public final class HiveMaterializedViewsRegistry {
   private final ConcurrentMap<String, ConcurrentMap<String, RelOptMaterialization>> materializedViews =
       new ConcurrentHashMap<String, ConcurrentMap<String, RelOptMaterialization>>();
 
+  /* If this boolean is true, we bypass the cache. */
+  private boolean dummy = true;
+
   /* Whether the cache has been initialized or not. */
-  private boolean initialized;
+  private AtomicBoolean initialized = new AtomicBoolean(true);
 
   private HiveMaterializedViewsRegistry() {
   }
@@ -116,9 +120,14 @@ public final class HiveMaterializedViewsRegistry {
    * it returns.
    */
   public void init(final Hive db) {
-    ExecutorService pool = Executors.newCachedThreadPool();
-    pool.submit(new Loader(db));
-    pool.shutdown();
+    dummy = db.getConf().getBoolVar(HiveConf.ConfVars.HIVE_SERVER2_DUMMY_MATERIALIZED_VIEWS_REGISTRY);
+    if (!dummy) {
+      // We initialize the cache
+      initialized.set(false);
+      ExecutorService pool = Executors.newCachedThreadPool();
+      pool.submit(new Loader(db));
+      pool.shutdown();
+    }
   }
 
   private class Loader implements Runnable {
@@ -136,7 +145,8 @@ public final class HiveMaterializedViewsRegistry {
             addMaterializedView(mv, OpType.LOAD);
           }
         }
-        initialized = true;
+        initialized.set(true);
+        LOG.debug("Materialized views registry has been initialized");
       } catch (HiveException e) {
         LOG.error("Problem connecting to the metastore when initializing the view registry");
       }
@@ -144,7 +154,7 @@ public final class HiveMaterializedViewsRegistry {
   }
 
   public boolean isInitialized() {
-    return initialized;
+    return initialized.get();
   }
 
   /**
@@ -171,10 +181,13 @@ public final class HiveMaterializedViewsRegistry {
     // We are going to create the map for each view in the given database
     ConcurrentMap<String, RelOptMaterialization> cq =
         new ConcurrentHashMap<String, RelOptMaterialization>();
-    final ConcurrentMap<String, RelOptMaterialization> prevCq = materializedViews.putIfAbsent(
-        materializedViewTable.getDbName(), cq);
-    if (prevCq != null) {
-      cq = prevCq;
+    if (!dummy) {
+      // If we are caching the MV, we include it in the cache
+      final ConcurrentMap<String, RelOptMaterialization> prevCq = materializedViews.putIfAbsent(
+          materializedViewTable.getDbName(), cq);
+      if (prevCq != null) {
+        cq = prevCq;
+      }
     }
 
     // Start the process to add MV to the cache
@@ -225,6 +238,10 @@ public final class HiveMaterializedViewsRegistry {
    * @param tableName the name for the materialized view to remove
    */
   public void dropMaterializedView(String dbName, String tableName) {
+    if (dummy) {
+      // Nothing to do
+      return;
+    }
     ConcurrentMap<String, RelOptMaterialization> dbMap = materializedViews.get(dbName);
     if (dbMap != null) {
       dbMap.remove(tableName);
