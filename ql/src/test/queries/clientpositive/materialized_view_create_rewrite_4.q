@@ -53,11 +53,19 @@ insert into cmv_basetable_2 values
 
 analyze table cmv_basetable_2 compute statistics for columns;
 
+-- CHECK THAT VERSION '0' EXISTS AND VERSION '1' DOES NOT
+dfs -ls ${hiveconf:hive.metastore.warehouse.dir}/cmv_mat_view;
+dfs -test -e ${hiveconf:hive.metastore.warehouse.dir}/cmv_mat_view/0;
+
 -- ENABLE FOR REWRITE
 EXPLAIN
 ALTER MATERIALIZED VIEW cmv_mat_view ENABLE REWRITE;
 
 ALTER MATERIALIZED VIEW cmv_mat_view ENABLE REWRITE;
+
+-- CHECK THAT VERSION '0' EXISTS AND VERSION '1' DOES NOT
+dfs -ls ${hiveconf:hive.metastore.warehouse.dir}/cmv_mat_view;
+dfs -test -e ${hiveconf:hive.metastore.warehouse.dir}/cmv_mat_view/0;
 
 -- CANNOT USE THE VIEW, IT IS OUTDATED
 EXPLAIN
@@ -76,6 +84,10 @@ EXPLAIN
 ALTER MATERIALIZED VIEW cmv_mat_view REBUILD;
 
 ALTER MATERIALIZED VIEW cmv_mat_view REBUILD;
+
+-- NOW VERSION '0' SHOULD HAVE BEEN DELETED WHILE VERSION '1' SHOULD EXIST
+dfs -ls ${hiveconf:hive.metastore.warehouse.dir}/cmv_mat_view;
+dfs -test -e ${hiveconf:hive.metastore.warehouse.dir}/cmv_mat_view/1;
 
 -- NOW IT CAN BE USED AGAIN
 EXPLAIN

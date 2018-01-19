@@ -51,7 +51,6 @@ import java.util.TreeSet;
 import java.util.concurrent.ExecutionException;
 
 import com.google.common.collect.ImmutableSet;
-import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileStatus;
@@ -61,7 +60,6 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.common.StatsSetupConst;
-import org.apache.hadoop.hive.common.ValidReadTxnList;
 import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.conf.Constants;
@@ -76,7 +74,6 @@ import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.AggrStats;
 import org.apache.hadoop.hive.metastore.api.AlreadyExistsException;
-import org.apache.hadoop.hive.metastore.api.BasicTxnInfo;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsData;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
 import org.apache.hadoop.hive.metastore.api.CompactionResponse;
@@ -108,7 +105,6 @@ import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.TxnInfo;
 import org.apache.hadoop.hive.metastore.api.WMFullResourcePlan;
 import org.apache.hadoop.hive.metastore.api.WMNullableResourcePlan;
-import org.apache.hadoop.hive.metastore.api.WMResourcePlan;
 import org.apache.hadoop.hive.metastore.api.WMResourcePlanStatus;
 import org.apache.hadoop.hive.metastore.api.WMTrigger;
 import org.apache.hadoop.hive.metastore.api.WMValidateResourcePlanResponse;
@@ -240,6 +236,7 @@ import org.apache.hadoop.hive.ql.plan.ShowTableStatusDesc;
 import org.apache.hadoop.hive.ql.plan.ShowTablesDesc;
 import org.apache.hadoop.hive.ql.plan.ShowTblPropertiesDesc;
 import org.apache.hadoop.hive.ql.plan.ShowTxnsDesc;
+import org.apache.hadoop.hive.ql.plan.StatsWork;
 import org.apache.hadoop.hive.ql.plan.SwitchDatabaseDesc;
 import org.apache.hadoop.hive.ql.plan.TezWork;
 import org.apache.hadoop.hive.ql.plan.TruncateTableDesc;
@@ -5129,14 +5126,27 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       }
 
       if (crtView.isMaterialized()) {
+        // Recall that this is a REBUILD
         // We need to update the status of the creation signature
         CreationMetadata cm =
             new CreationMetadata(oldview.getDbName(), oldview.getTableName(),
                 ImmutableSet.copyOf(crtView.getTablesUsed()));
         cm.setValidTxnList(conf.get(ValidTxnList.VALID_TXNS_KEY));
         oldview.getTTable().setCreationMetadata(cm);
+        // We disable the stats for the time being
+        oldview.getTTable().getParameters().remove(StatsSetupConst.COLUMN_STATS_ACCURATE);
+        // We need to set the properties and location so we get the new version
+        oldview.getTTable().getParameters().put(Constants.MATERIALIZED_VIEW_VERSION,
+            crtView.getTblProps().get(Constants.MATERIALIZED_VIEW_VERSION));
+        final Path prevDataLocation = oldview.getDataLocation();
+        oldview.getTTable().getSd().setLocation(crtView.getLocation());
+        // We update metastore
         db.alterTable(crtView.getViewName(), oldview, null);
-        // This is a replace/rebuild, so we need an exclusive lock
+        // As table object is modified in this method, we need to update
+        // the subsequent stats tasks (if any)
+        updateChildrenStatsTask(oldview);
+        // We need to delete the previous location for the materialized view
+        deleteDir(prevDataLocation);
         addIfAbsentByName(new WriteEntity(oldview, WriteEntity.WriteType.DDL_EXCLUSIVE));
       } else {
         // replace existing view
@@ -5159,7 +5169,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
         }
         oldview.checkValidity(null);
         db.alterTable(crtView.getViewName(), oldview, null);
-        addIfAbsentByName(new WriteEntity(oldview, WriteEntity.WriteType.DDL_NO_LOCK));
+        addIfAbsentByName(new WriteEntity(oldview, WriteEntity.WriteType.DDL_SHARED));
       }
     } else {
       // We create new view
@@ -5173,6 +5183,9 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
         tbl.getTTable().setCreationMetadata(cm);
       }
       db.createTable(tbl, crtView.getIfNotExists());
+      // As table object is modified in this method, we need to update
+      // the subsequent stats tasks (if any)
+      updateChildrenStatsTask(tbl);
       addIfAbsentByName(new WriteEntity(tbl, WriteEntity.WriteType.DDL_NO_LOCK));
 
       //set lineage info
@@ -5182,8 +5195,20 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     return 0;
   }
 
- private int truncateTable(Hive db, TruncateTableDesc truncateTableDesc) throws HiveException {
+  private void updateChildrenStatsTask(Table viewTbl) {
+    // As table object is modified in this method, we need to update
+    // the subsequent stats tasks (if any)
+    if (getChildTasks() != null) {
+      for (Task<?> t : getChildTasks()) {
+        if (t.getWork() instanceof StatsWork) {
+          StatsWork sw = (StatsWork) t.getWork();
+          sw.setTable(viewTbl);
+        }
+      }
+    }
+  }
 
+ private int truncateTable(Hive db, TruncateTableDesc truncateTableDesc) throws HiveException {
     if (truncateTableDesc.getColumnIndexes() != null) {
       ColumnTruncateWork truncateWork = new ColumnTruncateWork(
           truncateTableDesc.getColumnIndexes(), truncateTableDesc.getInputDir(),

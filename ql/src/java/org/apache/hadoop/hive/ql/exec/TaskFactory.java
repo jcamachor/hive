@@ -83,6 +83,9 @@ public final class TaskFactory {
     taskvec.add(new TaskTuple<CopyWork>(CopyWork.class, CopyTask.class));
     taskvec.add(new TaskTuple<ReplCopyWork>(ReplCopyWork.class, ReplCopyTask.class));
     taskvec.add(new TaskTuple<DDLWork>(DDLWork.class, DDLTask.class));
+    taskvec.add(new TaskTuple<MaterializedViewUpdateRegistryWork>(
+            MaterializedViewUpdateRegistryWork.class,
+            MaterializedViewUpdateRegistryTask.class));
     taskvec.add(new TaskTuple<FunctionWork>(FunctionWork.class,
         FunctionTask.class));
     taskvec

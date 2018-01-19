@@ -118,6 +118,10 @@ public class StatsWork implements Serializable {
     return table;
   }
 
+  public void setTable(Table table) {
+    this.table = table;
+  }
+
   public void collectStatsFromAggregator(IStatsGatherDesc conf) {
     // AggKey in StatsWork is used for stats aggregation while StatsAggPrefix
     // in FileSinkDesc is used for stats publishing. They should be consistent.

@@ -26,7 +26,6 @@ import com.google.common.collect.Iterables;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.hooks.HookContext;
 import org.apache.hadoop.hive.ql.hooks.HooksLoader;
-import org.apache.hadoop.hive.ql.hooks.MaterializedViewRegistryUpdateHook;
 import org.apache.hadoop.hive.ql.hooks.MetricsQueryLifeTimeHook;
 import org.apache.hadoop.hive.ql.hooks.QueryLifeTimeHook;
 import org.apache.hadoop.hive.ql.hooks.QueryLifeTimeHookContext;
@@ -60,7 +59,6 @@ class QueryLifeTimeHookRunner {
     if (conf.getBoolVar(HiveConf.ConfVars.HIVE_SERVER2_METRICS_ENABLED)) {
       queryHooks.add(new MetricsQueryLifeTimeHook());
     }
-    queryHooks.add(new MaterializedViewRegistryUpdateHook());
 
     List<QueryLifeTimeHook> propertyDefinedHoooks;
     try {

@@ -92,6 +92,7 @@ STAGE DEPENDENCIES:
   Stage-0 depends on stages: Stage-2
   Stage-5 depends on stages: Stage-0
   Stage-3 depends on stages: Stage-5
+  Stage-6 depends on stages: Stage-3
 
 STAGE PLANS:
   Stage: Stage-1
@@ -183,6 +184,8 @@ STAGE PLANS:
       Create View Operator:
         Create View
           columns: a int, c decimal(10,2)
+          table properties:
+            materialized.view.version 0
           expanded text: SELECT `cmv_basetable`.`a`, `cmv_basetable_2`.`c`
   FROM `default`.`cmv_basetable` JOIN `default`.`cmv_basetable_2` ON (`cmv_basetable`.`a` = `cmv_basetable_2`.`a`)
   WHERE `cmv_basetable_2`.`c` > 10.0
@@ -197,6 +200,9 @@ STAGE PLANS:
   Stage: Stage-3
     Stats Work
       Basic Stats Work:
+
+  Stage: Stage-6
+    Materialized View Registry Update
 
 PREHOOK: query: CREATE MATERIALIZED VIEW cmv_mat_view ENABLE REWRITE AS
   SELECT cmv_basetable.a, cmv_basetable_2.c
@@ -443,6 +449,7 @@ STAGE DEPENDENCIES:
   Stage-0 depends on stages: Stage-2
   Stage-5 depends on stages: Stage-0
   Stage-3 depends on stages: Stage-5
+  Stage-6 depends on stages: Stage-3
 
 STAGE PLANS:
   Stage: Stage-1
@@ -534,12 +541,17 @@ STAGE PLANS:
       Create View Operator:
         Create View
           columns: a int, c decimal(10,2)
+          table properties:
+            materialized.view.version 1
           name: default.cmv_mat_view
           replace: true
 
   Stage: Stage-3
     Stats Work
       Basic Stats Work:
+
+  Stage: Stage-6
+    Materialized View Registry Update
 
 PREHOOK: query: ALTER MATERIALIZED VIEW cmv_mat_view REBUILD
 PREHOOK: type: CREATE_MATERIALIZED_VIEW

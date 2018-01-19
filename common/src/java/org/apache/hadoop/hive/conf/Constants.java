@@ -25,6 +25,9 @@ public class Constants {
   public static final String LLAP_NUM_BUCKETS = "llap.num.buckets";
   public static final String LLAP_BUCKET_ID = "llap.bucket.id";
 
+  /* Constants for MV */
+  public static final String MATERIALIZED_VIEW_VERSION = "materialized.view.version";
+
   /* Constants for Druid storage handler */
   public static final String DRUID_HIVE_STORAGE_HANDLER_ID =
           "org.apache.hadoop.hive.druid.DruidStorageHandler";

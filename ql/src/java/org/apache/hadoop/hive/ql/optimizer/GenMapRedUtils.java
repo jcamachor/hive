@@ -87,6 +87,7 @@ import org.apache.hadoop.hive.ql.plan.BasicStatsWork;
 import org.apache.hadoop.hive.ql.plan.ConditionalResolverMergeFiles;
 import org.apache.hadoop.hive.ql.plan.ConditionalResolverMergeFiles.ConditionalResolverMergeFilesCtx;
 import org.apache.hadoop.hive.ql.plan.ConditionalWork;
+import org.apache.hadoop.hive.ql.plan.CreateViewDesc;
 import org.apache.hadoop.hive.ql.plan.DependencyCollectionWork;
 import org.apache.hadoop.hive.ql.plan.DynamicPartitionCtx;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
@@ -1508,25 +1509,7 @@ public final class GenMapRedUtils {
           LOG.debug("can't pre-create table for CTAS", e);
           table = null;
         }
-      } else if (mvWork.getLoadFileWork().getCreateViewDesc() != null) {
-        if (mvWork.getLoadFileWork().getCreateViewDesc().isReplace()) {
-          // ALTER MV ... REBUILD
-          String tableName = mvWork.getLoadFileWork().getCreateViewDesc().getViewName();
-          try {
-            table = Hive.get().getTable(tableName);
-          } catch (HiveException e) {
-            throw new RuntimeException("unexpected; MV should be present already..: " + tableName, e);
-          }
-        } else {
-          // CREATE MATERIALIZED VIEW ...
-          try {
-            table = mvWork.getLoadFileWork().getCreateViewDesc().toTable(hconf);
-          } catch (HiveException e) {
-            LOG.debug("can't pre-create table for MV", e);
-            table = null;
-          }
-        }
-      } else {
+      } else if (mvWork.getLoadFileWork().getCreateViewDesc() == null) {
         throw new RuntimeException("unexpected; this should be a CTAS or a CREATE/REBUILD MV - however no desc present");
       }
     }

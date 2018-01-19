@@ -46,6 +46,7 @@ Retention:          	0
 Table Type:         	MATERIALIZED_VIEW   	 
 Table Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	materialized.view.version	0                   
 	numFiles            	1                   
 	numRows             	5                   
 	rawDataSize         	1025                
@@ -106,6 +107,7 @@ Retention:          	0
 Table Type:         	MATERIALIZED_VIEW   	 
 Table Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	materialized.view.version	0                   
 	numFiles            	1                   
 	numRows             	5                   
 	rawDataSize         	580                 
@@ -241,6 +243,7 @@ POSTHOOK: query: show tblproperties cmv_mat_view5
 POSTHOOK: type: SHOW_TBLPROPERTIES
 COLUMN_STATS_ACCURATE	{"BASIC_STATS":"true"}
 key	value
+materialized.view.version	0
 numFiles	1
 numRows	5
 rawDataSize	1605

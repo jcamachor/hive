@@ -28,6 +28,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.hadoop.hive.ql.exec.DDLTask;
+import org.apache.hadoop.hive.ql.exec.MaterializedViewUpdateRegistryWork;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -479,6 +481,7 @@ public abstract class TaskCompiler {
     HashSet<Task<? extends Serializable>> leaves = new LinkedHashSet<>();
     getLeafTasks(rootTasks, leaves);
     assert (leaves.size() > 0);
+    Task<? extends Serializable> targetTask = createTask;
     for (Task<? extends Serializable> task : leaves) {
       if (task instanceof StatsTask) {
         // StatsTask require table to already exist
@@ -489,9 +492,35 @@ public abstract class TaskCompiler {
           parentOfCrtTblTask.removeDependentTask(task);
         }
         createTask.addDependentTask(task);
+        targetTask = task;
       } else {
         task.addDependentTask(createTask);
       }
+    }
+
+    // Add task to insert / delete materialized view from registry if needed
+    if (createTask instanceof DDLTask) {
+      DDLTask ddlTask = (DDLTask) createTask;
+      DDLWork work = ddlTask.getWork();
+      String tableName = null;
+      boolean retrieveAndInclude = false;
+      boolean disableRewrite = false;
+      if (work.getCreateViewDesc() != null && work.getCreateViewDesc().isMaterialized()) {
+        tableName = work.getCreateViewDesc().getViewName();
+        retrieveAndInclude = work.getCreateViewDesc().isRewriteEnabled() ||
+                work.getCreateViewDesc().isReplace();
+      } else if (work.getAlterMaterializedViewDesc() != null) {
+        tableName = work.getAlterMaterializedViewDesc().getMaterializedViewName();
+        if (work.getAlterMaterializedViewDesc().isRewriteEnable()) {
+          retrieveAndInclude = true;
+        } else {
+          disableRewrite = true;
+        }
+      } else {
+        return;
+      }
+      targetTask.addDependentTask(
+              TaskFactory.get(new MaterializedViewUpdateRegistryWork(tableName, retrieveAndInclude, disableRewrite), conf));
     }
   }
 

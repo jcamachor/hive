@@ -63,6 +63,7 @@ import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.common.ObjectPair;
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.common.StatsSetupConst.StatDB;
+import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.conf.HiveConf.StrictChecks;
@@ -12563,7 +12564,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       }
     }
 
-    addDbAndTabToOutputs(qualifiedTabName, TableType.MANAGED_TABLE);
+    addDbAndTabToOutputs(qualifiedTabName, TableType.MANAGED_TABLE, WriteEntity.WriteType.DDL_NO_LOCK);
 
     if (isTemporary) {
       if (partCols.size() > 0) {
@@ -12712,13 +12713,13 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     return null;
   }
 
-  private void addDbAndTabToOutputs(String[] qualifiedTabName, TableType type) throws SemanticException {
+  private void addDbAndTabToOutputs(String[] qualifiedTabName, TableType type, WriteEntity.WriteType writeType) throws SemanticException {
     Database database  = getDatabase(qualifiedTabName[0]);
     outputs.add(new WriteEntity(database, WriteEntity.WriteType.DDL_SHARED));
 
     Table t = new Table(qualifiedTabName[0], qualifiedTabName[1]);
     t.setTableType(type);
-    outputs.add(new WriteEntity(t, WriteEntity.WriteType.DDL_NO_LOCK));
+    outputs.add(new WriteEntity(t, writeType));
   }
 
   protected ASTNode analyzeCreateView(ASTNode ast, QB qb, PlannerContext plannerCtx) throws SemanticException {
@@ -12822,8 +12823,62 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           storageFormat.getInputFormat(), storageFormat.getOutputFormat(),
           location, storageFormat.getSerde(), storageFormat.getStorageHandler(),
           storageFormat.getSerdeProps());
-      addDbAndTabToOutputs(qualTabName, TableType.MATERIALIZED_VIEW);
       queryState.setCommandType(HiveOperation.CREATE_MATERIALIZED_VIEW);
+
+      // For materialized views, properties should exist
+      if (createVwDesc.getTblProps() == null) {
+        createVwDesc.setTblProps(new HashMap<>());
+      }
+
+      Path dataLocation;
+      String mvVersion;
+      if (isRebuild) {
+        // We need to go lookup the table and get the select statement and then parse it.
+        Table tab;
+        try {
+          tab = getTableObjectByName(dbDotTable, true);
+          // We need to use the expanded text for the materialized view, as it will contain
+          // the qualified table aliases, etc.
+          String viewText = tab.getViewExpandedText();
+          if (viewText.trim().isEmpty()) {
+            throw new SemanticException(ErrorMsg.MATERIALIZED_VIEW_DEF_EMPTY);
+          }
+          Context ctx = new Context(queryState.getConf());
+          selectStmt = ParseUtils.parse(viewText, ctx);
+          // For CBO
+          if (plannerCtx != null) {
+            plannerCtx.setViewToken(selectStmt);
+          }
+        } catch (Exception e) {
+          throw new SemanticException(e);
+        }
+        // Generate the new directory and increase the version
+        dataLocation = tab.getDataLocation().getParent();
+        mvVersion = String.valueOf(Integer.parseInt(
+                tab.getProperty(Constants.MATERIALIZED_VIEW_VERSION)) + 1);
+        // Rebuild materialized view, exclusive lock
+        addDbAndTabToOutputs(qualTabName, TableType.MATERIALIZED_VIEW, WriteEntity.WriteType.DDL_EXCLUSIVE);
+        outputs.add(BaseSemanticAnalyzer.toWriteEntity(tab.getDataLocation(), conf));
+      } else {
+        // Add version property ('0') and set up location correctly
+        if (createVwDesc.getLocation() == null) {
+          try {
+            dataLocation = new Warehouse(conf).getDefaultTablePath(
+                    db.getDatabase(qualTabName[0]), qualTabName[1]);
+          } catch (Exception e) {
+            throw new SemanticException(e);
+          }
+        } else {
+          dataLocation = new Path(createVwDesc.getLocation());
+        }
+        // We create a new materialized view, hence we use version 0
+        mvVersion = String.valueOf(0);
+        // New materialized view, no need for lock
+        addDbAndTabToOutputs(qualTabName, TableType.MATERIALIZED_VIEW, WriteEntity.WriteType.DDL_NO_LOCK);
+      }
+      // Set up the new directory and version in tblProps
+      createVwDesc.setLocation(new Path(dataLocation, mvVersion).toString());
+      createVwDesc.getTblProps().put(Constants.MATERIALIZED_VIEW_VERSION, mvVersion);
     } else {
       createVwDesc = new CreateViewDesc(
           dbDotTable, cols, comment, tblProps, partColNames,
@@ -12831,31 +12886,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           storageFormat.getOutputFormat(), storageFormat.getSerde());
       rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(),
           createVwDesc), conf));
-      addDbAndTabToOutputs(qualTabName, TableType.VIRTUAL_VIEW);
+      addDbAndTabToOutputs(qualTabName, TableType.VIRTUAL_VIEW, WriteEntity.WriteType.DDL_NO_LOCK);
       queryState.setCommandType(HiveOperation.CREATEVIEW);
     }
     qb.setViewDesc(createVwDesc);
-
-    if (isRebuild) {
-      // We need to go lookup the table and get the select statement and then parse it.
-      try {
-        Table tab = getTableObjectByName(dbDotTable, true);
-        // We need to use the expanded text for the materialized view, as it will contain
-        // the qualified table aliases, etc.
-        String viewText = tab.getViewExpandedText();
-        if (viewText.trim().isEmpty()) {
-          throw new SemanticException(ErrorMsg.MATERIALIZED_VIEW_DEF_EMPTY);
-        }
-        Context ctx = new Context(queryState.getConf());
-        selectStmt = ParseUtils.parse(viewText, ctx);
-        // For CBO
-        if (plannerCtx != null) {
-          plannerCtx.setViewToken(selectStmt);
-        }
-      } catch (Exception e) {
-        throw new SemanticException(e);
-      }
-    }
 
     return selectStmt;
   }

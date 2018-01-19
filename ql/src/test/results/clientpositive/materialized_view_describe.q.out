@@ -69,6 +69,7 @@ Table Parameters:
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
 	comment             	this is the first view
 	key                 	foo                 
+	materialized.view.version	0                   
 	numFiles            	1                   
 	numRows             	5                   
 	rawDataSize         	580                 
@@ -95,6 +96,7 @@ POSTHOOK: type: SHOW_TBLPROPERTIES
 COLUMN_STATS_ACCURATE	{"BASIC_STATS":"true"}
 comment	this is the first view
 key	foo
+materialized.view.version	0
 numFiles	1
 numRows	5
 rawDataSize	580
@@ -157,6 +159,7 @@ Table Parameters:
 	comment             	this is the second view
 	key                 	alice               
 	key2                	bob                 
+	materialized.view.version	0                   
 	numFiles            	1                   
 	numRows             	5                   
 	rawDataSize         	5                   
@@ -235,6 +238,7 @@ Table Type:         	MATERIALIZED_VIEW
 Table Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
 	comment             	this is the third view
+	materialized.view.version	0                   
 	numFiles            	1                   
 	numRows             	5                   
 	rawDataSize         	1025                
@@ -324,6 +328,7 @@ Table Type:         	MATERIALIZED_VIEW
 Table Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
 	comment             	this is the last view
+	materialized.view.version	0                   
 	numFiles            	1                   
 	numRows             	5                   
 	rawDataSize         	5                   
