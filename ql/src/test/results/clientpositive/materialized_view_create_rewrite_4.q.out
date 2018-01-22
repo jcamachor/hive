@@ -629,9 +629,24 @@ STAGE PLANS:
         Create View
           columns: a int, c decimal(10,2)
           table properties:
+            COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
             materialized.view.version 1
+            numFiles 1
+            numRows 2
+            rawDataSize 232
+            totalSize 325
+#### A masked pattern was here ####
+          expanded text: SELECT `cmv_basetable`.`a`, `cmv_basetable_2`.`c`
+  FROM `default`.`cmv_basetable` JOIN `default`.`cmv_basetable_2` ON (`cmv_basetable`.`a` = `cmv_basetable_2`.`a`)
+  WHERE `cmv_basetable_2`.`c` > 10.0
+  GROUP BY `cmv_basetable`.`a`, `cmv_basetable_2`.`c`
           name: default.cmv_mat_view
+          original text: SELECT cmv_basetable.a, cmv_basetable_2.c
+  FROM cmv_basetable JOIN cmv_basetable_2 ON (cmv_basetable.a = cmv_basetable_2.a)
+  WHERE cmv_basetable_2.c > 10.0
+  GROUP BY cmv_basetable.a, cmv_basetable_2.c
           replace: true
+          rewrite enabled: true
 
   Stage: Stage-3
     Stats Work

@@ -94,13 +94,15 @@ public class ImportTableDesc {
                   null, // comment passed as table params
                   table.getParameters(),
                   table.getPartColNames(),
-                  false,false,false,false,
+                  false,false,false,
                   table.getSd().getInputFormat(),
                   table.getSd().getOutputFormat(),
                   null, // location: set to null here, can be overwritten by the IMPORT stmt
                   table.getSd().getSerdeInfo().getSerializationLib(),
                   null, // storagehandler passed as table params
                   table.getSd().getSerdeInfo().getParameters());
+          // TODO: If the DB name from the creation metadata for any of the tables has changed,
+          // we should update it. Currently it refers to the source database name.
           this.createViewDesc.setTablesUsed(table.getCreationMetadata() != null ?
               table.getCreationMetadata().getTablesUsed() : ImmutableSet.of());
         } else {

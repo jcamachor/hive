@@ -5105,7 +5105,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
    * @throws HiveException
    *           Throws this exception if an unexpected error occurs.
    */
-  private int createView(Hive db, CreateViewDesc crtView) throws HiveException {
+  private int createView(Hive db, CreateViewDesc crtView) throws HiveException, MetaException {
     Table oldview = db.getTable(crtView.getViewName(), false);
     if (oldview != null) {
       // Check whether we are replicating
@@ -5140,11 +5140,27 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
             crtView.getTblProps().get(Constants.MATERIALIZED_VIEW_VERSION));
         final Path prevDataLocation = oldview.getDataLocation();
         oldview.getTTable().getSd().setLocation(crtView.getLocation());
-        // We update metastore
-        db.alterTable(crtView.getViewName(), oldview, null);
         // As table object is modified in this method, we need to update
         // the subsequent stats tasks (if any)
         updateChildrenStatsTask(oldview);
+        // We commit changes to the metastore
+        boolean failed = true;
+        HiveMetaHook hook = oldview.getStorageHandler() != null ?
+            oldview.getStorageHandler().getMetaHook() : null;
+        if (hook != null && hook instanceof DefaultHiveMetaHook) {
+          DefaultHiveMetaHook hiveMetaHook = (DefaultHiveMetaHook) hook;
+          try {
+            // We execute the OVERWRITE hook
+            hiveMetaHook.commitInsertTable(oldview.getTTable(), true);
+            // We update metastore
+            db.alterTable(crtView.getViewName(), oldview, null);
+            failed = false;
+          } finally {
+            if (failed) {
+              hiveMetaHook.rollbackInsertTable(oldview.getTTable(), true);
+            }
+          }
+        }
         // We need to delete the previous location for the materialized view
         deleteDir(prevDataLocation);
         addIfAbsentByName(new WriteEntity(oldview, WriteEntity.WriteType.DDL_EXCLUSIVE));

@@ -83,19 +83,18 @@ public class CreateViewDesc extends DDLDesc implements Serializable {
    * @param tblProps
    * @param partColNames
    * @param ifNotExists
-   * @param orReplace
-   * @param isAlterViewAs
+   * @param replace
+   * @param rewriteEnabled
    * @param inputFormat
    * @param outputFormat
    * @param location
-   * @param serName
    * @param serde
    * @param storageHandler
    * @param serdeProps
    */
   public CreateViewDesc(String viewName, List<FieldSchema> schema, String comment,
           Map<String, String> tblProps, List<String> partColNames,
-          boolean ifNotExists, boolean replace, boolean rewriteEnabled, boolean isAlterViewAs,
+          boolean ifNotExists, boolean replace, boolean rewriteEnabled,
           String inputFormat, String outputFormat, String location,
           String serde, String storageHandler, Map<String, String> serdeProps) {
     this.viewName = viewName;
@@ -107,13 +106,40 @@ public class CreateViewDesc extends DDLDesc implements Serializable {
     this.replace = replace;
     this.isMaterialized = true;
     this.rewriteEnabled = rewriteEnabled;
-    this.isAlterViewAs = isAlterViewAs;
+    this.isAlterViewAs = false;
     this.inputFormat = inputFormat;
     this.outputFormat = outputFormat;
     this.location = location;
     this.serde = serde;
     this.storageHandler = storageHandler;
     this.serdeProps = serdeProps;
+  }
+
+  /**
+   * Generates a descriptor from a metastore table object, copying
+   * its properties.
+   */
+  public static CreateViewDesc fromTable(Table tab) {
+    CreateViewDesc cvd = new CreateViewDesc();
+    cvd.setViewName(tab.getFullyQualifiedName());
+    cvd.setViewOriginalText(tab.getViewOriginalText());
+    cvd.setViewExpandedText(tab.getViewExpandedText());
+    cvd.setSchema(tab.getAllCols());
+    cvd.setTblProps(tab.getParameters());
+    cvd.setPartColNames(tab.getPartColNames());
+    cvd.setComment(tab.getProperty("comment"));
+    cvd.setMaterialized(tab.isMaterializedView());
+    cvd.setRewriteEnabled(tab.isRewriteEnabled());
+    cvd.setInputFormat(tab.getSd().getInputFormat());
+    cvd.setOutputFormat(tab.getSd().getOutputFormat());
+    cvd.setLocation(tab.getSd().getLocation());
+    cvd.setSerde(tab.getSerializationLib());
+    cvd.setStorageHandler(
+        tab.getStorageHandler() == null ? null : tab.getStorageHandler().toString());
+    cvd.setSerdeProps(
+        tab.getSd().getSerdeInfo() == null ?
+            null : tab.getSd().getSerdeInfo().getParameters());
+    return cvd;
   }
 
   /**
@@ -288,6 +314,10 @@ public class CreateViewDesc extends DDLDesc implements Serializable {
     this.outputFormat = outputFormat;
   }
 
+  public void setMaterialized(boolean isMaterialized) {
+    this.isMaterialized = isMaterialized;
+  }
+
   public boolean isMaterialized() {
     return isMaterialized;
   }
@@ -295,16 +325,29 @@ public class CreateViewDesc extends DDLDesc implements Serializable {
   public void setLocation(String location) {
     this.location = location;
   }
+
   public String getLocation() {
     return location;
+  }
+
+  public void setSerde(String serde) {
+    this.serde = serde;
   }
 
   public String getSerde() {
     return serde;
   }
 
+  public void setStorageHandler(String storageHandler) {
+    this.storageHandler = storageHandler;
+  }
+
   public String getStorageHandler() {
     return storageHandler;
+  }
+
+  public void setSerdeProps(Map<String, String> serdeProps) {
+    this.serdeProps = serdeProps;
   }
 
   public Map<String, String> getSerdeProps() {

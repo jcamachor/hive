@@ -12817,19 +12817,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     unparseTranslator.enable();
 
     if (isMaterialized) {
-      createVwDesc = new CreateViewDesc(
-          dbDotTable, cols, comment, tblProps, partColNames,
-          ifNotExists, isRebuild, rewriteEnabled, isAlterViewAs,
-          storageFormat.getInputFormat(), storageFormat.getOutputFormat(),
-          location, storageFormat.getSerde(), storageFormat.getStorageHandler(),
-          storageFormat.getSerdeProps());
-      queryState.setCommandType(HiveOperation.CREATE_MATERIALIZED_VIEW);
-
-      // For materialized views, properties should exist
-      if (createVwDesc.getTblProps() == null) {
-        createVwDesc.setTblProps(new HashMap<>());
-      }
-
       Path dataLocation;
       String mvVersion;
       if (isRebuild) {
@@ -12852,6 +12839,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         } catch (Exception e) {
           throw new SemanticException(e);
         }
+        // Create view descriptor
+        createVwDesc = CreateViewDesc.fromTable(tab);
+        createVwDesc.setReplace(true);
         // Generate the new directory and increase the version
         dataLocation = tab.getDataLocation().getParent();
         mvVersion = String.valueOf(Integer.parseInt(
@@ -12860,6 +12850,17 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         addDbAndTabToOutputs(qualTabName, TableType.MATERIALIZED_VIEW, WriteEntity.WriteType.DDL_EXCLUSIVE);
         outputs.add(BaseSemanticAnalyzer.toWriteEntity(tab.getDataLocation(), conf));
       } else {
+        // Create view descriptor
+        createVwDesc = new CreateViewDesc(
+            dbDotTable, cols, comment, tblProps, partColNames,
+            ifNotExists, false, rewriteEnabled,
+            storageFormat.getInputFormat(), storageFormat.getOutputFormat(),
+            location, storageFormat.getSerde(), storageFormat.getStorageHandler(),
+            storageFormat.getSerdeProps());
+        // For materialized views, properties should exist
+        if (createVwDesc.getTblProps() == null) {
+          createVwDesc.setTblProps(new HashMap<>());
+        }
         // Add version property ('0') and set up location correctly
         if (createVwDesc.getLocation() == null) {
           try {
@@ -12879,6 +12880,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       // Set up the new directory and version in tblProps
       createVwDesc.setLocation(new Path(dataLocation, mvVersion).toString());
       createVwDesc.getTblProps().put(Constants.MATERIALIZED_VIEW_VERSION, mvVersion);
+      queryState.setCommandType(HiveOperation.CREATE_MATERIALIZED_VIEW);
     } else {
       createVwDesc = new CreateViewDesc(
           dbDotTable, cols, comment, tblProps, partColNames,

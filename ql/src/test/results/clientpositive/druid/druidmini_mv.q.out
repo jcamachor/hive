@@ -1,38 +1,55 @@
-PREHOOK: query: create table cmv_basetable (a int, b varchar(256), c decimal(10,2), d int) stored as orc TBLPROPERTIES ('transactional'='true')
-PREHOOK: type: CREATETABLE
+unix_timestamp(void) is deprecated. Use current_timestamp instead.
+unix_timestamp(void) is deprecated. Use current_timestamp instead.
+PREHOOK: query: CREATE TABLE cmv_basetable
+STORED AS orc
+TBLPROPERTIES ('transactional'='true')
+AS
+SELECT cast(unix_timestamp() AS timestamp) AS t,
+       cast(a AS int) AS a,
+       cast(b AS varchar(256)) AS b,
+       cast(c AS decimal(10,2)) AS c,
+       cast(d AS int) AS d
+FROM TABLE (
+  VALUES
+    (1, 'alfred', 10.30, 2),
+    (2, 'bob', 3.14, 3),
+    (2, 'bonnie', 172342.2, 3),
+    (3, 'calvin', 978.76, 3),
+    (3, 'charlie', 9.8, 1)) as q (a, b, c, d)
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: database:default
 PREHOOK: Output: default@cmv_basetable
-POSTHOOK: query: create table cmv_basetable (a int, b varchar(256), c decimal(10,2), d int) stored as orc TBLPROPERTIES ('transactional'='true')
-POSTHOOK: type: CREATETABLE
-POSTHOOK: Output: database:default
-POSTHOOK: Output: default@cmv_basetable
-PREHOOK: query: insert into cmv_basetable values
- (1, 'alfred', 10.30, 2),
- (2, 'bob', 3.14, 3),
- (2, 'bonnie', 172342.2, 3),
- (3, 'calvin', 978.76, 3),
- (3, 'charlie', 9.8, 1)
-PREHOOK: type: QUERY
-PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@cmv_basetable
-POSTHOOK: query: insert into cmv_basetable values
- (1, 'alfred', 10.30, 2),
- (2, 'bob', 3.14, 3),
- (2, 'bonnie', 172342.2, 3),
- (3, 'calvin', 978.76, 3),
- (3, 'charlie', 9.8, 1)
-POSTHOOK: type: QUERY
+POSTHOOK: query: CREATE TABLE cmv_basetable
+STORED AS orc
+TBLPROPERTIES ('transactional'='true')
+AS
+SELECT cast(unix_timestamp() AS timestamp) AS t,
+       cast(a AS int) AS a,
+       cast(b AS varchar(256)) AS b,
+       cast(c AS decimal(10,2)) AS c,
+       cast(d AS int) AS d
+FROM TABLE (
+  VALUES
+    (1, 'alfred', 10.30, 2),
+    (2, 'bob', 3.14, 3),
+    (2, 'bonnie', 172342.2, 3),
+    (3, 'calvin', 978.76, 3),
+    (3, 'charlie', 9.8, 1)) as q (a, b, c, d)
+POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@cmv_basetable
 POSTHOOK: Lineage: cmv_basetable.a SCRIPT []
 POSTHOOK: Lineage: cmv_basetable.b SCRIPT []
 POSTHOOK: Lineage: cmv_basetable.c SCRIPT []
 POSTHOOK: Lineage: cmv_basetable.d SCRIPT []
+POSTHOOK: Lineage: cmv_basetable.t SIMPLE []
 PREHOOK: query: CREATE MATERIALIZED VIEW cmv_mat_view ENABLE REWRITE
 STORED BY 'org.apache.hadoop.hive.druid.DruidStorageHandler'
 TBLPROPERTIES ("druid.segment.granularity" = "HOUR")
 AS
-SELECT cast(current_timestamp() as timestamp with local time zone) as `__time`, a, b, c
+SELECT cast(t AS timestamp with local time zone) as `__time`, a, b, c
 FROM cmv_basetable
 WHERE a = 2
 PREHOOK: type: CREATE_MATERIALIZED_VIEW
@@ -43,7 +60,7 @@ POSTHOOK: query: CREATE MATERIALIZED VIEW cmv_mat_view ENABLE REWRITE
 STORED BY 'org.apache.hadoop.hive.druid.DruidStorageHandler'
 TBLPROPERTIES ("druid.segment.granularity" = "HOUR")
 AS
-SELECT cast(current_timestamp() as timestamp with local time zone) as `__time`, a, b, c
+SELECT cast(t AS timestamp with local time zone) as `__time`, a, b, c
 FROM cmv_basetable
 WHERE a = 2
 POSTHOOK: type: CREATE_MATERIALIZED_VIEW
@@ -67,6 +84,7 @@ POSTHOOK: type: SHOW_TBLPROPERTIES
 COLUMN_STATS_ACCURATE	{"BASIC_STATS":"true"}
 druid.datasource	default.cmv_mat_view
 druid.segment.granularity	HOUR
+materialized.view.version	0
 numFiles	0
 numRows	2
 rawDataSize	0
@@ -77,7 +95,7 @@ PREHOOK: query: CREATE MATERIALIZED VIEW IF NOT EXISTS cmv_mat_view2 ENABLE REWR
 STORED BY 'org.apache.hadoop.hive.druid.DruidStorageHandler'
 TBLPROPERTIES ("druid.segment.granularity" = "HOUR")
 AS
-SELECT cast(current_timestamp() as timestamp with local time zone) as `__time`, a, c
+SELECT cast(t AS timestamp with local time zone) as `__time`, a, b, c
 FROM cmv_basetable
 WHERE a = 3
 PREHOOK: type: CREATE_MATERIALIZED_VIEW
@@ -88,7 +106,7 @@ POSTHOOK: query: CREATE MATERIALIZED VIEW IF NOT EXISTS cmv_mat_view2 ENABLE REW
 STORED BY 'org.apache.hadoop.hive.druid.DruidStorageHandler'
 TBLPROPERTIES ("druid.segment.granularity" = "HOUR")
 AS
-SELECT cast(current_timestamp() as timestamp with local time zone) as `__time`, a, c
+SELECT cast(t AS timestamp with local time zone) as `__time`, a, b, c
 FROM cmv_basetable
 WHERE a = 3
 POSTHOOK: type: CREATE_MATERIALIZED_VIEW
@@ -103,7 +121,8 @@ POSTHOOK: query: SELECT a, c FROM cmv_mat_view2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@cmv_mat_view2
 #### A masked pattern was here ####
-6	988.56
+3	9.80
+3	978.76
 PREHOOK: query: SHOW TBLPROPERTIES cmv_mat_view2
 PREHOOK: type: SHOW_TBLPROPERTIES
 POSTHOOK: query: SHOW TBLPROPERTIES cmv_mat_view2
@@ -111,6 +130,7 @@ POSTHOOK: type: SHOW_TBLPROPERTIES
 COLUMN_STATS_ACCURATE	{"BASIC_STATS":"true"}
 druid.datasource	default.cmv_mat_view2
 druid.segment.granularity	HOUR
+materialized.view.version	0
 numFiles	0
 numRows	2
 rawDataSize	0
@@ -161,7 +181,8 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@cmv_basetable
 POSTHOOK: Input: default@cmv_mat_view2
 #### A masked pattern was here ####
-6	988.56
+3	9.80
+3	978.76
 Warning: Shuffle Join JOIN[6][tables = [cmv_mat_view2, $hdt$_0]] in Stage 'Stage-1:MAPRED' is a cross product
 PREHOOK: query: EXPLAIN
 SELECT * FROM (
@@ -187,17 +208,17 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: cmv_basetable
-            Statistics: Num rows: 1 Data size: 9310 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 5 Data size: 10350 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: ((3 = a) and (d = 3)) (type: boolean)
-              Statistics: Num rows: 1 Data size: 9310 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 1 Data size: 2070 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: c (type: decimal(10,2))
                 outputColumnNames: _col0
-                Statistics: Num rows: 1 Data size: 9310 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 2070 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   sort order: 
-                  Statistics: Num rows: 1 Data size: 9310 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 2070 Basic stats: COMPLETE Column stats: NONE
                   value expressions: _col0 (type: decimal(10,2))
           TableScan
             alias: cmv_mat_view2
@@ -217,14 +238,14 @@ STAGE PLANS:
             0 
             1 
           outputColumnNames: _col1, _col5
-          Statistics: Num rows: 2 Data size: 18622 Basic stats: PARTIAL Column stats: NONE
+          Statistics: Num rows: 2 Data size: 4142 Basic stats: PARTIAL Column stats: NONE
           Select Operator
             expressions: 3 (type: int), _col1 (type: decimal(10,2)), 3 (type: int), _col5 (type: decimal(10,2))
             outputColumnNames: _col0, _col1, _col2, _col3
-            Statistics: Num rows: 2 Data size: 18622 Basic stats: PARTIAL Column stats: NONE
+            Statistics: Num rows: 2 Data size: 4142 Basic stats: PARTIAL Column stats: NONE
             File Output Operator
               compressed: false
-              Statistics: Num rows: 2 Data size: 18622 Basic stats: PARTIAL Column stats: NONE
+              Statistics: Num rows: 2 Data size: 4142 Basic stats: PARTIAL Column stats: NONE
               table:
                   input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -255,14 +276,17 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@cmv_basetable
 POSTHOOK: Input: default@cmv_mat_view2
 #### A masked pattern was here ####
-3	988.56	3	978.76
+3	9.80	3	978.76
+3	978.76	3	978.76
+unix_timestamp(void) is deprecated. Use current_timestamp instead.
+unix_timestamp(void) is deprecated. Use current_timestamp instead.
 PREHOOK: query: INSERT INTO cmv_basetable VALUES
- (3, 'charlie', 15.8, 1)
+ (cast(unix_timestamp() AS timestamp), 3, 'chloe', 15.8, 1)
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@cmv_basetable
 POSTHOOK: query: INSERT INTO cmv_basetable VALUES
- (3, 'charlie', 15.8, 1)
+ (cast(unix_timestamp() AS timestamp), 3, 'chloe', 15.8, 1)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@cmv_basetable
@@ -270,6 +294,7 @@ POSTHOOK: Lineage: cmv_basetable.a SCRIPT []
 POSTHOOK: Lineage: cmv_basetable.b SCRIPT []
 POSTHOOK: Lineage: cmv_basetable.c SCRIPT []
 POSTHOOK: Lineage: cmv_basetable.d SCRIPT []
+POSTHOOK: Lineage: cmv_basetable.t SCRIPT []
 Warning: Shuffle Join JOIN[8][tables = [$hdt$_0, $hdt$_1]] in Stage 'Stage-1:MAPRED' is a cross product
 PREHOOK: query: EXPLAIN
 SELECT * FROM (
@@ -295,31 +320,31 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: cmv_basetable
-            Statistics: Num rows: 1 Data size: 17540 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 5 Data size: 19600 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (a = 3) (type: boolean)
-              Statistics: Num rows: 1 Data size: 17540 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 2 Data size: 7840 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: c (type: decimal(10,2))
                 outputColumnNames: _col0
-                Statistics: Num rows: 1 Data size: 17540 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 2 Data size: 7840 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   sort order: 
-                  Statistics: Num rows: 1 Data size: 17540 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 2 Data size: 7840 Basic stats: COMPLETE Column stats: NONE
                   value expressions: _col0 (type: decimal(10,2))
           TableScan
             alias: cmv_basetable
-            Statistics: Num rows: 1 Data size: 17540 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 5 Data size: 19600 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: ((3 = a) and (d = 3)) (type: boolean)
-              Statistics: Num rows: 1 Data size: 17540 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 1 Data size: 3920 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: c (type: decimal(10,2))
                 outputColumnNames: _col0
-                Statistics: Num rows: 1 Data size: 17540 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 3920 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   sort order: 
-                  Statistics: Num rows: 1 Data size: 17540 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 3920 Basic stats: COMPLETE Column stats: NONE
                   value expressions: _col0 (type: decimal(10,2))
       Reduce Operator Tree:
         Join Operator
@@ -329,14 +354,14 @@ STAGE PLANS:
             0 
             1 
           outputColumnNames: _col0, _col1
-          Statistics: Num rows: 1 Data size: 35081 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 2 Data size: 15682 Basic stats: COMPLETE Column stats: NONE
           Select Operator
             expressions: 3 (type: int), _col0 (type: decimal(10,2)), 3 (type: int), _col1 (type: decimal(10,2))
             outputColumnNames: _col0, _col1, _col2, _col3
-            Statistics: Num rows: 1 Data size: 35081 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 2 Data size: 15682 Basic stats: COMPLETE Column stats: NONE
             File Output Operator
               compressed: false
-              Statistics: Num rows: 1 Data size: 35081 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 2 Data size: 15682 Basic stats: COMPLETE Column stats: NONE
               table:
                   input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -368,7 +393,17 @@ POSTHOOK: Input: default@cmv_basetable
 3	15.80	3	978.76
 3	9.80	3	978.76
 3	978.76	3	978.76
-Warning: Shuffle Join JOIN[8][tables = [$hdt$_0, $hdt$_1]] in Stage 'Stage-1:MAPRED' is a cross product
+PREHOOK: query: ALTER MATERIALIZED VIEW cmv_mat_view2 REBUILD
+PREHOOK: type: CREATE_MATERIALIZED_VIEW
+PREHOOK: Input: default@cmv_basetable
+PREHOOK: Output: database:default
+PREHOOK: Output: default@cmv_mat_view2
+POSTHOOK: query: ALTER MATERIALIZED VIEW cmv_mat_view2 REBUILD
+POSTHOOK: type: CREATE_MATERIALIZED_VIEW
+POSTHOOK: Input: default@cmv_basetable
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@cmv_mat_view2
+Warning: Shuffle Join JOIN[6][tables = [cmv_mat_view2, $hdt$_0]] in Stage 'Stage-1:MAPRED' is a cross product
 PREHOOK: query: EXPLAIN
 SELECT * FROM (
   (SELECT a, c FROM cmv_basetable WHERE a = 3) table1
@@ -393,32 +428,28 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: cmv_basetable
-            Statistics: Num rows: 1 Data size: 17540 Basic stats: COMPLETE Column stats: NONE
-            Filter Operator
-              predicate: (a = 3) (type: boolean)
-              Statistics: Num rows: 1 Data size: 17540 Basic stats: COMPLETE Column stats: NONE
-              Select Operator
-                expressions: c (type: decimal(10,2))
-                outputColumnNames: _col0
-                Statistics: Num rows: 1 Data size: 17540 Basic stats: COMPLETE Column stats: NONE
-                Reduce Output Operator
-                  sort order: 
-                  Statistics: Num rows: 1 Data size: 17540 Basic stats: COMPLETE Column stats: NONE
-                  value expressions: _col0 (type: decimal(10,2))
-          TableScan
-            alias: cmv_basetable
-            Statistics: Num rows: 1 Data size: 17540 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 5 Data size: 19600 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: ((3 = a) and (d = 3)) (type: boolean)
-              Statistics: Num rows: 1 Data size: 17540 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 1 Data size: 3920 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: c (type: decimal(10,2))
                 outputColumnNames: _col0
-                Statistics: Num rows: 1 Data size: 17540 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 3920 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   sort order: 
-                  Statistics: Num rows: 1 Data size: 17540 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 3920 Basic stats: COMPLETE Column stats: NONE
                   value expressions: _col0 (type: decimal(10,2))
+          TableScan
+            alias: cmv_mat_view2
+            properties:
+              druid.query.json {"queryType":"select","dataSource":"default.cmv_mat_view2","descending":false,"intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"],"dimensions":[],"metrics":["c"],"granularity":"all","pagingSpec":{"threshold":16384,"fromNext":true},"context":{"druid.query.fetch":false}}
+              druid.query.type select
+            Statistics: Num rows: 3 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+            Reduce Output Operator
+              sort order: 
+              Statistics: Num rows: 3 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+              value expressions: c (type: decimal(10,2))
       Reduce Operator Tree:
         Join Operator
           condition map:
@@ -426,15 +457,15 @@ STAGE PLANS:
           keys:
             0 
             1 
-          outputColumnNames: _col0, _col1
-          Statistics: Num rows: 1 Data size: 35081 Basic stats: COMPLETE Column stats: NONE
+          outputColumnNames: _col1, _col5
+          Statistics: Num rows: 3 Data size: 11763 Basic stats: PARTIAL Column stats: NONE
           Select Operator
-            expressions: 3 (type: int), _col0 (type: decimal(10,2)), 3 (type: int), _col1 (type: decimal(10,2))
+            expressions: 3 (type: int), _col1 (type: decimal(10,2)), 3 (type: int), _col5 (type: decimal(10,2))
             outputColumnNames: _col0, _col1, _col2, _col3
-            Statistics: Num rows: 1 Data size: 35081 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 3 Data size: 11763 Basic stats: PARTIAL Column stats: NONE
             File Output Operator
               compressed: false
-              Statistics: Num rows: 1 Data size: 35081 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 3 Data size: 11763 Basic stats: PARTIAL Column stats: NONE
               table:
                   input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -446,7 +477,7 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-Warning: Shuffle Join JOIN[8][tables = [$hdt$_0, $hdt$_1]] in Stage 'Stage-1:MAPRED' is a cross product
+Warning: Shuffle Join JOIN[6][tables = [cmv_mat_view2, $hdt$_0]] in Stage 'Stage-1:MAPRED' is a cross product
 PREHOOK: query: SELECT * FROM (
   (SELECT a, c FROM cmv_basetable WHERE a = 3) table1
   JOIN
@@ -454,6 +485,7 @@ PREHOOK: query: SELECT * FROM (
   ON table1.a = table2.a)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@cmv_basetable
+PREHOOK: Input: default@cmv_mat_view2
 #### A masked pattern was here ####
 POSTHOOK: query: SELECT * FROM (
   (SELECT a, c FROM cmv_basetable WHERE a = 3) table1
@@ -462,6 +494,7 @@ POSTHOOK: query: SELECT * FROM (
   ON table1.a = table2.a)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@cmv_basetable
+POSTHOOK: Input: default@cmv_mat_view2
 #### A masked pattern was here ####
 3	15.80	3	978.76
 3	9.80	3	978.76
