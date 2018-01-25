@@ -25,6 +25,7 @@ import java.util.Set;
 
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.TableType;
+import org.apache.hadoop.hive.metastore.api.CreationMetadata;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.TableMeta;
@@ -149,7 +150,7 @@ public class TestGetTableMeta {
 
 
     if (type == TableType.MATERIALIZED_VIEW) {
-      table.setCreationMetadata(new HashMap<>());
+      table.setCreationMetadata(new CreationMetadata());
     }
 
     if (type == TableType.EXTERNAL_TABLE) {
