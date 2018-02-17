@@ -1274,6 +1274,8 @@ public class ObjectStore implements RawStore, Configurable {
   private boolean dropCreationMetadata(String dbName, String tableName) throws MetaException,
       NoSuchObjectException, InvalidObjectException, InvalidInputException {
     boolean success = false;
+    dbName = normalizeIdentifier(dbName);
+    tableName = normalizeIdentifier(tableName);
     try {
       openTransaction();
       MCreationMetadata mcm = getCreationMetadata(dbName, tableName);

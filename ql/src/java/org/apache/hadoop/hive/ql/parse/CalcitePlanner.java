@@ -88,6 +88,8 @@ import org.apache.calcite.rel.metadata.RelMetadataQuery;
 import org.apache.calcite.rel.rules.FilterMergeRule;
 import org.apache.calcite.rel.rules.JoinToMultiJoinRule;
 import org.apache.calcite.rel.rules.LoptOptimizeJoinRule;
+import org.apache.calcite.rel.rules.ProjectFilterTransposeRule;
+import org.apache.calcite.rel.rules.ProjectJoinTransposeRule;
 import org.apache.calcite.rel.rules.ProjectMergeRule;
 import org.apache.calcite.rel.rules.ProjectRemoveRule;
 import org.apache.calcite.rel.type.RelDataType;
@@ -1480,70 +1482,16 @@ public class CalcitePlanner extends SemanticAnalyzer {
       calcitePreCboPlan = applyPreJoinOrderingTransforms(calciteGenPlan,
               mdProvider.getMetadataProvider(), executorProvider);
 
-      // 3. Apply join order optimizations: reordering MST algorithm
-      //    If join optimizations failed because of missing stats, we continue with
-      //    the rest of optimizations
-      if (profilesCBO.contains(ExtendedCBOProfile.JOIN_REORDERING)) {
-        perfLogger.PerfLogBegin(this.getClass().getName(), PerfLogger.OPTIMIZER);
-        try {
-          List<RelMetadataProvider> list = Lists.newArrayList();
-          list.add(mdProvider.getMetadataProvider());
-          RelTraitSet desiredTraits = optCluster
-              .traitSetOf(HiveRelNode.CONVENTION, RelCollations.EMPTY);
-
-          HepProgramBuilder hepPgmBldr = new HepProgramBuilder().addMatchOrder(HepMatchOrder.BOTTOM_UP);
-          hepPgmBldr.addRuleInstance(new JoinToMultiJoinRule(HiveJoin.class));
-          hepPgmBldr.addRuleInstance(new LoptOptimizeJoinRule(HiveRelFactories.HIVE_BUILDER));
-
-          HepProgram hepPgm = hepPgmBldr.build();
-          HepPlanner hepPlanner = new HepPlanner(hepPgm);
-
-          hepPlanner.registerMetadataProviders(list);
-          RelMetadataProvider chainedProvider = ChainedRelMetadataProvider.of(list);
-          optCluster.setMetadataProvider(new CachingRelMetadataProvider(chainedProvider, hepPlanner));
-
-          RelNode rootRel = calcitePreCboPlan;
-          hepPlanner.setRoot(rootRel);
-          if (!calcitePreCboPlan.getTraitSet().equals(desiredTraits)) {
-            rootRel = hepPlanner.changeTraits(calcitePreCboPlan, desiredTraits);
-          }
-          hepPlanner.setRoot(rootRel);
-
-          calciteOptimizedPlan = hepPlanner.findBestExp();
-        } catch (Exception e) {
-          boolean isMissingStats = noColsMissingStats.get() > 0;
-          if (isMissingStats) {
-            LOG.warn("Missing column stats (see previous messages), skipping join reordering in CBO");
-            noColsMissingStats.set(0);
-            calciteOptimizedPlan = calcitePreCboPlan;
-            disableSemJoinReordering = false;
-          } else {
-            throw e;
-          }
-        }
-        perfLogger.PerfLogEnd(this.getClass().getName(), PerfLogger.OPTIMIZER, "Calcite: Join Reordering");
-      } else {
-        calciteOptimizedPlan = calcitePreCboPlan;
-        disableSemJoinReordering = false;
-      }
-
-      // 4.1. Run other optimizations that do not need stats
-      perfLogger.PerfLogBegin(this.getClass().getName(), PerfLogger.OPTIMIZER);
-      calciteOptimizedPlan = hepPlan(calciteOptimizedPlan, false, mdProvider.getMetadataProvider(), null,
-              HepMatchOrder.BOTTOM_UP, ProjectRemoveRule.INSTANCE, HiveUnionMergeRule.INSTANCE,
-              HiveProjectMergeRule.INSTANCE_NO_FORCE, HiveJoinCommuteRule.INSTANCE);
-      perfLogger.PerfLogEnd(this.getClass().getName(), PerfLogger.OPTIMIZER, "Calcite: Optimizations without stats 1");
-
-      // 5. Materialized view based rewriting
+      // 3. Materialized view based rewriting
       // We disable it for CTAS and MV creation queries (trying to avoid any problem
       // due to data freshness)
       if (conf.getBoolVar(ConfVars.HIVE_MATERIALIZED_VIEW_ENABLE_AUTO_REWRITING) &&
               !getQB().isMaterializedView() && !ctx.isLoadingMaterializedView() && !getQB().isCTAS()) {
         perfLogger.PerfLogBegin(this.getClass().getName(), PerfLogger.OPTIMIZER);
+        final RelNode calcitePreMVRewritingPlan = calcitePreCboPlan;
         // Use Calcite cost model for view rewriting
-        RelMetadataProvider calciteMdProvider = DefaultRelMetadataProvider.INSTANCE;
-        RelMetadataQuery.THREAD_PROVIDERS.set(JaninoRelMetadataProvider.of(calciteMdProvider));
-        planner.registerMetadataProviders(Lists.newArrayList(calciteMdProvider));
+        this.cluster.invalidateMetadataQuery();
+        RelMetadataQuery.THREAD_PROVIDERS.set(JaninoRelMetadataProvider.of(DefaultRelMetadataProvider.INSTANCE));
         // Add views to planner
         List<RelOptMaterialization> materializations = new ArrayList<>();
         try {
@@ -1605,21 +1553,95 @@ public class CalcitePlanner extends SemanticAnalyzer {
           planner.addRule(HiveMaterializedViewRule.INSTANCE_PROJECT_AGGREGATE);
           planner.addRule(HiveMaterializedViewRule.INSTANCE_AGGREGATE);
           // Optimize plan
-          planner.setRoot(calciteOptimizedPlan);
-          calciteOptimizedPlan = planner.findBestExp();
+          planner.setRoot(calcitePreCboPlan);
+          calcitePreCboPlan = planner.findBestExp();
           // Remove view-based rewriting rules from planner
           planner.clear();
         }
         // Restore default cost model
+        this.cluster.invalidateMetadataQuery();
         RelMetadataQuery.THREAD_PROVIDERS.set(JaninoRelMetadataProvider.of(mdProvider.getMetadataProvider()));
         perfLogger.PerfLogEnd(this.getClass().getName(), PerfLogger.OPTIMIZER, "Calcite: View-based rewriting");
+        if (calcitePreMVRewritingPlan != calcitePreCboPlan) {
+          // Only trigger this sequence of rules if a rewriting has been produced.
+          // Push filter operators back
+          perfLogger.PerfLogBegin(this.getClass().getName(), PerfLogger.OPTIMIZER);
+          calcitePreCboPlan = hepPlan(calcitePreCboPlan, true, mdProvider.getMetadataProvider(), executorProvider,
+              HiveFilterProjectTransposeRule.INSTANCE_DETERMINISTIC_WINDOWING, HiveFilterJoinRule.JOIN,
+              HiveFilterJoinRule.FILTER_ON_JOIN, new FilterMergeRule(HiveRelFactories.HIVE_BUILDER));
+          perfLogger.PerfLogEnd(this.getClass().getName(), PerfLogger.OPTIMIZER,
+              "Calcite: Prejoin ordering transformation, Rerun PPD -MV-");
+          // We might to retrieve needed column stats for materialized views
+          perfLogger.PerfLogBegin(this.getClass().getName(), PerfLogger.OPTIMIZER);
+          fieldTrimmer = new HiveRelFieldTrimmer(null,
+              HiveRelFactories.HIVE_BUILDER.create(cluster, null),
+              profilesCBO.contains(ExtendedCBOProfile.JOIN_REORDERING));
+          calcitePreCboPlan = fieldTrimmer.trim(calcitePreCboPlan);
+          perfLogger.PerfLogEnd(this.getClass().getName(), PerfLogger.OPTIMIZER,
+              "Calcite: Prejoin ordering transformation, Projection Pruning -MV-");
+          // Push filter to TS
+          perfLogger.PerfLogBegin(this.getClass().getName(), PerfLogger.OPTIMIZER);
+          calcitePreCboPlan = hepPlan(calcitePreCboPlan, true, mdProvider.getMetadataProvider(), executorProvider,
+              HiveFilterProjectTSTransposeRule.INSTANCE, HiveFilterProjectTSTransposeRule.INSTANCE_DRUID,
+              HiveProjectFilterPullUpConstantsRule.INSTANCE);
+          perfLogger.PerfLogEnd(this.getClass().getName(), PerfLogger.OPTIMIZER,
+              "Calcite: Prejoin ordering transformation, Rerun PPD -MV-");
+        }
       }
 
-      // 4.2. Run other optimizations that do not need stats
+      // 4. Apply join order optimizations: reordering MST algorithm
+      //    If join optimizations failed because of missing stats, we continue with
+      //    the rest of optimizations
+      if (profilesCBO.contains(ExtendedCBOProfile.JOIN_REORDERING)) {
+        perfLogger.PerfLogBegin(this.getClass().getName(), PerfLogger.OPTIMIZER);
+        try {
+          List<RelMetadataProvider> list = Lists.newArrayList();
+          list.add(mdProvider.getMetadataProvider());
+          RelTraitSet desiredTraits = optCluster
+              .traitSetOf(HiveRelNode.CONVENTION, RelCollations.EMPTY);
+
+          HepProgramBuilder hepPgmBldr = new HepProgramBuilder().addMatchOrder(HepMatchOrder.BOTTOM_UP);
+          hepPgmBldr.addRuleInstance(new JoinToMultiJoinRule(HiveJoin.class));
+          hepPgmBldr.addRuleInstance(new LoptOptimizeJoinRule(HiveRelFactories.HIVE_BUILDER));
+
+          HepProgram hepPgm = hepPgmBldr.build();
+          HepPlanner hepPlanner = new HepPlanner(hepPgm);
+
+          hepPlanner.registerMetadataProviders(list);
+          RelMetadataProvider chainedProvider = ChainedRelMetadataProvider.of(list);
+          optCluster.setMetadataProvider(new CachingRelMetadataProvider(chainedProvider, hepPlanner));
+
+          RelNode rootRel = calcitePreCboPlan;
+          hepPlanner.setRoot(rootRel);
+          if (!calcitePreCboPlan.getTraitSet().equals(desiredTraits)) {
+            rootRel = hepPlanner.changeTraits(calcitePreCboPlan, desiredTraits);
+          }
+          hepPlanner.setRoot(rootRel);
+
+          calciteOptimizedPlan = hepPlanner.findBestExp();
+        } catch (Exception e) {
+          boolean isMissingStats = noColsMissingStats.get() > 0;
+          if (isMissingStats) {
+            LOG.warn("Missing column stats (see previous messages), skipping join reordering in CBO");
+            noColsMissingStats.set(0);
+            calciteOptimizedPlan = calcitePreCboPlan;
+            disableSemJoinReordering = false;
+          } else {
+            throw e;
+          }
+        }
+        perfLogger.PerfLogEnd(this.getClass().getName(), PerfLogger.OPTIMIZER, "Calcite: Join Reordering");
+      } else {
+        calciteOptimizedPlan = calcitePreCboPlan;
+        disableSemJoinReordering = false;
+      }
+
+      // 5. Run other optimizations that do not need stats
       perfLogger.PerfLogBegin(this.getClass().getName(), PerfLogger.OPTIMIZER);
       calciteOptimizedPlan = hepPlan(calciteOptimizedPlan, false, mdProvider.getMetadataProvider(), null,
-              HepMatchOrder.BOTTOM_UP, HiveAggregateProjectMergeRule.INSTANCE);
-      perfLogger.PerfLogEnd(this.getClass().getName(), PerfLogger.OPTIMIZER, "Calcite: Optimizations without stats 2");
+          HepMatchOrder.BOTTOM_UP, ProjectRemoveRule.INSTANCE, HiveUnionMergeRule.INSTANCE,
+          HiveAggregateProjectMergeRule.INSTANCE, HiveProjectMergeRule.INSTANCE_NO_FORCE, HiveJoinCommuteRule.INSTANCE);
+      perfLogger.PerfLogEnd(this.getClass().getName(), PerfLogger.OPTIMIZER, "Calcite: Optimizations without stats 1");
 
       // 6. Run aggregate-join transpose (cost based)
       //    If it failed because of missing stats, we continue with
@@ -2493,16 +2515,16 @@ public class CalcitePlanner extends SemanticAnalyzer {
           List<Interval> intervals = Arrays.asList(DruidTable.DEFAULT_INTERVAL);
           rowType = dtFactory.createStructType(druidColTypes, druidColNames);
           DruidTable druidTable = new DruidTable(new DruidSchema(address, address, false),
-                  dataSource, RelDataTypeImpl.proto(rowType), metrics, DruidTable.DEFAULT_TIMESTAMP_COLUMN,
-                  intervals, null, null);
+              dataSource, RelDataTypeImpl.proto(rowType), metrics, DruidTable.DEFAULT_TIMESTAMP_COLUMN,
+              intervals, null, null);
           RelOptHiveTable optTable = new RelOptHiveTable(relOptSchema, fullyQualifiedTabName,
-                  rowType, tabMetaData, nonPartitionColumns, partitionColumns, virtualCols, conf,
-                  partitionCache, colStatsCache, noColsMissingStats);
+              rowType, tabMetaData, nonPartitionColumns, partitionColumns, virtualCols, conf,
+              partitionCache, colStatsCache, noColsMissingStats);
           final TableScan scan = new HiveTableScan(cluster, cluster.traitSetOf(HiveRelNode.CONVENTION),
-                  optTable, null == tableAlias ? tabMetaData.getTableName() : tableAlias,
-                  getAliasId(tableAlias, qb), HiveConf.getBoolVar(conf,
-                      HiveConf.ConfVars.HIVE_CBO_RETPATH_HIVEOP), qb.isInsideView()
-                      || qb.getAliasInsideView().contains(tableAlias.toLowerCase()));
+              optTable, null == tableAlias ? tabMetaData.getTableName() : tableAlias,
+              getAliasId(tableAlias, qb), HiveConf.getBoolVar(conf,
+                  HiveConf.ConfVars.HIVE_CBO_RETPATH_HIVEOP), qb.isInsideView()
+                  || qb.getAliasInsideView().contains(tableAlias.toLowerCase()));
           tableRel = DruidQuery.create(cluster, cluster.traitSetOf(BindableConvention.INSTANCE),
               optTable, druidTable, ImmutableList.<RelNode>of(scan));
         } else {
@@ -2517,8 +2539,8 @@ public class CalcitePlanner extends SemanticAnalyzer {
             fullyQualifiedTabName = tabMetaData.getTableName();
           }
           RelOptHiveTable optTable = new RelOptHiveTable(relOptSchema, fullyQualifiedTabName,
-                  rowType, tabMetaData, nonPartitionColumns, partitionColumns, virtualCols, conf,
-                  partitionCache, colStatsCache, noColsMissingStats);
+              rowType, tabMetaData, nonPartitionColumns, partitionColumns, virtualCols, conf,
+              partitionCache, colStatsCache, noColsMissingStats);
           // Build Hive Table Scan Rel
           tableRel = new HiveTableScan(cluster, cluster.traitSetOf(HiveRelNode.CONVENTION), optTable,
               null == tableAlias ? tabMetaData.getTableName() : tableAlias,

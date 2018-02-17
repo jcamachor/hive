@@ -29,6 +29,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.SortedMap;
 
+import org.apache.calcite.adapter.druid.DruidQuery;
 import org.apache.calcite.linq4j.Linq4j;
 import org.apache.calcite.linq4j.Ord;
 import org.apache.calcite.linq4j.function.Predicate1;
@@ -40,6 +41,7 @@ import org.apache.calcite.rel.core.Join;
 import org.apache.calcite.rel.core.JoinRelType;
 import org.apache.calcite.rel.core.Project;
 import org.apache.calcite.rel.core.SemiJoin;
+import org.apache.calcite.rel.core.TableScan;
 import org.apache.calcite.rel.core.Union;
 import org.apache.calcite.rel.metadata.BuiltInMetadata;
 import org.apache.calcite.rel.metadata.ChainedRelMetadataProvider;
@@ -49,6 +51,7 @@ import org.apache.calcite.rel.metadata.ReflectiveRelMetadataProvider;
 import org.apache.calcite.rel.metadata.RelMdPredicates;
 import org.apache.calcite.rel.metadata.RelMetadataProvider;
 import org.apache.calcite.rel.metadata.RelMetadataQuery;
+import org.apache.calcite.rel.type.RelDataTypeField;
 import org.apache.calcite.rex.RexBuilder;
 import org.apache.calcite.rex.RexCall;
 import org.apache.calcite.rex.RexInputRef;
@@ -71,7 +74,6 @@ import com.google.common.base.Function;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
-import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
@@ -97,6 +99,39 @@ public class HiveRelMdPredicates implements MetadataHandler<BuiltInMetadata.Pred
   @Override
   public MetadataDef<BuiltInMetadata.Predicates> getDef() {
     return BuiltInMetadata.Predicates.DEF;
+  }
+
+
+  /**
+   * Infers predicates for a table scan.
+   */
+  public RelOptPredicateList getPredicates(TableScan table, RelMetadataQuery mq) {
+    final RexBuilder rexBuilder = table.getCluster().getRexBuilder();
+    final ImmutableList.Builder preds = ImmutableList.builder();
+    for (RelDataTypeField field : table.getTable().getRowType().getFieldList()) {
+      if (!field.getType().isNullable()) {
+        preds.add(
+            rexBuilder.makeCall(
+                SqlStdOperatorTable.IS_NOT_NULL, rexBuilder.makeInputRef(table, field.getIndex())));
+      }
+    }
+    return RelOptPredicateList.of(rexBuilder, preds.build());
+  }
+
+  /**
+   * Infers predicates for a Druid query.
+   */
+  public RelOptPredicateList getPredicates(DruidQuery druidQuery, RelMetadataQuery mq) {
+    final RexBuilder rexBuilder = druidQuery.getCluster().getRexBuilder();
+    final ImmutableList.Builder preds = ImmutableList.builder();
+    for (RelDataTypeField field : druidQuery.getTable().getRowType().getFieldList()) {
+      if (!field.getType().isNullable()) {
+        preds.add(
+            rexBuilder.makeCall(
+                SqlStdOperatorTable.IS_NOT_NULL, rexBuilder.makeInputRef(druidQuery, field.getIndex())));
+      }
+    }
+    return RelOptPredicateList.of(rexBuilder, preds.build());
   }
 
   /**
