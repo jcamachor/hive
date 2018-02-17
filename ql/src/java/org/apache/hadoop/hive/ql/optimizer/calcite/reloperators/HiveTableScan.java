@@ -57,6 +57,7 @@ import com.google.common.collect.ImmutableSet;
  */
 public class HiveTableScan extends TableScan implements HiveRelNode {
 
+  private final RelDataType rowType;
   private final RelDataType hiveTableScanRowType;
   private final ImmutableList<Integer> neededColIndxsFrmReloptHT;
   private final String tblAlias;
@@ -87,20 +88,22 @@ public class HiveTableScan extends TableScan implements HiveRelNode {
    * @param table
    *          HiveDB table
    */
-  public HiveTableScan(RelOptCluster cluster, RelTraitSet traitSet, RelOptHiveTable table,
+  public HiveTableScan(RelOptCluster cluster, RelTraitSet traitSet, RelOptHiveTable table, RelDataType rowType,
       String alias, String concatQbIDAlias, boolean useQBIdInDigest, boolean insideView) {
-    this(cluster, traitSet, table, alias, concatQbIDAlias, table.getRowType(), useQBIdInDigest, insideView);
+    this(cluster, traitSet, table, alias, concatQbIDAlias, rowType, rowType, useQBIdInDigest, insideView);
   }
 
   private HiveTableScan(RelOptCluster cluster, RelTraitSet traitSet, RelOptHiveTable table,
-      String alias, String concatQbIDAlias, RelDataType newRowtype, boolean useQBIdInDigest, boolean insideView) {
+      String alias, String concatQbIDAlias, RelDataType rowType, RelDataType prunedRowtype,
+      boolean useQBIdInDigest, boolean insideView) {
     super(cluster, TraitsUtil.getDefaultTraitSet(cluster), table);
     assert getConvention() == HiveRelNode.CONVENTION;
     this.tblAlias = alias;
     this.concatQbIDAlias = concatQbIDAlias;
-    this.hiveTableScanRowType = newRowtype;
+    this.rowType = rowType;
+    this.hiveTableScanRowType = prunedRowtype;
     Triple<ImmutableList<Integer>, ImmutableSet<Integer>, ImmutableSet<Integer>> colIndxPair =
-        buildColIndxsFrmReloptHT(table, newRowtype);
+        buildColIndxsFrmReloptHT(table, prunedRowtype);
     this.neededColIndxsFrmReloptHT = colIndxPair.getLeft();
     this.virtualOrPartColIndxsInTS = colIndxPair.getMiddle();
     this.virtualColIndxsInTS = colIndxPair.getRight();
@@ -118,12 +121,12 @@ public class HiveTableScan extends TableScan implements HiveRelNode {
    * Copy TableScan operator with a new Row Schema. The new Row Schema can only
    * be a subset of this TS schema.
    *
-   * @param newRowtype
+   * @param prunedRowtype
    * @return
    */
-  public HiveTableScan copy(RelDataType newRowtype) {
+  public HiveTableScan copy(RelDataType prunedRowtype) {
     return new HiveTableScan(getCluster(), getTraitSet(), ((RelOptHiveTable) table), this.tblAlias, this.concatQbIDAlias,
-            newRowtype, this.useQBIdInDigest, this.insideView);
+        rowType, prunedRowtype, this.useQBIdInDigest, this.insideView);
   }
 
   @Override public RelWriter explainTerms(RelWriter pw) {
@@ -195,6 +198,10 @@ public class HiveTableScan extends TableScan implements HiveRelNode {
     hp.setSynthetic();
 
     return hp;
+  }
+
+  @Override public RelDataType deriveRowType() {
+    return rowType;
   }
 
   public List<Integer> getNeededColIndxsFrmReloptHT() {

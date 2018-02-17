@@ -88,6 +88,8 @@ import org.apache.calcite.rel.metadata.RelMetadataQuery;
 import org.apache.calcite.rel.rules.FilterMergeRule;
 import org.apache.calcite.rel.rules.JoinToMultiJoinRule;
 import org.apache.calcite.rel.rules.LoptOptimizeJoinRule;
+import org.apache.calcite.rel.rules.ProjectFilterTransposeRule;
+import org.apache.calcite.rel.rules.ProjectJoinTransposeRule;
 import org.apache.calcite.rel.rules.ProjectMergeRule;
 import org.apache.calcite.rel.rules.ProjectRemoveRule;
 import org.apache.calcite.rel.type.RelDataType;
@@ -1480,7 +1482,101 @@ public class CalcitePlanner extends SemanticAnalyzer {
       calcitePreCboPlan = applyPreJoinOrderingTransforms(calciteGenPlan,
               mdProvider.getMetadataProvider(), executorProvider);
 
-      // 3. Apply join order optimizations: reordering MST algorithm
+      // 3. Materialized view based rewriting
+      // We disable it for CTAS and MV creation queries (trying to avoid any problem
+      // due to data freshness)
+      if (conf.getBoolVar(ConfVars.HIVE_MATERIALIZED_VIEW_ENABLE_AUTO_REWRITING) &&
+              !getQB().isMaterializedView() && !ctx.isLoadingMaterializedView() && !getQB().isCTAS()) {
+        perfLogger.PerfLogBegin(this.getClass().getName(), PerfLogger.OPTIMIZER);
+        final RelNode calcitePreMVRewritingPlan = calcitePreCboPlan;
+        // Use Calcite cost model for view rewriting
+        RelMetadataProvider calciteMdProvider = DefaultRelMetadataProvider.INSTANCE;
+        RelMetadataQuery.THREAD_PROVIDERS.set(JaninoRelMetadataProvider.of(calciteMdProvider));
+        planner.registerMetadataProviders(Lists.newArrayList(calciteMdProvider));
+        // Add views to planner
+        List<RelOptMaterialization> materializations = new ArrayList<>();
+        try {
+          materializations = Hive.get().getValidMaterializedViews();
+          // We need to use the current cluster for the scan operator on views,
+          // otherwise the planner will throw an Exception (different planners)
+          materializations = Lists.transform(materializations,
+              new Function<RelOptMaterialization, RelOptMaterialization>() {
+                @Override
+                public RelOptMaterialization apply(RelOptMaterialization materialization) {
+                  final RelNode viewScan = materialization.tableRel;
+                  final RelNode newViewScan;
+                  if (viewScan instanceof DruidQuery) {
+                    final DruidQuery dq = (DruidQuery) viewScan;
+                    // Ideally we should use HiveRelNode convention. However, since Volcano planner
+                    // throws in that case because DruidQuery does not implement the interface,
+                    // we set it as Bindable. Currently, we do not use convention in Hive, hence that
+                    // should be fine.
+                    // TODO: If we want to make use of convention (e.g., while directly generating operator
+                    // tree instead of AST), this should be changed.
+                    newViewScan = DruidQuery.create(optCluster, optCluster.traitSetOf(BindableConvention.INSTANCE),
+                        viewScan.getTable(), dq.getDruidTable(),
+                        ImmutableList.<RelNode>of(dq.getTableScan()));
+                  } else {
+                    newViewScan = new HiveTableScan(optCluster, optCluster.traitSetOf(HiveRelNode.CONVENTION),
+                        (RelOptHiveTable) viewScan.getTable(), viewScan.getRowType(), viewScan.getTable().getQualifiedName().get(0),
+                        null, false, false);
+                  }
+                  return new RelOptMaterialization(newViewScan, materialization.queryRel, null,
+                      materialization.qualifiedTableName);
+                }
+              }
+          );
+        } catch (HiveException e) {
+          LOG.warn("Exception loading materialized views", e);
+        }
+        if (!materializations.isEmpty()) {
+          for (RelOptMaterialization materialization : materializations) {
+            planner.addMaterialization(materialization);
+          }
+          // Add view-based rewriting rules to planner
+          planner.addRule(HiveMaterializedViewRule.INSTANCE_PROJECT_FILTER);
+          planner.addRule(HiveMaterializedViewRule.INSTANCE_FILTER);
+          planner.addRule(HiveMaterializedViewRule.INSTANCE_PROJECT_JOIN);
+          planner.addRule(HiveMaterializedViewRule.INSTANCE_JOIN);
+          planner.addRule(HiveMaterializedViewRule.INSTANCE_PROJECT_AGGREGATE);
+          planner.addRule(HiveMaterializedViewRule.INSTANCE_AGGREGATE);
+          // Optimize plan
+          planner.setRoot(calcitePreCboPlan);
+          calcitePreCboPlan = planner.findBestExp();
+          // Remove view-based rewriting rules from planner
+          planner.clear();
+        }
+        // Restore default cost model
+        RelMetadataQuery.THREAD_PROVIDERS.set(JaninoRelMetadataProvider.of(mdProvider.getMetadataProvider()));
+        perfLogger.PerfLogEnd(this.getClass().getName(), PerfLogger.OPTIMIZER, "Calcite: View-based rewriting");
+        if (calcitePreMVRewritingPlan != calcitePreCboPlan) {
+          // Only trigger this sequence of rules if a rewriting has been produced.
+          // Push filter operators back
+          perfLogger.PerfLogBegin(this.getClass().getName(), PerfLogger.OPTIMIZER);
+          calcitePreCboPlan = hepPlan(calcitePreCboPlan, true, mdProvider.getMetadataProvider(), executorProvider,
+              HiveFilterProjectTransposeRule.INSTANCE_DETERMINISTIC_WINDOWING, HiveFilterJoinRule.JOIN,
+              HiveFilterJoinRule.FILTER_ON_JOIN, new FilterMergeRule(HiveRelFactories.HIVE_BUILDER));
+          perfLogger.PerfLogEnd(this.getClass().getName(), PerfLogger.OPTIMIZER,
+              "Calcite: Prejoin ordering transformation, Rerun PPD -MV-");
+          // We might to retrieve needed column stats for materialized views
+          perfLogger.PerfLogBegin(this.getClass().getName(), PerfLogger.OPTIMIZER);
+          fieldTrimmer = new HiveRelFieldTrimmer(null,
+              HiveRelFactories.HIVE_BUILDER.create(cluster, null),
+              profilesCBO.contains(ExtendedCBOProfile.JOIN_REORDERING));
+          calcitePreCboPlan = fieldTrimmer.trim(calcitePreCboPlan);
+          perfLogger.PerfLogEnd(this.getClass().getName(), PerfLogger.OPTIMIZER,
+              "Calcite: Prejoin ordering transformation, Projection Pruning -MV-");
+          // Push filter to TS
+          perfLogger.PerfLogBegin(this.getClass().getName(), PerfLogger.OPTIMIZER);
+          calcitePreCboPlan = hepPlan(calcitePreCboPlan, true, mdProvider.getMetadataProvider(), executorProvider,
+              HiveFilterProjectTSTransposeRule.INSTANCE, HiveFilterProjectTSTransposeRule.INSTANCE_DRUID,
+              HiveProjectFilterPullUpConstantsRule.INSTANCE);
+          perfLogger.PerfLogEnd(this.getClass().getName(), PerfLogger.OPTIMIZER,
+              "Calcite: Prejoin ordering transformation, Rerun PPD -MV-");
+        }
+      }
+
+      // 4. Apply join order optimizations: reordering MST algorithm
       //    If join optimizations failed because of missing stats, we continue with
       //    the rest of optimizations
       if (profilesCBO.contains(ExtendedCBOProfile.JOIN_REORDERING)) {
@@ -1527,99 +1623,12 @@ public class CalcitePlanner extends SemanticAnalyzer {
         disableSemJoinReordering = false;
       }
 
-      // 4.1. Run other optimizations that do not need stats
+      // 5. Run other optimizations that do not need stats
       perfLogger.PerfLogBegin(this.getClass().getName(), PerfLogger.OPTIMIZER);
       calciteOptimizedPlan = hepPlan(calciteOptimizedPlan, false, mdProvider.getMetadataProvider(), null,
-              HepMatchOrder.BOTTOM_UP, ProjectRemoveRule.INSTANCE, HiveUnionMergeRule.INSTANCE,
-              HiveProjectMergeRule.INSTANCE_NO_FORCE, HiveJoinCommuteRule.INSTANCE);
+          HepMatchOrder.BOTTOM_UP, ProjectRemoveRule.INSTANCE, HiveUnionMergeRule.INSTANCE,
+          HiveAggregateProjectMergeRule.INSTANCE, HiveProjectMergeRule.INSTANCE_NO_FORCE, HiveJoinCommuteRule.INSTANCE);
       perfLogger.PerfLogEnd(this.getClass().getName(), PerfLogger.OPTIMIZER, "Calcite: Optimizations without stats 1");
-
-      // 5. Materialized view based rewriting
-      // We disable it for CTAS and MV creation queries (trying to avoid any problem
-      // due to data freshness)
-      if (conf.getBoolVar(ConfVars.HIVE_MATERIALIZED_VIEW_ENABLE_AUTO_REWRITING) &&
-              !getQB().isMaterializedView() && !ctx.isLoadingMaterializedView() && !getQB().isCTAS()) {
-        perfLogger.PerfLogBegin(this.getClass().getName(), PerfLogger.OPTIMIZER);
-        // Use Calcite cost model for view rewriting
-        RelMetadataProvider calciteMdProvider = DefaultRelMetadataProvider.INSTANCE;
-        RelMetadataQuery.THREAD_PROVIDERS.set(JaninoRelMetadataProvider.of(calciteMdProvider));
-        planner.registerMetadataProviders(Lists.newArrayList(calciteMdProvider));
-        // Add views to planner
-        List<RelOptMaterialization> materializations = new ArrayList<>();
-        try {
-          materializations = Hive.get().getValidMaterializedViews();
-          // We need to use the current cluster for the scan operator on views,
-          // otherwise the planner will throw an Exception (different planners)
-          materializations = Lists.transform(materializations,
-              new Function<RelOptMaterialization, RelOptMaterialization>() {
-                @Override
-                public RelOptMaterialization apply(RelOptMaterialization materialization) {
-                  final RelNode viewScan = materialization.tableRel;
-                  final RelNode newViewScan;
-                  if (viewScan instanceof Project) {
-                    // There is a Project on top (due to nullability)
-                    final Project pq = (Project) viewScan;
-                    newViewScan = HiveProject.create(optCluster, copyNodeScan(pq.getInput()),
-                        pq.getChildExps(), pq.getRowType(), Collections.<RelCollation> emptyList());
-                  } else {
-                    newViewScan = copyNodeScan(viewScan);
-                  }
-                  return new RelOptMaterialization(newViewScan, materialization.queryRel, null,
-                      materialization.qualifiedTableName);
-                }
-
-                private RelNode copyNodeScan(RelNode scan) {
-                  final RelNode newScan;
-                  if (scan instanceof DruidQuery) {
-                    final DruidQuery dq = (DruidQuery) scan;
-                    // Ideally we should use HiveRelNode convention. However, since Volcano planner
-                    // throws in that case because DruidQuery does not implement the interface,
-                    // we set it as Bindable. Currently, we do not use convention in Hive, hence that
-                    // should be fine.
-                    // TODO: If we want to make use of convention (e.g., while directly generating operator
-                    // tree instead of AST), this should be changed.
-                    newScan = DruidQuery.create(optCluster, optCluster.traitSetOf(BindableConvention.INSTANCE),
-                        scan.getTable(), dq.getDruidTable(),
-                        ImmutableList.<RelNode>of(dq.getTableScan()));
-                  } else {
-                    newScan = new HiveTableScan(optCluster, optCluster.traitSetOf(HiveRelNode.CONVENTION),
-                        (RelOptHiveTable) scan.getTable(), scan.getTable().getQualifiedName().get(0),
-                        null, false, false);
-                  }
-                  return newScan;
-                }
-              }
-          );
-        } catch (HiveException e) {
-          LOG.warn("Exception loading materialized views", e);
-        }
-        if (!materializations.isEmpty()) {
-          for (RelOptMaterialization materialization : materializations) {
-            planner.addMaterialization(materialization);
-          }
-          // Add view-based rewriting rules to planner
-          planner.addRule(HiveMaterializedViewRule.INSTANCE_PROJECT_FILTER);
-          planner.addRule(HiveMaterializedViewRule.INSTANCE_FILTER);
-          planner.addRule(HiveMaterializedViewRule.INSTANCE_PROJECT_JOIN);
-          planner.addRule(HiveMaterializedViewRule.INSTANCE_JOIN);
-          planner.addRule(HiveMaterializedViewRule.INSTANCE_PROJECT_AGGREGATE);
-          planner.addRule(HiveMaterializedViewRule.INSTANCE_AGGREGATE);
-          // Optimize plan
-          planner.setRoot(calciteOptimizedPlan);
-          calciteOptimizedPlan = planner.findBestExp();
-          // Remove view-based rewriting rules from planner
-          planner.clear();
-        }
-        // Restore default cost model
-        RelMetadataQuery.THREAD_PROVIDERS.set(JaninoRelMetadataProvider.of(mdProvider.getMetadataProvider()));
-        perfLogger.PerfLogEnd(this.getClass().getName(), PerfLogger.OPTIMIZER, "Calcite: View-based rewriting");
-      }
-
-      // 4.2. Run other optimizations that do not need stats
-      perfLogger.PerfLogBegin(this.getClass().getName(), PerfLogger.OPTIMIZER);
-      calciteOptimizedPlan = hepPlan(calciteOptimizedPlan, false, mdProvider.getMetadataProvider(), null,
-              HepMatchOrder.BOTTOM_UP, HiveAggregateProjectMergeRule.INSTANCE);
-      perfLogger.PerfLogEnd(this.getClass().getName(), PerfLogger.OPTIMIZER, "Calcite: Optimizations without stats 2");
 
       // 6. Run aggregate-join transpose (cost based)
       //    If it failed because of missing stats, we continue with
@@ -2491,23 +2500,27 @@ public class CalcitePlanner extends SemanticAnalyzer {
           }
 
           List<Interval> intervals = Arrays.asList(DruidTable.DEFAULT_INTERVAL);
-          rowType = dtFactory.createStructType(druidColTypes, druidColNames);
+          // TODO: Propagate nullability in rowType throughout the complete operator tree
+          RelDataType tableRowType = dtFactory.createStructType(druidColTypes, druidColNames);
           DruidTable druidTable = new DruidTable(new DruidSchema(address, address, false),
-                  dataSource, RelDataTypeImpl.proto(rowType), metrics, DruidTable.DEFAULT_TIMESTAMP_COLUMN,
-                  intervals, null, null);
+              dataSource, RelDataTypeImpl.proto(tableRowType), metrics, DruidTable.DEFAULT_TIMESTAMP_COLUMN,
+              intervals, null, null);
           RelOptHiveTable optTable = new RelOptHiveTable(relOptSchema, fullyQualifiedTabName,
-                  rowType, tabMetaData, nonPartitionColumns, partitionColumns, virtualCols, conf,
-                  partitionCache, colStatsCache, noColsMissingStats);
+              tableRowType, tabMetaData, nonPartitionColumns, partitionColumns, virtualCols, conf,
+              partitionCache, colStatsCache, noColsMissingStats);
           final TableScan scan = new HiveTableScan(cluster, cluster.traitSetOf(HiveRelNode.CONVENTION),
-                  optTable, null == tableAlias ? tabMetaData.getTableName() : tableAlias,
-                  getAliasId(tableAlias, qb), HiveConf.getBoolVar(conf,
-                      HiveConf.ConfVars.HIVE_CBO_RETPATH_HIVEOP), qb.isInsideView()
-                      || qb.getAliasInsideView().contains(tableAlias.toLowerCase()));
+              optTable, rowType, null == tableAlias ? tabMetaData.getTableName() : tableAlias,
+              getAliasId(tableAlias, qb), HiveConf.getBoolVar(conf,
+                  HiveConf.ConfVars.HIVE_CBO_RETPATH_HIVEOP), qb.isInsideView()
+                  || qb.getAliasInsideView().contains(tableAlias.toLowerCase()));
           tableRel = DruidQuery.create(cluster, cluster.traitSetOf(BindableConvention.INSTANCE),
               optTable, druidTable, ImmutableList.<RelNode>of(scan));
         } else {
           // Build row type from field <type, name>
-          RelDataType rowType = inferNotNullableColumns(tabMetaData, TypeConverter.getType(cluster, rr, null));
+          RelDataType tableScanRowType = TypeConverter.getType(cluster, rr, null);
+          // Build row type for table object, in this occasion we account for nullability.
+          // TODO: Propagate nullability in rowType throughout the complete operator tree
+          RelDataType tableRowType = inferNotNullableColumns(tabMetaData, tableScanRowType);
           // Build RelOptAbstractTable
           String fullyQualifiedTabName = tabMetaData.getDbName();
           if (fullyQualifiedTabName != null && !fullyQualifiedTabName.isEmpty()) {
@@ -2517,10 +2530,10 @@ public class CalcitePlanner extends SemanticAnalyzer {
             fullyQualifiedTabName = tabMetaData.getTableName();
           }
           RelOptHiveTable optTable = new RelOptHiveTable(relOptSchema, fullyQualifiedTabName,
-                  rowType, tabMetaData, nonPartitionColumns, partitionColumns, virtualCols, conf,
-                  partitionCache, colStatsCache, noColsMissingStats);
+              tableRowType, tabMetaData, nonPartitionColumns, partitionColumns, virtualCols, conf,
+              partitionCache, colStatsCache, noColsMissingStats);
           // Build Hive Table Scan Rel
-          tableRel = new HiveTableScan(cluster, cluster.traitSetOf(HiveRelNode.CONVENTION), optTable,
+          tableRel = new HiveTableScan(cluster, cluster.traitSetOf(HiveRelNode.CONVENTION), optTable, tableScanRowType,
               null == tableAlias ? tabMetaData.getTableName() : tableAlias,
               getAliasId(tableAlias, qb), HiveConf.getBoolVar(conf,
                   HiveConf.ConfVars.HIVE_CBO_RETPATH_HIVEOP), qb.isInsideView()
