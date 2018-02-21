@@ -340,9 +340,9 @@ public final class HiveMaterializedViewsRegistry {
     else {
       fullyQualifiedTabName = viewTable.getTableName();
     }
+    RelNode tableRel;
 
     // 3. Build operator
-    RelNode rel;
     if (obtainTableType(viewTable) == TableType.DRUID) {
       // Build Druid query
       String address = HiveConf.getVar(conf,
@@ -374,27 +374,27 @@ public final class HiveMaterializedViewsRegistry {
       }
 
       List<Interval> intervals = Arrays.asList(DruidTable.DEFAULT_INTERVAL);
-      RelDataType tableRowType = dtFactory.createStructType(druidColTypes, druidColNames);
+      rowType = dtFactory.createStructType(druidColTypes, druidColNames);
       RelOptHiveTable optTable = new RelOptHiveTable(null, fullyQualifiedTabName,
-          tableRowType, viewTable, nonPartitionColumns, partitionColumns, new ArrayList<>(),
+          rowType, viewTable, nonPartitionColumns, partitionColumns, new ArrayList<>(),
           conf, new HashMap<>(), new HashMap<>(), new AtomicInteger());
       DruidTable druidTable = new DruidTable(new DruidSchema(address, address, false),
-          dataSource, RelDataTypeImpl.proto(tableRowType), metrics, DruidTable.DEFAULT_TIMESTAMP_COLUMN,
+          dataSource, RelDataTypeImpl.proto(rowType), metrics, DruidTable.DEFAULT_TIMESTAMP_COLUMN,
           intervals, null, null);
       final TableScan scan = new HiveTableScan(cluster, cluster.traitSetOf(HiveRelNode.CONVENTION),
-          optTable, rowType, viewTable.getTableName(), null, false, false);
-      rel = DruidQuery.create(cluster, cluster.traitSetOf(BindableConvention.INSTANCE),
+          optTable, viewTable.getTableName(), null, false, false);
+      tableRel = DruidQuery.create(cluster, cluster.traitSetOf(BindableConvention.INSTANCE),
           optTable, druidTable, ImmutableList.<RelNode>of(scan));
     } else {
       // Build Hive Table Scan Rel
       RelOptHiveTable optTable = new RelOptHiveTable(null, fullyQualifiedTabName,
           rowType, viewTable, nonPartitionColumns, partitionColumns, new ArrayList<>(),
           conf, new HashMap<>(), new HashMap<>(), new AtomicInteger());
-      rel = new HiveTableScan(cluster, cluster.traitSetOf(HiveRelNode.CONVENTION), optTable, rowType,
+      tableRel = new HiveTableScan(cluster, cluster.traitSetOf(HiveRelNode.CONVENTION), optTable,
           viewTable.getTableName(), null, false, false);
     }
 
-    return rel;
+    return tableRel;
   }
 
   private static RelNode parseQuery(HiveConf conf, String viewQuery) {

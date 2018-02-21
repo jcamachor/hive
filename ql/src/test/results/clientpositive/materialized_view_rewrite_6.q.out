@@ -232,7 +232,7 @@ STAGE PLANS:
             alias: default.mv1
             Statistics: Num rows: 4 Data size: 64 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
-              predicate: (deptno > 10) (type: boolean)
+              predicate: (10 < deptno) (type: boolean)
               Statistics: Num rows: 4 Data size: 64 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: salary (type: float), s (type: bigint)
@@ -340,7 +340,7 @@ STAGE PLANS:
             alias: default.mv1
             Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
-              predicate: (deptno > 15) (type: boolean)
+              predicate: (15 < deptno) (type: boolean)
               Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: salary (type: float), s (type: bigint)
@@ -741,12 +741,12 @@ STAGE PLANS:
               Select Operator
                 expressions: empid (type: int), deptno (type: int)
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 1 Data size: 92 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
                   key expressions: _col1 (type: int)
                   sort order: +
                   Map-reduce partition columns: _col1 (type: int)
-                  Statistics: Num rows: 1 Data size: 92 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                   value expressions: _col0 (type: int)
       Reduce Operator Tree:
         Join Operator

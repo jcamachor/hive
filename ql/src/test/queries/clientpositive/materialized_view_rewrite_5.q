@@ -255,7 +255,7 @@ where emps.empid = 1;
 
 drop materialized view mv1;
 
--- EXAMPLE 45
+-- EXAMPLE 45a
 create materialized view mv1 enable rewrite as
 select emps.empid, emps.deptno from emps
 join depts a on (emps.deptno=a.deptno)
@@ -272,5 +272,25 @@ where emps.empid = 1;
 select emps.empid from emps
 join dependents on (emps.empid = dependents.empid)
 where emps.empid = 1;
+
+drop materialized view mv1;
+
+-- EXAMPLE 45b
+create materialized view mv1 enable rewrite as
+select emps.empid, emps.deptno from emps
+join depts a on (emps.deptno=a.deptno)
+join depts b on (emps.deptno=b.deptno)
+join dependents on (emps.empid = dependents.empid)
+where emps.name = 'Sebastian';
+analyze table mv1 compute statistics for columns;
+
+explain
+select emps.empid from emps
+join dependents on (emps.empid = dependents.empid)
+where emps.name = 'Sebastian';
+
+select emps.empid from emps
+join dependents on (emps.empid = dependents.empid)
+where emps.name = 'Sebastian';
 
 drop materialized view mv1;

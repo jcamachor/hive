@@ -218,7 +218,7 @@ STAGE PLANS:
             alias: default.mv1
             Statistics: Num rows: 4 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
-              predicate: (deptno = 1) (type: boolean)
+              predicate: (1 = deptno) (type: boolean)
               Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: 1 (type: int)
@@ -306,7 +306,7 @@ STAGE PLANS:
             alias: default.mv1
             Statistics: Num rows: 4 Data size: 32 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
-              predicate: (UDFToInteger(_c0) > 1) (type: boolean)
+              predicate: (1 < UDFToInteger(_c0)) (type: boolean)
               Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: UDFToInteger(_c0) (type: int)
@@ -398,7 +398,7 @@ STAGE PLANS:
             alias: default.mv1
             Statistics: Num rows: 4 Data size: 32 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
-              predicate: (UDFToInteger(_c0) = 1) (type: boolean)
+              predicate: (1 = UDFToInteger(_c0)) (type: boolean)
               Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: 1 (type: int)

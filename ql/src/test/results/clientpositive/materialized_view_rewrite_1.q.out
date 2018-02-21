@@ -216,7 +216,7 @@ STAGE PLANS:
             alias: default.mv1
             Statistics: Num rows: 3 Data size: 315 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
-              predicate: (empid < 120) (type: boolean)
+              predicate: (120 > empid) (type: boolean)
               Statistics: Num rows: 3 Data size: 315 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: empid (type: int), deptno (type: int), name (type: varchar(256)), salary (type: float), commission (type: int)
@@ -460,7 +460,7 @@ STAGE PLANS:
             alias: default.mv1
             Statistics: Num rows: 5 Data size: 20 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
-              predicate: (deptno = 1) (type: boolean)
+              predicate: (1 = deptno) (type: boolean)
               Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: 1 (type: int)
@@ -563,7 +563,7 @@ STAGE PLANS:
             alias: default.mv1
             Statistics: Num rows: 4 Data size: 424 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
-              predicate: (empid < 150) (type: boolean)
+              predicate: (150 > empid) (type: boolean)
               Statistics: Num rows: 1 Data size: 106 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: empid (type: int), deptno (type: int), name (type: varchar(256)), salary (type: float), commission (type: int)

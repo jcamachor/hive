@@ -686,7 +686,7 @@ STAGE PLANS:
             alias: default.ssb_mv
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
-              predicate: ((UDFToDouble(lo_quantity) < 25.0) and (UDFToInteger(d_year) = 1993) and UDFToDouble(lo_discount) BETWEEN 1.0 AND 3.0) (type: boolean)
+              predicate: ((1993 = UDFToInteger(d_year)) and (25.0 > UDFToDouble(lo_quantity)) and UDFToDouble(lo_discount) BETWEEN 1.0 AND 3.0) (type: boolean)
               Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
               Select Operator
                 expressions: discounted_price (type: double)
@@ -755,7 +755,7 @@ STAGE PLANS:
             alias: default.ssb_mv
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
-              predicate: ((UDFToInteger(d_yearmonthnum) = 199401) and UDFToDouble(lo_discount) BETWEEN 4.0 AND 6.0 and UDFToDouble(lo_quantity) BETWEEN 26.0 AND 35.0) (type: boolean)
+              predicate: ((199401 = UDFToInteger(d_yearmonthnum)) and UDFToDouble(lo_discount) BETWEEN 4.0 AND 6.0 and UDFToDouble(lo_quantity) BETWEEN 26.0 AND 35.0) (type: boolean)
               Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
               Select Operator
                 expressions: discounted_price (type: double)
@@ -826,7 +826,7 @@ STAGE PLANS:
             alias: default.ssb_mv
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
-              predicate: ((UDFToInteger(d_weeknuminyear) = 6) and (UDFToInteger(d_year) = 1994) and UDFToDouble(lo_discount) BETWEEN 5.0 AND 7.0 and UDFToDouble(lo_quantity) BETWEEN 26.0 AND 35.0) (type: boolean)
+              predicate: ((1994 = UDFToInteger(d_year)) and (6 = UDFToInteger(d_weeknuminyear)) and UDFToDouble(lo_discount) BETWEEN 5.0 AND 7.0 and UDFToDouble(lo_quantity) BETWEEN 26.0 AND 35.0) (type: boolean)
               Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
               Select Operator
                 expressions: discounted_price (type: double)
@@ -1237,7 +1237,7 @@ STAGE PLANS:
             alias: default.ssb_mv
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
-              predicate: ((UDFToInteger(d_year) <= 1997) and (UDFToInteger(d_year) >= 1992) and (c_region = 'ASIA') and (s_region = 'ASIA')) (type: boolean)
+              predicate: ((1992 <= UDFToInteger(d_year)) and (1997 >= UDFToInteger(d_year)) and (c_region = 'ASIA') and (s_region = 'ASIA')) (type: boolean)
               Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
               Select Operator
                 expressions: c_nation (type: string), s_nation (type: string), UDFToInteger(d_year) (type: int), lo_revenue (type: double)
@@ -1348,7 +1348,7 @@ STAGE PLANS:
             alias: default.ssb_mv
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
-              predicate: ((UDFToInteger(d_year) <= 1997) and (UDFToInteger(d_year) >= 1992) and (c_nation = 'UNITED STATES') and (s_nation = 'UNITED STATES')) (type: boolean)
+              predicate: ((1992 <= UDFToInteger(d_year)) and (1997 >= UDFToInteger(d_year)) and (c_nation = 'UNITED STATES') and (s_nation = 'UNITED STATES')) (type: boolean)
               Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
               Select Operator
                 expressions: c_city (type: string), s_city (type: string), UDFToInteger(d_year) (type: int), lo_revenue (type: double)
@@ -1459,7 +1459,7 @@ STAGE PLANS:
             alias: default.ssb_mv
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
-              predicate: (((c_city = 'UNITED KI1') or (c_city = 'UNITED KI5')) and ((s_city = 'UNITED KI1') or (s_city = 'UNITED KI5')) and (UDFToInteger(d_year) <= 1997) and (UDFToInteger(d_year) >= 1992)) (type: boolean)
+              predicate: (((c_city = 'UNITED KI1') or (c_city = 'UNITED KI5')) and ((s_city = 'UNITED KI1') or (s_city = 'UNITED KI5')) and (1992 <= UDFToInteger(d_year)) and (1997 >= UDFToInteger(d_year))) (type: boolean)
               Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
               Select Operator
                 expressions: c_city (type: string), s_city (type: string), UDFToInteger(d_year) (type: int), lo_revenue (type: double)
@@ -1798,7 +1798,7 @@ STAGE PLANS:
             alias: default.ssb_mv
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
-              predicate: (((UDFToInteger(d_year) = 1997) or (UDFToInteger(d_year) = 1998)) and ((p_mfgr = 'MFGR#1') or (p_mfgr = 'MFGR#2')) and (c_region = 'AMERICA') and (s_region = 'AMERICA')) (type: boolean)
+              predicate: (((1997 = UDFToInteger(d_year)) or (1998 = UDFToInteger(d_year))) and ((p_mfgr = 'MFGR#1') or (p_mfgr = 'MFGR#2')) and (c_region = 'AMERICA') and (s_region = 'AMERICA')) (type: boolean)
               Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
               Select Operator
                 expressions: UDFToInteger(d_year) (type: int), s_nation (type: string), p_category (type: string), net_revenue (type: double)
@@ -1911,7 +1911,7 @@ STAGE PLANS:
             alias: default.ssb_mv
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
-              predicate: (((UDFToInteger(d_year) = 1997) or (UDFToInteger(d_year) = 1998)) and (c_region = 'AMERICA') and (p_category = 'MFGR#14') and (s_nation = 'UNITED STATES')) (type: boolean)
+              predicate: (((1997 = UDFToInteger(d_year)) or (1998 = UDFToInteger(d_year))) and (c_region = 'AMERICA') and (p_category = 'MFGR#14') and (s_nation = 'UNITED STATES')) (type: boolean)
               Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
               Select Operator
                 expressions: UDFToInteger(d_year) (type: int), s_city (type: string), p_brand1 (type: string), net_revenue (type: double)

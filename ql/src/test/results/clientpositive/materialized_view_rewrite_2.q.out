@@ -222,7 +222,7 @@ STAGE PLANS:
             alias: default.mv1
             Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
-              predicate: (deptno > 20) (type: boolean)
+              predicate: (20 < deptno) (type: boolean)
               Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: empid (type: int)
@@ -316,7 +316,7 @@ STAGE PLANS:
             alias: default.mv1
             Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
-              predicate: (deptno > 20) (type: boolean)
+              predicate: (20 < deptno) (type: boolean)
               Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: empid (type: int)
@@ -410,7 +410,7 @@ STAGE PLANS:
             alias: default.mv1
             Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
-              predicate: (deptno > 20) (type: boolean)
+              predicate: (20 < deptno) (type: boolean)
               Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: empid (type: int)
@@ -504,7 +504,7 @@ STAGE PLANS:
             alias: default.mv1
             Statistics: Num rows: 5 Data size: 40 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
-              predicate: (empid > 15) (type: boolean)
+              predicate: (15 < empid) (type: boolean)
               Statistics: Num rows: 5 Data size: 40 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: deptno (type: int)
@@ -603,14 +603,14 @@ STAGE PLANS:
             alias: default.mv1
             Statistics: Num rows: 5 Data size: 40 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
-              predicate: (empid > 15) (type: boolean)
+              predicate: (15 < empid) (type: boolean)
               Statistics: Num rows: 5 Data size: 40 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: deptno (type: int)
-                outputColumnNames: deptno
+                outputColumnNames: _col0
                 Statistics: Num rows: 5 Data size: 40 Basic stats: COMPLETE Column stats: COMPLETE
                 Group By Operator
-                  keys: deptno (type: int)
+                  keys: _col0 (type: int)
                   mode: hash
                   outputColumnNames: _col0
                   Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
@@ -730,10 +730,10 @@ STAGE PLANS:
               Statistics: Num rows: 2 Data size: 384 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: empid (type: int)
-                outputColumnNames: empid
+                outputColumnNames: _col0
                 Statistics: Num rows: 2 Data size: 384 Basic stats: COMPLETE Column stats: COMPLETE
                 Group By Operator
-                  keys: empid (type: int)
+                  keys: _col0 (type: int)
                   mode: hash
                   outputColumnNames: _col0
                   Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE

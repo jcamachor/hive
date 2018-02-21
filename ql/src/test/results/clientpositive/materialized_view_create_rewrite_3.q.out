@@ -246,7 +246,7 @@ STAGE PLANS:
             alias: default.cmv_mat_view
             Statistics: Num rows: 2 Data size: 232 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (c > 10.1) (type: boolean)
+              predicate: (10.1 < c) (type: boolean)
               Statistics: Num rows: 1 Data size: 116 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: a (type: int)
@@ -623,7 +623,7 @@ STAGE PLANS:
             alias: default.cmv_mat_view
             Statistics: Num rows: 3 Data size: 348 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (c > 10.1) (type: boolean)
+              predicate: (10.1 < c) (type: boolean)
               Statistics: Num rows: 1 Data size: 116 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: a (type: int)
@@ -831,7 +831,7 @@ STAGE PLANS:
             alias: default.cmv_mat_view
             Statistics: Num rows: 1 Data size: 116 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (c > 10.1) (type: boolean)
+              predicate: (10.1 < c) (type: boolean)
               Statistics: Num rows: 1 Data size: 116 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: a (type: int)
@@ -928,7 +928,7 @@ STAGE PLANS:
             alias: default.cmv_mat_view
             Statistics: Num rows: 1 Data size: 116 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (c > 10.1) (type: boolean)
+              predicate: (10.1 < c) (type: boolean)
               Statistics: Num rows: 1 Data size: 116 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: a (type: int)

@@ -369,7 +369,7 @@ STAGE PLANS:
             alias: default.source_table_001_mv
             Statistics: Num rows: 1 Data size: 159 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
-              predicate: (my_date = 2010-01-10) (type: boolean)
+              predicate: (2010-01-10 = my_date) (type: boolean)
               Statistics: Num rows: 1 Data size: 159 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: down_volume_sum (type: bigint), 2010-01-10 (type: date), my_id2 (type: bigint), environment (type: string)
@@ -417,7 +417,7 @@ STAGE PLANS:
             alias: default.source_table_001_mv
             Statistics: Num rows: 1 Data size: 167 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
-              predicate: (my_date = 2010-01-10) (type: boolean)
+              predicate: (2010-01-10 = my_date) (type: boolean)
               Statistics: Num rows: 1 Data size: 167 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: (down_volume_sum + up_volume_sum) (type: bigint), 2010-01-10 (type: date), my_id2 (type: bigint), environment (type: string)
@@ -461,7 +461,7 @@ STAGE PLANS:
             alias: default.source_table_001_mv
             Statistics: Num rows: 1 Data size: 64 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
-              predicate: (my_date = 2010-01-10) (type: boolean)
+              predicate: (2010-01-10 = my_date) (type: boolean)
               Statistics: Num rows: 1 Data size: 64 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: down_volume_sum (type: bigint)
@@ -522,7 +522,7 @@ STAGE PLANS:
             alias: default.source_table_001_mv
             Statistics: Num rows: 1 Data size: 64 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
-              predicate: (my_date = 2010-01-10) (type: boolean)
+              predicate: (2010-01-10 = my_date) (type: boolean)
               Statistics: Num rows: 1 Data size: 64 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: down_volume_sum (type: bigint)
@@ -589,7 +589,7 @@ STAGE PLANS:
             alias: default.source_table_001_mv
             Statistics: Num rows: 1 Data size: 64 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
-              predicate: (my_date = 2010-01-10) (type: boolean)
+              predicate: (2010-01-10 = my_date) (type: boolean)
               Statistics: Num rows: 1 Data size: 64 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: down_volume_sum (type: bigint)
