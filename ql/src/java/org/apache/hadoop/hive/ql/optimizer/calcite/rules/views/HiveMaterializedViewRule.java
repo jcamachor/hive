@@ -35,6 +35,7 @@ import org.apache.calcite.rel.rules.AbstractMaterializedViewRule.MaterializedVie
 import org.apache.calcite.rel.rules.AbstractMaterializedViewRule.MaterializedViewOnlyJoinRule;
 import org.apache.calcite.rel.rules.AbstractMaterializedViewRule.MaterializedViewProjectAggregateRule;
 import org.apache.calcite.rel.rules.AbstractMaterializedViewRule.MaterializedViewOnlyAggregateRule;
+import org.apache.calcite.rel.rules.ProjectRemoveRule;
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.sql.SqlAggFunction;
 import org.apache.calcite.sql.SqlFunction;
@@ -65,13 +66,16 @@ public class HiveMaterializedViewRule {
    */
   private static final HepProgram PROGRAM = new HepProgramBuilder()
       .addRuleInstance(HiveExtractRelNodeRule.INSTANCE)
-      .addRuleInstance(HiveRootJoinProjectInsert.INSTANCE)
       .addRuleInstance(HiveTableScanProjectInsert.INSTANCE)
-      .addRuleInstance(HiveFilterProjectTransposeRule.INSTANCE)
-      .addRuleInstance(HiveJoinProjectTransposeRule.BOTH_PROJECT)
-      .addRuleInstance(HiveJoinProjectTransposeRule.LEFT_PROJECT)
-      .addRuleInstance(HiveJoinProjectTransposeRule.RIGHT_PROJECT)
-      .addRuleInstance(HiveProjectMergeRule.INSTANCE)
+      .addRuleCollection(
+          ImmutableList.of(
+              HiveFilterProjectTransposeRule.INSTANCE,
+              HiveJoinProjectTransposeRule.BOTH_PROJECT,
+              HiveJoinProjectTransposeRule.LEFT_PROJECT,
+              HiveJoinProjectTransposeRule.RIGHT_PROJECT,
+              HiveProjectMergeRule.INSTANCE))
+      .addRuleInstance(ProjectRemoveRule.INSTANCE)
+      .addRuleInstance(HiveRootJoinProjectInsert.INSTANCE)
       .build();
 
   public static final MaterializedViewProjectFilterRule INSTANCE_PROJECT_FILTER =

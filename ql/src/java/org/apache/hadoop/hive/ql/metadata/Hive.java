@@ -57,9 +57,21 @@ import java.util.stream.Collectors;
 
 import javax.jdo.JDODataStoreException;
 
+import com.google.common.collect.ImmutableList;
 import org.apache.calcite.plan.RelOptMaterialization;
+import org.apache.calcite.plan.RelOptRule;
+import org.apache.calcite.plan.RelOptRuleCall;
+import org.apache.calcite.plan.hep.HepPlanner;
+import org.apache.calcite.plan.hep.HepProgramBuilder;
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.core.Project;
+import org.apache.calcite.rel.core.TableScan;
+import org.apache.calcite.rel.type.RelDataType;
+import org.apache.calcite.rex.RexBuilder;
+import org.apache.calcite.rex.RexNode;
+import org.apache.calcite.sql.fun.SqlStdOperatorTable;
+import org.apache.calcite.sql.type.SqlTypeName;
+import org.apache.calcite.tools.RelBuilder;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileChecksum;
@@ -74,6 +86,8 @@ import org.apache.hadoop.hive.common.HiveStatsUtils;
 import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.common.ObjectPair;
 import org.apache.hadoop.hive.common.StatsSetupConst;
+import org.apache.hadoop.hive.common.ValidTxnWriteIdList;
+import org.apache.hadoop.hive.common.ValidWriteIdList;
 import org.apache.hadoop.hive.common.classification.InterfaceAudience.LimitedPrivate;
 import org.apache.hadoop.hive.common.classification.InterfaceStability.Unstable;
 import org.apache.hadoop.hive.common.log.InPlaceUpdate;
@@ -157,6 +171,7 @@ import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.lockmgr.DbTxnManager;
 import org.apache.hadoop.hive.ql.log.PerfLogger;
+import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelFactories;
 import org.apache.hadoop.hive.ql.optimizer.calcite.RelOptHiveTable;
 import org.apache.hadoop.hive.ql.optimizer.listbucketingpruner.ListBucketingPrunerUtils;
 import org.apache.hadoop.hive.ql.plan.AddPartitionDesc;
@@ -1303,7 +1318,10 @@ public class Hive {
    * @return the list of materialized views available for rewriting
    * @throws HiveException
    */
-  public List<RelOptMaterialization> getValidMaterializedViews(boolean materializedViewRebuild) throws HiveException {
+  public List<RelOptMaterialization> getValidMaterializedViews(boolean materializedViewRebuild, ValidTxnWriteIdList txnList)
+      throws HiveException {
+    final boolean tryIncrementalRewriting =
+        HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_MATERIALIZED_VIEW_REWRITING_INCREMENTAL);
     final long defaultDiff =
         HiveConf.getTimeVar(conf, HiveConf.ConfVars.HIVE_MATERIALIZED_VIEW_REWRITING_TIME_WINDOW,
             TimeUnit.MILLISECONDS);
@@ -1322,37 +1340,50 @@ public class Hive {
         Map<String, Materialization> databaseInvalidationInfo =
             getMSC().getMaterializationsInvalidationInfo(dbName, materializedViewNames);
         for (Table materializedViewTable : materializedViewTables) {
-          // Check whether the materialized view is invalidated
-          Materialization materializationInvalidationInfo =
-              databaseInvalidationInfo.get(materializedViewTable.getTableName());
-          if (materializationInvalidationInfo == null) {
-            LOG.debug("Materialized view " + materializedViewTable.getFullyQualifiedName() +
-                " ignored for rewriting as there was no information loaded in the invalidation cache");
-            continue;
-          }
           // Check if materialization defined its own invalidation time window
           String timeWindowString = materializedViewTable.getProperty(MATERIALIZED_VIEW_REWRITING_TIME_WINDOW);
           long diff = org.apache.commons.lang.StringUtils.isEmpty(timeWindowString) ? defaultDiff :
               HiveConf.toTime(timeWindowString,
                   HiveConf.getDefaultTimeUnit(HiveConf.ConfVars.HIVE_MATERIALIZED_VIEW_REWRITING_TIME_WINDOW),
                   TimeUnit.MILLISECONDS);
-
-          long invalidationTime = materializationInvalidationInfo.getInvalidationTime();
-          // If the limit is not met, we do not add the materialized view.
-          // If we are doing a rebuild, we do not consider outdated materialized views either.
-          if (diff == 0L || materializedViewRebuild) {
-            if (invalidationTime != 0L) {
-              // If parameter is zero, materialized view cannot be outdated at all
-              LOG.debug("Materialized view " + materializedViewTable.getFullyQualifiedName() +
-                  " ignored for rewriting as its contents are outdated");
-              continue;
-            }
+          Materialization materializationInvInfo = null;
+          boolean outdated = false;
+          if (diff == -1L) {
+            // If it is a rebuild, we will consider the materialized view to be outdated.
+            // Otherwise, it passed the test.
+            outdated = materializedViewRebuild;
           } else {
-            if (invalidationTime != 0 && invalidationTime > currentTime - diff) {
+            // Check whether the materialized view is invalidated
+            materializationInvInfo =
+                databaseInvalidationInfo.get(materializedViewTable.getTableName());
+            if (materializationInvInfo == null) {
               LOG.debug("Materialized view " + materializedViewTable.getFullyQualifiedName() +
-                  " ignored for rewriting as its contents are outdated");
+                  " ignored for rewriting as there was no information loaded in the invalidation cache");
               continue;
             }
+            long invalidationTime = materializationInvInfo.getInvalidationTime();
+            // If the limit is not met, we do not add the materialized view.
+            // If we are doing a rebuild, we do not consider outdated materialized views either.
+            if (diff == 0L || materializedViewRebuild) {
+              if (invalidationTime != 0L) {
+                // If parameter is zero, materialized view cannot be outdated at all
+                outdated = true;
+              }
+            } else {
+              if (invalidationTime != 0L && invalidationTime > currentTime - diff) {
+                outdated = true;
+              }
+            }
+          }
+
+          if (outdated && (!tryIncrementalRewriting || materializationInvInfo == null ||
+              materializationInvInfo.isSourceTablesUpdateDeleteModified())) {
+            // We will not try partial rewriting either because the config specification, this
+            // is a rebuild over some non-transactional table, or there were update/delete
+            // operations in the source tables (not supported yet)
+            LOG.debug("Materialized view " + materializedViewTable.getFullyQualifiedName() +
+                " ignored for rewriting as its contents are outdated");
+            continue;
           }
 
           // It passed the test, load
@@ -1371,6 +1402,13 @@ public class Hive {
             if (cachedMaterializedViewTable.getHiveTableMD().getCreateTime() ==
                 materializedViewTable.getCreateTime()) {
               // It is in the cache and up to date
+              if (outdated) {
+                // We will rewrite it to include the filters on transaction list
+                // so we can produce partial rewritings
+                materialization = augmentMaterializationWithTimeInformation(
+                    materialization, txnList, new ValidTxnWriteIdList(
+                        materializationInvInfo.getValidTxnList()));
+              }
               result.add(materialization);
               continue;
             }
@@ -1387,6 +1425,13 @@ public class Hive {
             materialization = HiveMaterializedViewsRegistry.get().createMaterializedView(
                 conf, materializedViewTable);
             if (materialization != null) {
+              if (outdated) {
+                // We will rewrite it to include the filters on transaction list
+                // so we can produce partial rewritings
+                materialization = augmentMaterializationWithTimeInformation(
+                    materialization, txnList, new ValidTxnWriteIdList(
+                        materializationInvInfo.getValidTxnList()));
+              }
               result.add(materialization);
             }
           } else {
@@ -1402,6 +1447,99 @@ public class Hive {
     } catch (Exception e) {
       throw new HiveException(e);
     }
+  }
+
+  /**
+   * Method to enrich the materialization query contained in the input with
+   * its invalidation.
+   */
+  private static RelOptMaterialization augmentMaterializationWithTimeInformation(
+      RelOptMaterialization materialization, ValidTxnWriteIdList currentTxnList,
+      ValidTxnWriteIdList materializationTxnList) {
+    final RexBuilder rexBuilder = materialization.queryRel.getCluster().getRexBuilder();
+    final HepProgramBuilder augmentMaterializationProgram = new HepProgramBuilder()
+        .addRuleInstance(new HiveAugmentMaterializationRule(rexBuilder, currentTxnList, materializationTxnList));
+    final HepPlanner augmentMaterializationPlanner = new HepPlanner(
+        augmentMaterializationProgram.build());
+    augmentMaterializationPlanner.setRoot(materialization.queryRel);
+    final RelNode modifiedQueryRel = augmentMaterializationPlanner.findBestExp();
+    return new RelOptMaterialization(materialization.tableRel, modifiedQueryRel,
+        null, materialization.qualifiedTableName);
+  }
+
+  /**
+   * This rule will rewrite the materialized view with information about
+   * its invalidation data. In particular, if any of the tables used by the
+   * materialization has been updated since the materialization was created,
+   * it will introduce a filter operator on top of that table in the materialization
+   * definition, making explicit the data contained in it so the rewriting
+   * can use this information. If the data in the source table matches the
+   * current data in the snapshot, no filter is created.
+   */
+  private static class HiveAugmentMaterializationRule extends RelOptRule {
+
+    private final RexBuilder rexBuilder;
+    private final ValidTxnWriteIdList currentTxnList;
+    private final ValidTxnWriteIdList materializationTxnList;
+    private final Set<RelNode> visited;
+
+    private HiveAugmentMaterializationRule(RexBuilder rexBuilder,
+        ValidTxnWriteIdList currentTxnList, ValidTxnWriteIdList materializationTxnList) {
+      super(operand(TableScan.class, any()),
+          HiveRelFactories.HIVE_BUILDER, "HiveAugmentMaterializationRule");
+      this.rexBuilder = rexBuilder;
+      this.currentTxnList = currentTxnList;
+      this.materializationTxnList = materializationTxnList;
+      this.visited = new HashSet<>();
+    }
+
+    @Override
+    public void onMatch(RelOptRuleCall call) {
+      final TableScan tableScan = call.rel(0);
+      if (!visited.add(tableScan)) {
+        // Already visited
+        return;
+      }
+      final String tableQName =
+          ((RelOptHiveTable)tableScan.getTable()).getHiveTableMD().getFullyQualifiedName();
+      final ValidWriteIdList tableCurrentTxnList =
+          currentTxnList.getTableValidWriteIdList(tableQName);
+      final ValidWriteIdList tableMaterializationTxnList =
+          materializationTxnList.getTableValidWriteIdList(tableQName);
+      if (tableCurrentTxnList.toString().equals(tableMaterializationTxnList.toString())) {
+        // This table has not been modified since materialization was created,
+        // nothing to do
+        return;
+      }
+      // ROW__ID: struct<transactionid:bigint,bucketid:int,rowid:bigint>
+      int rowIDPos = tableScan.getTable().getRowType().getField(
+          VirtualColumn.ROWID.getName(), false, false).getIndex();
+      RexNode rowIDFieldAccess = rexBuilder.makeFieldAccess(
+          rexBuilder.makeInputRef(tableScan.getTable().getRowType().getFieldList().get(rowIDPos).getType(), rowIDPos),
+          0);
+      // Now we create the filter with the transactions information
+      final RelBuilder relBuilder = call.builder();
+      relBuilder.push(tableScan);
+      List<RexNode> conds = new ArrayList<>();
+      RelDataType bigIntType = relBuilder.getTypeFactory().createSqlType(SqlTypeName.BIGINT);
+      final RexNode literalHighWatermark = rexBuilder.makeLiteral(
+          tableMaterializationTxnList.getHighWatermark(), bigIntType, false);
+      conds.add(
+          rexBuilder.makeCall(
+              SqlStdOperatorTable.LESS_THAN_OR_EQUAL,
+              ImmutableList.of(rowIDFieldAccess, literalHighWatermark)));
+      for (long invalidTxn : tableMaterializationTxnList.getInvalidWriteIds()) {
+        final RexNode literalInvalidTxn = rexBuilder.makeLiteral(
+            invalidTxn, bigIntType, false);
+        conds.add(
+            rexBuilder.makeCall(
+                SqlStdOperatorTable.NOT_EQUALS,
+                ImmutableList.of(rowIDFieldAccess, literalInvalidTxn)));
+      }
+      relBuilder.filter(conds);
+      call.transformTo(relBuilder.build());
+    }
+
   }
 
   /**
@@ -2411,8 +2549,6 @@ private void constructOneLBLocationMap(FileStatus fSta,
    *          created
    * @param partPath the path where the partition data is located
    * @param inheritTableSpecs whether to copy over the table specs for if/of/serde
-   * @param newFiles An optional list of new files that were moved into this partition.  If
-   *                 non-null these will be included in the DML event sent to the metastore.
    * @return result partition object or null if there is no partition
    * @throws HiveException
    */

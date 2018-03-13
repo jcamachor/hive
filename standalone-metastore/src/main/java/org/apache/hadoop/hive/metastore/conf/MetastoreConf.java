@@ -22,6 +22,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.DefaultStorageSchemaReader;
 import org.apache.hadoop.hive.metastore.HiveAlterHandler;
 import org.apache.hadoop.hive.metastore.MaterializationsCacheCleanerTask;
+import org.apache.hadoop.hive.metastore.MaterializationsRebuildLockCleanerTask;
 import org.apache.hadoop.hive.metastore.MetastoreTaskThread;
 import org.apache.hadoop.hive.metastore.events.EventCleanerTask;
 import org.apache.hadoop.hive.metastore.security.MetastoreDelegationTokenManager;
@@ -725,7 +726,8 @@ public class MetastoreConf {
     TASK_THREADS_ALWAYS("metastore.task.threads.always", "metastore.task.threads.always",
         EventCleanerTask.class.getName() + "," +
         "org.apache.hadoop.hive.metastore.repl.DumpDirCleanerTask" + "," +
-        MaterializationsCacheCleanerTask.class.getName(),
+        MaterializationsCacheCleanerTask.class.getName() + "," +
+        MaterializationsRebuildLockCleanerTask.class.getName(),
         "Comma separated list of tasks that will be started in separate threads.  These will " +
             "always be started, regardless of whether the metastore is running in embedded mode " +
             "or in server mode.  They must implement " + MetastoreTaskThread.class.getName()),
@@ -801,7 +803,7 @@ public class MetastoreConf {
         "org.apache.hadoop.hive.metastore.txn.CompactionTxnHandler",
         "Name of class that implements org.apache.riven.txn.TxnStore.  This " +
             "class is used to store and retrieve transactions and locks"),
-    TXN_TIMEOUT("metastore.txn.timeout", "hive.txn.timeout", 300, TimeUnit.SECONDS,
+    TXN_TIMEOUT("metastore.txn.timeout", "hive.txn.timeout", 10, TimeUnit.SECONDS,
         "time after which transactions are declared aborted if the client has not sent a heartbeat."),
     URI_RESOLVER("metastore.uri.resolver", "hive.metastore.uri.resolver", "",
             "If set, fully qualified class name of resolver for hive metastore uri's"),

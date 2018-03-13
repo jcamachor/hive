@@ -1995,4 +1995,23 @@ public interface IMetaStoreClient {
    * @throws TException general thrift error
    */
   SerDeInfo getSerDe(String serDeName) throws TException;
+
+  /**
+   * Acquire the materialization rebuild lock for a given view. We need to specify the fully
+   * qualified name of the materialized view and the open transaction ID so we can identify
+   * uniquely the lock.
+   * @param fullyQualifiedName qualified name for the materialized view
+   * @param txnId transaction id for the rebuild
+   * @return the response from the metastore, where the lock id is equal to the txn id and
+   * the status can be either ACQUIRED or NOT ACQUIRED
+   */
+  LockResponse lockMaterializationRebuild(String fullyQualifiedName, long txnId) throws TException;
+
+  /**
+   * Method to refresh the acquisition of a given materialization rebuild lock.
+   * @param fullyQualifiedName qualified name for the materialized view
+   * @param txnId transaction id for the rebuild
+   * @return true if the lock could be renewed, false otherwise
+   */
+  boolean heartbeatLockMaterializationRebuild(String fullyQualifiedName, long txnId) throws TException;
 }

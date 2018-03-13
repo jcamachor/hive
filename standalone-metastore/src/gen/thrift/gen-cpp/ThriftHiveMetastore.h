@@ -216,6 +216,8 @@ class ThriftHiveMetastoreIf : virtual public  ::facebook::fb303::FacebookService
   virtual void set_schema_version_state(const SetSchemaVersionStateRequest& rqst) = 0;
   virtual void add_serde(const SerDeInfo& serde) = 0;
   virtual void get_serde(SerDeInfo& _return, const GetSerdeRequest& rqst) = 0;
+  virtual void get_lock_materialization_rebuild(LockResponse& _return, const std::string& fullyQualifiedName, const int64_t txnId) = 0;
+  virtual bool heartbeat_lock_materialization_rebuild(const std::string& fullyQualifiedName, const int64_t txnId) = 0;
 };
 
 class ThriftHiveMetastoreIfFactory : virtual public  ::facebook::fb303::FacebookServiceIfFactory {
@@ -853,6 +855,13 @@ class ThriftHiveMetastoreNull : virtual public ThriftHiveMetastoreIf , virtual p
   }
   void get_serde(SerDeInfo& /* _return */, const GetSerdeRequest& /* rqst */) {
     return;
+  }
+  void get_lock_materialization_rebuild(LockResponse& /* _return */, const std::string& /* fullyQualifiedName */, const int64_t /* txnId */) {
+    return;
+  }
+  bool heartbeat_lock_materialization_rebuild(const std::string& /* fullyQualifiedName */, const int64_t /* txnId */) {
+    bool _return = false;
+    return _return;
   }
 };
 
@@ -24669,6 +24678,228 @@ class ThriftHiveMetastore_get_serde_presult {
 
 };
 
+typedef struct _ThriftHiveMetastore_get_lock_materialization_rebuild_args__isset {
+  _ThriftHiveMetastore_get_lock_materialization_rebuild_args__isset() : fullyQualifiedName(false), txnId(false) {}
+  bool fullyQualifiedName :1;
+  bool txnId :1;
+} _ThriftHiveMetastore_get_lock_materialization_rebuild_args__isset;
+
+class ThriftHiveMetastore_get_lock_materialization_rebuild_args {
+ public:
+
+  ThriftHiveMetastore_get_lock_materialization_rebuild_args(const ThriftHiveMetastore_get_lock_materialization_rebuild_args&);
+  ThriftHiveMetastore_get_lock_materialization_rebuild_args& operator=(const ThriftHiveMetastore_get_lock_materialization_rebuild_args&);
+  ThriftHiveMetastore_get_lock_materialization_rebuild_args() : fullyQualifiedName(), txnId(0) {
+  }
+
+  virtual ~ThriftHiveMetastore_get_lock_materialization_rebuild_args() throw();
+  std::string fullyQualifiedName;
+  int64_t txnId;
+
+  _ThriftHiveMetastore_get_lock_materialization_rebuild_args__isset __isset;
+
+  void __set_fullyQualifiedName(const std::string& val);
+
+  void __set_txnId(const int64_t val);
+
+  bool operator == (const ThriftHiveMetastore_get_lock_materialization_rebuild_args & rhs) const
+  {
+    if (!(fullyQualifiedName == rhs.fullyQualifiedName))
+      return false;
+    if (!(txnId == rhs.txnId))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_get_lock_materialization_rebuild_args &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_get_lock_materialization_rebuild_args & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+
+class ThriftHiveMetastore_get_lock_materialization_rebuild_pargs {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_get_lock_materialization_rebuild_pargs() throw();
+  const std::string* fullyQualifiedName;
+  const int64_t* txnId;
+
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_get_lock_materialization_rebuild_result__isset {
+  _ThriftHiveMetastore_get_lock_materialization_rebuild_result__isset() : success(false) {}
+  bool success :1;
+} _ThriftHiveMetastore_get_lock_materialization_rebuild_result__isset;
+
+class ThriftHiveMetastore_get_lock_materialization_rebuild_result {
+ public:
+
+  ThriftHiveMetastore_get_lock_materialization_rebuild_result(const ThriftHiveMetastore_get_lock_materialization_rebuild_result&);
+  ThriftHiveMetastore_get_lock_materialization_rebuild_result& operator=(const ThriftHiveMetastore_get_lock_materialization_rebuild_result&);
+  ThriftHiveMetastore_get_lock_materialization_rebuild_result() {
+  }
+
+  virtual ~ThriftHiveMetastore_get_lock_materialization_rebuild_result() throw();
+  LockResponse success;
+
+  _ThriftHiveMetastore_get_lock_materialization_rebuild_result__isset __isset;
+
+  void __set_success(const LockResponse& val);
+
+  bool operator == (const ThriftHiveMetastore_get_lock_materialization_rebuild_result & rhs) const
+  {
+    if (!(success == rhs.success))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_get_lock_materialization_rebuild_result &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_get_lock_materialization_rebuild_result & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_get_lock_materialization_rebuild_presult__isset {
+  _ThriftHiveMetastore_get_lock_materialization_rebuild_presult__isset() : success(false) {}
+  bool success :1;
+} _ThriftHiveMetastore_get_lock_materialization_rebuild_presult__isset;
+
+class ThriftHiveMetastore_get_lock_materialization_rebuild_presult {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_get_lock_materialization_rebuild_presult() throw();
+  LockResponse* success;
+
+  _ThriftHiveMetastore_get_lock_materialization_rebuild_presult__isset __isset;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+
+};
+
+typedef struct _ThriftHiveMetastore_heartbeat_lock_materialization_rebuild_args__isset {
+  _ThriftHiveMetastore_heartbeat_lock_materialization_rebuild_args__isset() : fullyQualifiedName(false), txnId(false) {}
+  bool fullyQualifiedName :1;
+  bool txnId :1;
+} _ThriftHiveMetastore_heartbeat_lock_materialization_rebuild_args__isset;
+
+class ThriftHiveMetastore_heartbeat_lock_materialization_rebuild_args {
+ public:
+
+  ThriftHiveMetastore_heartbeat_lock_materialization_rebuild_args(const ThriftHiveMetastore_heartbeat_lock_materialization_rebuild_args&);
+  ThriftHiveMetastore_heartbeat_lock_materialization_rebuild_args& operator=(const ThriftHiveMetastore_heartbeat_lock_materialization_rebuild_args&);
+  ThriftHiveMetastore_heartbeat_lock_materialization_rebuild_args() : fullyQualifiedName(), txnId(0) {
+  }
+
+  virtual ~ThriftHiveMetastore_heartbeat_lock_materialization_rebuild_args() throw();
+  std::string fullyQualifiedName;
+  int64_t txnId;
+
+  _ThriftHiveMetastore_heartbeat_lock_materialization_rebuild_args__isset __isset;
+
+  void __set_fullyQualifiedName(const std::string& val);
+
+  void __set_txnId(const int64_t val);
+
+  bool operator == (const ThriftHiveMetastore_heartbeat_lock_materialization_rebuild_args & rhs) const
+  {
+    if (!(fullyQualifiedName == rhs.fullyQualifiedName))
+      return false;
+    if (!(txnId == rhs.txnId))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_heartbeat_lock_materialization_rebuild_args &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_heartbeat_lock_materialization_rebuild_args & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+
+class ThriftHiveMetastore_heartbeat_lock_materialization_rebuild_pargs {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_heartbeat_lock_materialization_rebuild_pargs() throw();
+  const std::string* fullyQualifiedName;
+  const int64_t* txnId;
+
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_heartbeat_lock_materialization_rebuild_result__isset {
+  _ThriftHiveMetastore_heartbeat_lock_materialization_rebuild_result__isset() : success(false) {}
+  bool success :1;
+} _ThriftHiveMetastore_heartbeat_lock_materialization_rebuild_result__isset;
+
+class ThriftHiveMetastore_heartbeat_lock_materialization_rebuild_result {
+ public:
+
+  ThriftHiveMetastore_heartbeat_lock_materialization_rebuild_result(const ThriftHiveMetastore_heartbeat_lock_materialization_rebuild_result&);
+  ThriftHiveMetastore_heartbeat_lock_materialization_rebuild_result& operator=(const ThriftHiveMetastore_heartbeat_lock_materialization_rebuild_result&);
+  ThriftHiveMetastore_heartbeat_lock_materialization_rebuild_result() : success(0) {
+  }
+
+  virtual ~ThriftHiveMetastore_heartbeat_lock_materialization_rebuild_result() throw();
+  bool success;
+
+  _ThriftHiveMetastore_heartbeat_lock_materialization_rebuild_result__isset __isset;
+
+  void __set_success(const bool val);
+
+  bool operator == (const ThriftHiveMetastore_heartbeat_lock_materialization_rebuild_result & rhs) const
+  {
+    if (!(success == rhs.success))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_heartbeat_lock_materialization_rebuild_result &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_heartbeat_lock_materialization_rebuild_result & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_heartbeat_lock_materialization_rebuild_presult__isset {
+  _ThriftHiveMetastore_heartbeat_lock_materialization_rebuild_presult__isset() : success(false) {}
+  bool success :1;
+} _ThriftHiveMetastore_heartbeat_lock_materialization_rebuild_presult__isset;
+
+class ThriftHiveMetastore_heartbeat_lock_materialization_rebuild_presult {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_heartbeat_lock_materialization_rebuild_presult() throw();
+  bool* success;
+
+  _ThriftHiveMetastore_heartbeat_lock_materialization_rebuild_presult__isset __isset;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+
+};
+
 class ThriftHiveMetastoreClient : virtual public ThriftHiveMetastoreIf, public  ::facebook::fb303::FacebookServiceClient {
  public:
   ThriftHiveMetastoreClient(boost::shared_ptr< ::apache::thrift::protocol::TProtocol> prot) :
@@ -25262,6 +25493,12 @@ class ThriftHiveMetastoreClient : virtual public ThriftHiveMetastoreIf, public  
   void get_serde(SerDeInfo& _return, const GetSerdeRequest& rqst);
   void send_get_serde(const GetSerdeRequest& rqst);
   void recv_get_serde(SerDeInfo& _return);
+  void get_lock_materialization_rebuild(LockResponse& _return, const std::string& fullyQualifiedName, const int64_t txnId);
+  void send_get_lock_materialization_rebuild(const std::string& fullyQualifiedName, const int64_t txnId);
+  void recv_get_lock_materialization_rebuild(LockResponse& _return);
+  bool heartbeat_lock_materialization_rebuild(const std::string& fullyQualifiedName, const int64_t txnId);
+  void send_heartbeat_lock_materialization_rebuild(const std::string& fullyQualifiedName, const int64_t txnId);
+  bool recv_heartbeat_lock_materialization_rebuild();
 };
 
 class ThriftHiveMetastoreProcessor : public  ::facebook::fb303::FacebookServiceProcessor {
@@ -25466,6 +25703,8 @@ class ThriftHiveMetastoreProcessor : public  ::facebook::fb303::FacebookServiceP
   void process_set_schema_version_state(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_add_serde(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_get_serde(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
+  void process_get_lock_materialization_rebuild(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
+  void process_heartbeat_lock_materialization_rebuild(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
  public:
   ThriftHiveMetastoreProcessor(boost::shared_ptr<ThriftHiveMetastoreIf> iface) :
      ::facebook::fb303::FacebookServiceProcessor(iface),
@@ -25664,6 +25903,8 @@ class ThriftHiveMetastoreProcessor : public  ::facebook::fb303::FacebookServiceP
     processMap_["set_schema_version_state"] = &ThriftHiveMetastoreProcessor::process_set_schema_version_state;
     processMap_["add_serde"] = &ThriftHiveMetastoreProcessor::process_add_serde;
     processMap_["get_serde"] = &ThriftHiveMetastoreProcessor::process_get_serde;
+    processMap_["get_lock_materialization_rebuild"] = &ThriftHiveMetastoreProcessor::process_get_lock_materialization_rebuild;
+    processMap_["heartbeat_lock_materialization_rebuild"] = &ThriftHiveMetastoreProcessor::process_heartbeat_lock_materialization_rebuild;
   }
 
   virtual ~ThriftHiveMetastoreProcessor() {}
@@ -27563,6 +27804,25 @@ class ThriftHiveMetastoreMultiface : virtual public ThriftHiveMetastoreIf, publi
     return;
   }
 
+  void get_lock_materialization_rebuild(LockResponse& _return, const std::string& fullyQualifiedName, const int64_t txnId) {
+    size_t sz = ifaces_.size();
+    size_t i = 0;
+    for (; i < (sz - 1); ++i) {
+      ifaces_[i]->get_lock_materialization_rebuild(_return, fullyQualifiedName, txnId);
+    }
+    ifaces_[i]->get_lock_materialization_rebuild(_return, fullyQualifiedName, txnId);
+    return;
+  }
+
+  bool heartbeat_lock_materialization_rebuild(const std::string& fullyQualifiedName, const int64_t txnId) {
+    size_t sz = ifaces_.size();
+    size_t i = 0;
+    for (; i < (sz - 1); ++i) {
+      ifaces_[i]->heartbeat_lock_materialization_rebuild(fullyQualifiedName, txnId);
+    }
+    return ifaces_[i]->heartbeat_lock_materialization_rebuild(fullyQualifiedName, txnId);
+  }
+
 };
 
 // The 'concurrent' client is a thread safe client that correctly handles
@@ -28161,6 +28421,12 @@ class ThriftHiveMetastoreConcurrentClient : virtual public ThriftHiveMetastoreIf
   void get_serde(SerDeInfo& _return, const GetSerdeRequest& rqst);
   int32_t send_get_serde(const GetSerdeRequest& rqst);
   void recv_get_serde(SerDeInfo& _return, const int32_t seqid);
+  void get_lock_materialization_rebuild(LockResponse& _return, const std::string& fullyQualifiedName, const int64_t txnId);
+  int32_t send_get_lock_materialization_rebuild(const std::string& fullyQualifiedName, const int64_t txnId);
+  void recv_get_lock_materialization_rebuild(LockResponse& _return, const int32_t seqid);
+  bool heartbeat_lock_materialization_rebuild(const std::string& fullyQualifiedName, const int64_t txnId);
+  int32_t send_heartbeat_lock_materialization_rebuild(const std::string& fullyQualifiedName, const int64_t txnId);
+  bool recv_heartbeat_lock_materialization_rebuild(const int32_t seqid);
 };
 
 #ifdef _WIN32

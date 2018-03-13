@@ -7812,6 +7812,18 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         endFunction("get_serde", serde != null, ex);
       }
     }
+
+    @Override
+    public LockResponse get_lock_materialization_rebuild(String fullyQualifiedName, long txnId)
+        throws TException {
+      return MaterializationsRebuildLockHandler.get().lockResource(fullyQualifiedName, txnId);
+    }
+
+    @Override
+    public boolean heartbeat_lock_materialization_rebuild(String fullyQualifiedName, long txnId)
+        throws TException {
+      return MaterializationsRebuildLockHandler.get().refreshLockResource(fullyQualifiedName, txnId);
+    }
   }
 
   private static IHMSHandler newRetryingHMSHandler(IHMSHandler baseHandler, Configuration conf)

@@ -1138,7 +1138,8 @@ struct TableMeta {
 struct Materialization {
   1: required set<string> tablesUsed;
   2: optional string validTxnList
-  3: required i64 invalidationTime;
+  3: optional i64 invalidationTime;
+  4: optional bool sourceTablesUpdateDeleteModified;
 }
 
 // Data types for workload management.
@@ -1570,7 +1571,7 @@ service ThriftHiveMetastore extends fb303.FacebookService
   GetTablesResult get_table_objects_by_name_req(1:GetTablesRequest req)
 				   throws (1:MetaException o1, 2:InvalidOperationException o2, 3:UnknownDBException o3)
   map<string, Materialization> get_materialization_invalidation_info(1:string dbname, 2:list<string> tbl_names)
-				   throws (1:MetaException o1, 2:InvalidOperationException o2, 3:UnknownDBException o3)
+                                  throws (1:MetaException o1, 2:InvalidOperationException o2, 3:UnknownDBException o3)
   void update_creation_metadata(1:string dbname, 2:string tbl_name, 3:CreationMetadata creation_metadata)
                    throws (1:MetaException o1, 2:InvalidOperationException o2, 3:UnknownDBException o3)
 
@@ -2063,6 +2064,8 @@ service ThriftHiveMetastore extends fb303.FacebookService
   void add_serde(1: SerDeInfo serde) throws(1:AlreadyExistsException o1, 2:MetaException o2)
   SerDeInfo get_serde(1: GetSerdeRequest rqst) throws(1:NoSuchObjectException o1, 2:MetaException o2)
 
+  LockResponse get_lock_materialization_rebuild(1: string fullyQualifiedName, 2: i64 txnId)
+  bool heartbeat_lock_materialization_rebuild(1: string fullyQualifiedName, 2: i64 txnId)
 }
 
 // * Note about the DDL_TIME: When creating or altering a table or a partition,

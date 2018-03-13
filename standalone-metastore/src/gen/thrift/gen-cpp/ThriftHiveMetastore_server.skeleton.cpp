@@ -992,6 +992,16 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
     printf("get_serde\n");
   }
 
+  void get_lock_materialization_rebuild(LockResponse& _return, const std::string& fullyQualifiedName, const int64_t txnId) {
+    // Your implementation goes here
+    printf("get_lock_materialization_rebuild\n");
+  }
+
+  bool heartbeat_lock_materialization_rebuild(const std::string& fullyQualifiedName, const int64_t txnId) {
+    // Your implementation goes here
+    printf("heartbeat_lock_materialization_rebuild\n");
+  }
+
 };
 
 int main(int argc, char **argv) {

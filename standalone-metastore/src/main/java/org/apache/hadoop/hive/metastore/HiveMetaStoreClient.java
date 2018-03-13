@@ -2866,4 +2866,14 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   public SerDeInfo getSerDe(String serDeName) throws TException {
     return client.get_serde(new GetSerdeRequest(serDeName));
   }
+
+  @Override
+  public LockResponse lockMaterializationRebuild(String fullyQualifiedName, long txnId) throws TException {
+    return client.get_lock_materialization_rebuild(fullyQualifiedName, txnId);
+  }
+
+  @Override
+  public boolean heartbeatLockMaterializationRebuild(String fullyQualifiedName, long txnId) throws TException {
+    return client.heartbeat_lock_materialization_rebuild(fullyQualifiedName, txnId);
+  }
 }

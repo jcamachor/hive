@@ -192,6 +192,8 @@ public final class HiveMaterializedViewsRegistry {
   private RelOptMaterialization addMaterializedView(HiveConf conf, Table materializedViewTable, OpType opType) {
     // Bail out if it is not enabled for rewriting
     if (!materializedViewTable.isRewriteEnabled()) {
+      LOG.warn("Materialized view " + materializedViewTable.getCompleteName() +
+          " ignored; it is not rewrite enabled");
       return null;
     }
 

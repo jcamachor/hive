@@ -196,6 +196,10 @@ public class Driver implements IDriver {
   private HiveTxnManager queryTxnMgr;
   private RuntimeStatsSource runtimeStatsSource;
 
+  // Boolean to store information about whether valid txn list was generated
+  // for current query.
+  private boolean validTxnListsGenerated;
+
   private CacheUsage cacheUsage;
   private CacheEntry usedCacheEntry;
 
@@ -600,6 +604,35 @@ public class Driver implements IDriver {
       // because at that point we need access to the objects.
       Hive.get().getMSC().flushCache();
 
+//<<<<<<< ours
+//=======
+//      if(checkConcurrency() && startImplicitTxn(queryTxnMgr)) {
+//        String userFromUGI = getUserFromUGI();
+//        if (!queryTxnMgr.isTxnOpen()) {
+//          if(userFromUGI == null) {
+//            throw createProcessorResponse(10);
+//          }
+//          long txnid = queryTxnMgr.openTxn(ctx, userFromUGI);
+//        }
+//      }
+//
+//      // Record current valid txn list that will be used throughout the query
+//      // compilation and processing. We only do this if 1) a transaction
+//      // was already opened and 2) the list has not been recorded yet,
+//      // e.g., by an explicit open transaction command.
+//      validTxnListsGenerated = false;
+//      String currentTxnString = conf.get(ValidTxnList.VALID_TXNS_KEY);
+//      if (queryTxnMgr.isTxnOpen() && (currentTxnString == null || currentTxnString.isEmpty())) {
+//        try {
+//          recordValidTxns(queryTxnMgr);
+//          validTxnListsGenerated = true;
+//        } catch (Exception e) {
+//          LOG.error("Exception while acquiring valid txn list", e);
+//          throw e;
+//        }
+//      }
+//
+//>>>>>>> theirs
       BaseSemanticAnalyzer sem;
       // Do semantic analysis and plan generation
       if (hookRunner.hasPreAnalyzeHooks()) {
@@ -613,6 +646,21 @@ public class Driver implements IDriver {
         tree =  hookRunner.runPreAnalyzeHooks(hookCtx, tree);
         sem = SemanticAnalyzerFactory.get(queryState, tree);
         openTransaction();
+        // Record current valid txn list that will be used throughout the query
+        // compilation and processing. We only do this if 1) a transaction
+        // was already opened and 2) the list has not been recorded yet,
+        // e.g., by an explicit open transaction command.
+        validTxnListsGenerated = false;
+        String currentTxnString = conf.get(ValidTxnList.VALID_TXNS_KEY);
+        if (queryTxnMgr.isTxnOpen() && (currentTxnString == null || currentTxnString.isEmpty())) {
+          try {
+            recordValidTxns(queryTxnMgr);
+            validTxnListsGenerated = true;
+          } catch (Exception e) {
+            LOG.error("Exception while acquiring valid txn list", e);
+            throw e;
+          }
+        }
         sem.analyze(tree, ctx);
         hookCtx.update(sem);
 
@@ -620,6 +668,21 @@ public class Driver implements IDriver {
       } else {
         sem = SemanticAnalyzerFactory.get(queryState, tree);
         openTransaction();
+        // Record current valid txn list that will be used throughout the query
+        // compilation and processing. We only do this if 1) a transaction
+        // was already opened and 2) the list has not been recorded yet,
+        // e.g., by an explicit open transaction command.
+        validTxnListsGenerated = false;
+        String currentTxnString = conf.get(ValidTxnList.VALID_TXNS_KEY);
+        if (queryTxnMgr.isTxnOpen() && (currentTxnString == null || currentTxnString.isEmpty())) {
+          try {
+            recordValidTxns(queryTxnMgr);
+            validTxnListsGenerated = true;
+          } catch (Exception e) {
+            LOG.error("Exception while acquiring valid txn list", e);
+            throw e;
+          }
+        }
         sem.analyze(tree, ctx);
       }
       LOG.info("Semantic Analysis Completed");
@@ -1360,8 +1423,10 @@ public class Driver implements IDriver {
       /*It's imperative that {@code acquireLocks()} is called for all commands so that
       HiveTxnManager can transition its state machine correctly*/
       queryTxnMgr.acquireLocks(plan, ctx, userFromUGI, lDrvState);
-      if (queryTxnMgr.recordSnapshot(plan)) {
-        recordValidTxns(queryTxnMgr);
+      // This check is for controlling the correctness of the current state
+      if (queryTxnMgr.recordSnapshot(plan) && !validTxnListsGenerated) {
+        throw new IllegalStateException("calling recordValidTxn() more than once in the same " +
+            JavaUtils.txnIdToString(queryTxnMgr.getCurrentTxnId()));
       }
       if (plan.hasAcidResourcesInQuery()) {
         recordValidWriteIds(queryTxnMgr);
@@ -1519,11 +1584,21 @@ public class Driver implements IDriver {
 
   @Override
   public CommandProcessorResponse compileAndRespond(String command) {
+    return compileAndRespond(command, false);
+  }
+
+  public CommandProcessorResponse compileAndRespond(String command, boolean cleanupTxnList) {
     try {
       compileInternal(command, false);
       return createProcessorResponse(0);
     } catch (CommandProcessorResponse e) {
       return e;
+    } finally {
+      if (cleanupTxnList) {
+        // Valid txn list might be generated for a query compiled using this
+        // command, thus we need to reset it
+        conf.unset(ValidTxnList.VALID_TXNS_KEY);
+      }
     }
   }
 

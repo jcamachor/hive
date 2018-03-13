@@ -1168,6 +1168,10 @@ public class HiveConf extends Configuration {
         "moment in time t0, the materialized view will not be considered for rewriting anymore after t0 plus " +
         "the value assigned to this property. Default value 0 means that the materialized view cannot be " +
         "outdated to be used automatically in query rewriting."),
+    HIVE_MATERIALIZED_VIEW_REWRITING_INCREMENTAL("hive.materializedview.rewriting.incremental", true,
+        "Whether to try to execute incremental rewritings based on outdated materializations and\n" +
+        "current content of tables. Default value of true effectively amounts to enabling incremental\n" +
+        "rebuild for the materializations too."),
     HIVE_MATERIALIZED_VIEW_FILE_FORMAT("hive.materializedview.fileformat", "ORC",
         new StringSet("none", "TextFile", "SequenceFile", "RCfile", "ORC"),
         "Default file format for CREATE MATERIALIZED VIEW statement"),
@@ -1945,7 +1949,7 @@ public class HiveConf extends Configuration {
         "In nonstrict mode, for non-ACID resources, INSERT will only acquire shared lock, which\n" +
         "allows two concurrent writes to the same partition but still lets lock manager prevent\n" +
         "DROP TABLE etc. when the table is being written to"),
-    HIVE_TXN_TIMEOUT("hive.txn.timeout", "300s", new TimeValidator(TimeUnit.SECONDS),
+    HIVE_TXN_TIMEOUT("hive.txn.timeout", "10s", new TimeValidator(TimeUnit.SECONDS),
         "time after which transactions are declared aborted if the client has not sent a heartbeat."),
     HIVE_TXN_HEARTBEAT_THREADPOOL_SIZE("hive.txn.heartbeat.threadpool.size", 5, "The number of " +
         "threads to use for heartbeating. For Hive CLI, 1 is enough. For HiveServer2, we need a few"),
