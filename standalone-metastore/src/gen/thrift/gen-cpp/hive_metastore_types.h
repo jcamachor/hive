@@ -533,8 +533,6 @@ class CmRecycleResponse;
 
 class TableMeta;
 
-class Materialization;
-
 class WMResourcePlan;
 
 class WMNullableResourcePlan;
@@ -7698,8 +7696,9 @@ inline std::ostream& operator<<(std::ostream& out, const BasicTxnInfo& obj)
 }
 
 typedef struct _CreationMetadata__isset {
-  _CreationMetadata__isset() : validTxnList(false) {}
+  _CreationMetadata__isset() : validTxnList(false), materializationTime(false) {}
   bool validTxnList :1;
+  bool materializationTime :1;
 } _CreationMetadata__isset;
 
 class CreationMetadata {
@@ -7707,7 +7706,7 @@ class CreationMetadata {
 
   CreationMetadata(const CreationMetadata&);
   CreationMetadata& operator=(const CreationMetadata&);
-  CreationMetadata() : dbName(), tblName(), validTxnList() {
+  CreationMetadata() : dbName(), tblName(), validTxnList(), materializationTime(0) {
   }
 
   virtual ~CreationMetadata() throw();
@@ -7715,6 +7714,7 @@ class CreationMetadata {
   std::string tblName;
   std::set<std::string>  tablesUsed;
   std::string validTxnList;
+  int64_t materializationTime;
 
   _CreationMetadata__isset __isset;
 
@@ -7725,6 +7725,8 @@ class CreationMetadata {
   void __set_tablesUsed(const std::set<std::string> & val);
 
   void __set_validTxnList(const std::string& val);
+
+  void __set_materializationTime(const int64_t val);
 
   bool operator == (const CreationMetadata & rhs) const
   {
@@ -7737,6 +7739,10 @@ class CreationMetadata {
     if (__isset.validTxnList != rhs.__isset.validTxnList)
       return false;
     else if (__isset.validTxnList && !(validTxnList == rhs.validTxnList))
+      return false;
+    if (__isset.materializationTime != rhs.__isset.materializationTime)
+      return false;
+    else if (__isset.materializationTime && !(materializationTime == rhs.materializationTime))
       return false;
     return true;
   }
@@ -9229,64 +9235,6 @@ class TableMeta {
 void swap(TableMeta &a, TableMeta &b);
 
 inline std::ostream& operator<<(std::ostream& out, const TableMeta& obj)
-{
-  obj.printTo(out);
-  return out;
-}
-
-typedef struct _Materialization__isset {
-  _Materialization__isset() : validTxnList(false) {}
-  bool validTxnList :1;
-} _Materialization__isset;
-
-class Materialization {
- public:
-
-  Materialization(const Materialization&);
-  Materialization& operator=(const Materialization&);
-  Materialization() : validTxnList(), invalidationTime(0) {
-  }
-
-  virtual ~Materialization() throw();
-  std::set<std::string>  tablesUsed;
-  std::string validTxnList;
-  int64_t invalidationTime;
-
-  _Materialization__isset __isset;
-
-  void __set_tablesUsed(const std::set<std::string> & val);
-
-  void __set_validTxnList(const std::string& val);
-
-  void __set_invalidationTime(const int64_t val);
-
-  bool operator == (const Materialization & rhs) const
-  {
-    if (!(tablesUsed == rhs.tablesUsed))
-      return false;
-    if (__isset.validTxnList != rhs.__isset.validTxnList)
-      return false;
-    else if (__isset.validTxnList && !(validTxnList == rhs.validTxnList))
-      return false;
-    if (!(invalidationTime == rhs.invalidationTime))
-      return false;
-    return true;
-  }
-  bool operator != (const Materialization &rhs) const {
-    return !(*this == rhs);
-  }
-
-  bool operator < (const Materialization & ) const;
-
-  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
-  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
-
-  virtual void printTo(std::ostream& out) const;
-};
-
-void swap(Materialization &a, Materialization &b);
-
-inline std::ostream& operator<<(std::ostream& out, const Materialization& obj)
 {
   obj.printTo(out);
   return out;

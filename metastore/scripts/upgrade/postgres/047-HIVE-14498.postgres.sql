@@ -2,7 +2,8 @@ CREATE TABLE "MV_CREATION_METADATA" (
     "MV_CREATION_METADATA_ID" bigint NOT NULL,
     "DB_NAME" character varying(128) NOT NULL,
     "TBL_NAME" character varying(256) NOT NULL,
-    "TXN_LIST" text
+    "TXN_LIST" text,
+    "MATERIALIZATION_TIME" bigint NOT NULL
 );
 CREATE TABLE "MV_TABLES_USED" (
     "MV_CREATION_METADATA_ID" bigint NOT NULL,

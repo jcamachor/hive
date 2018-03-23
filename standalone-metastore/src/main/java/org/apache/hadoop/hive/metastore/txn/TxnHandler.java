@@ -65,7 +65,6 @@ import org.apache.hadoop.hive.common.ValidReadTxnList;
 import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.common.classification.RetrySemantics;
 import org.apache.hadoop.hive.metastore.DatabaseProduct;
-import org.apache.hadoop.hive.metastore.MaterializationsInvalidationCache;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.AbortTxnRequest;
 import org.apache.hadoop.hive.metastore.api.AbortTxnsRequest;
@@ -846,18 +845,6 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         LOG.debug("Going to execute update <" + s + ">");
         modCount = stmt.executeUpdate(s);
         LOG.debug("Going to commit");
-        dbConn.commit();
-
-        // Update registry with modifications
-        s = "select ctc_database, ctc_table, ctc_timestamp from COMPLETED_TXN_COMPONENTS where ctc_txnid = " + txnid;
-        rs = stmt.executeQuery(s);
-        if (rs.next()) {
-          LOG.debug("Going to register table modification in invalidation cache <" + s + ">");
-          MaterializationsInvalidationCache.get().notifyTableModification(
-              rs.getString(1), rs.getString(2), txnid,
-              rs.getTimestamp(3, Calendar.getInstance(TimeZone.getTimeZone("UTC"))).getTime());
-        }
-        close(rs);
         dbConn.commit();
       } catch (SQLException e) {
         LOG.debug("Going to rollback");

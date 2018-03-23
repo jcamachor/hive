@@ -164,8 +164,6 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
       // instantiate the metastore server handler directly instead of connecting
       // through the network
       client = HiveMetaStore.newRetryingHMSHandler("hive client", this.conf, true);
-      // Initialize materializations invalidation cache (only for local metastore)
-      MaterializationsInvalidationCache.get().init(conf, (IHMSHandler) client);
       isConnected = true;
       snapshotActiveConf();
       return;
@@ -1458,14 +1456,6 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     req.setCapabilities(version);
     List<Table> tabs = client.get_table_objects_by_name_req(req).getTables();
     return fastpath ? tabs : deepCopyTables(filterHook.filterTables(tabs));
-  }
-
-  /** {@inheritDoc} */
-  @Override
-  public Map<String, Materialization> getMaterializationsInvalidationInfo(String dbName, List<String> viewNames)
-      throws MetaException, InvalidOperationException, UnknownDBException, TException {
-    return client.get_materialization_invalidation_info(
-        dbName, filterHook.filterTableNames(dbName, viewNames));
   }
 
   /** {@inheritDoc} */

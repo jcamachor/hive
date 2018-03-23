@@ -2567,11 +2567,6 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     }
 
     @Override
-    public Map<String, Materialization> get_materialization_invalidation_info(final String dbName, final List<String> tableNames) {
-      return MaterializationsInvalidationCache.get().getMaterializationInvalidationInfo(dbName, tableNames);
-    }
-
-    @Override
     public void update_creation_metadata(final String dbName, final String tableName, CreationMetadata cm) throws MetaException {
       getMS().updateCreationMetadata(dbName, tableName, cm);
     }
@@ -8097,9 +8092,6 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       HMSHandler baseHandler = new HiveMetaStore.HMSHandler("new db based metaserver", conf,
           false);
       IHMSHandler handler = newRetryingHMSHandler(baseHandler, conf);
-
-      // Initialize materializations invalidation cache
-      MaterializationsInvalidationCache.get().init(conf, handler);
 
       TServerSocket serverSocket;
 
