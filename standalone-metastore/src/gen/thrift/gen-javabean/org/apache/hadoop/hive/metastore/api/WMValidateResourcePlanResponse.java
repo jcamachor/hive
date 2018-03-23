@@ -441,6 +441,7 @@ import org.slf4j.LoggerFactory;
           case 1: // ERRORS
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
+<<<<<<< HEAD
                 org.apache.thrift.protocol.TList _list888 = iprot.readListBegin();
                 struct.errors = new ArrayList<String>(_list888.size);
                 String _elem889;
@@ -448,6 +449,15 @@ import org.slf4j.LoggerFactory;
                 {
                   _elem889 = iprot.readString();
                   struct.errors.add(_elem889);
+=======
+                org.apache.thrift.protocol.TList _list832 = iprot.readListBegin();
+                struct.errors = new ArrayList<String>(_list832.size);
+                String _elem833;
+                for (int _i834 = 0; _i834 < _list832.size; ++_i834)
+                {
+                  _elem833 = iprot.readString();
+                  struct.errors.add(_elem833);
+>>>>>>> HIVE-19027
                 }
                 iprot.readListEnd();
               }
@@ -459,6 +469,7 @@ import org.slf4j.LoggerFactory;
           case 2: // WARNINGS
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
+<<<<<<< HEAD
                 org.apache.thrift.protocol.TList _list891 = iprot.readListBegin();
                 struct.warnings = new ArrayList<String>(_list891.size);
                 String _elem892;
@@ -466,6 +477,15 @@ import org.slf4j.LoggerFactory;
                 {
                   _elem892 = iprot.readString();
                   struct.warnings.add(_elem892);
+=======
+                org.apache.thrift.protocol.TList _list835 = iprot.readListBegin();
+                struct.warnings = new ArrayList<String>(_list835.size);
+                String _elem836;
+                for (int _i837 = 0; _i837 < _list835.size; ++_i837)
+                {
+                  _elem836 = iprot.readString();
+                  struct.warnings.add(_elem836);
+>>>>>>> HIVE-19027
                 }
                 iprot.readListEnd();
               }
@@ -492,9 +512,15 @@ import org.slf4j.LoggerFactory;
           oprot.writeFieldBegin(ERRORS_FIELD_DESC);
           {
             oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, struct.errors.size()));
+<<<<<<< HEAD
             for (String _iter894 : struct.errors)
             {
               oprot.writeString(_iter894);
+=======
+            for (String _iter838 : struct.errors)
+            {
+              oprot.writeString(_iter838);
+>>>>>>> HIVE-19027
             }
             oprot.writeListEnd();
           }
@@ -506,9 +532,15 @@ import org.slf4j.LoggerFactory;
           oprot.writeFieldBegin(WARNINGS_FIELD_DESC);
           {
             oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, struct.warnings.size()));
+<<<<<<< HEAD
             for (String _iter895 : struct.warnings)
             {
               oprot.writeString(_iter895);
+=======
+            for (String _iter839 : struct.warnings)
+            {
+              oprot.writeString(_iter839);
+>>>>>>> HIVE-19027
             }
             oprot.writeListEnd();
           }
@@ -543,18 +575,30 @@ import org.slf4j.LoggerFactory;
       if (struct.isSetErrors()) {
         {
           oprot.writeI32(struct.errors.size());
+<<<<<<< HEAD
           for (String _iter896 : struct.errors)
           {
             oprot.writeString(_iter896);
+=======
+          for (String _iter840 : struct.errors)
+          {
+            oprot.writeString(_iter840);
+>>>>>>> HIVE-19027
           }
         }
       }
       if (struct.isSetWarnings()) {
         {
           oprot.writeI32(struct.warnings.size());
+<<<<<<< HEAD
           for (String _iter897 : struct.warnings)
           {
             oprot.writeString(_iter897);
+=======
+          for (String _iter841 : struct.warnings)
+          {
+            oprot.writeString(_iter841);
+>>>>>>> HIVE-19027
           }
         }
       }
@@ -566,6 +610,7 @@ import org.slf4j.LoggerFactory;
       BitSet incoming = iprot.readBitSet(2);
       if (incoming.get(0)) {
         {
+<<<<<<< HEAD
           org.apache.thrift.protocol.TList _list898 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, iprot.readI32());
           struct.errors = new ArrayList<String>(_list898.size);
           String _elem899;
@@ -573,12 +618,22 @@ import org.slf4j.LoggerFactory;
           {
             _elem899 = iprot.readString();
             struct.errors.add(_elem899);
+=======
+          org.apache.thrift.protocol.TList _list842 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, iprot.readI32());
+          struct.errors = new ArrayList<String>(_list842.size);
+          String _elem843;
+          for (int _i844 = 0; _i844 < _list842.size; ++_i844)
+          {
+            _elem843 = iprot.readString();
+            struct.errors.add(_elem843);
+>>>>>>> HIVE-19027
           }
         }
         struct.setErrorsIsSet(true);
       }
       if (incoming.get(1)) {
         {
+<<<<<<< HEAD
           org.apache.thrift.protocol.TList _list901 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, iprot.readI32());
           struct.warnings = new ArrayList<String>(_list901.size);
           String _elem902;
@@ -586,6 +641,15 @@ import org.slf4j.LoggerFactory;
           {
             _elem902 = iprot.readString();
             struct.warnings.add(_elem902);
+=======
+          org.apache.thrift.protocol.TList _list845 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, iprot.readI32());
+          struct.warnings = new ArrayList<String>(_list845.size);
+          String _elem846;
+          for (int _i847 = 0; _i847 < _list845.size; ++_i847)
+          {
+            _elem846 = iprot.readString();
+            struct.warnings.add(_elem846);
+>>>>>>> HIVE-19027
           }
         }
         struct.setWarningsIsSet(true);

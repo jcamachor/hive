@@ -1327,13 +1327,6 @@ public class ObjectStore implements RawStore, Configurable {
     } finally {
       if (!commited) {
         rollbackTransaction();
-      } else {
-        if (MetaStoreUtils.isMaterializedViewTable(tbl)) {
-          // Add to the invalidation cache
-          MaterializationsInvalidationCache.get().createMaterializedView(
-              tbl.getDbName(), tbl.getTableName(), tbl.getCreationMetadata().getTablesUsed(),
-              tbl.getCreationMetadata().getValidTxnList());
-        }
       }
     }
   }
@@ -1431,10 +1424,6 @@ public class ObjectStore implements RawStore, Configurable {
     } finally {
       if (!success) {
         rollbackTransaction();
-      } else {
-        if (materializedView) {
-          MaterializationsInvalidationCache.get().dropMaterializedView(dbName, tableName);
-        }
       }
     }
     return success;
@@ -1838,6 +1827,7 @@ public class ObjectStore implements RawStore, Configurable {
         lowered_tbl_names.add(normalizeIdentifier(t));
       }
       query = pm.newQuery(MTable.class);
+<<<<<<< HEAD
 //<<<<<<< HEAD
       query.setFilter("database.name == db && database.catalogName == cat && tbl_names.contains(tableName)");
       query.declareParameters("java.lang.String db, java.lang.String cat, java.util.Collection tbl_names");
@@ -1864,6 +1854,19 @@ public class ObjectStore implements RawStore, Configurable {
           }
           tables.add(tbl);
         }
+=======
+      query.setFilter("database.name == db && tbl_names.contains(tableName)");
+      query.declareParameters("java.lang.String db, java.util.Collection tbl_names");
+      Collection mtables = (Collection) query.execute(db, lowered_tbl_names);
+      for (Iterator iter = mtables.iterator(); iter.hasNext();) {
+        Table tbl = convertToTable((MTable) iter.next());
+        // Retrieve creation metadata if needed
+        if (TableType.MATERIALIZED_VIEW.toString().equals(tbl.getTableType())) {
+          tbl.setCreationMetadata(
+              convertToCreationMetadata(getCreationMetadata(tbl.getDbName(), tbl.getTableName())));
+        }
+        tables.add(tbl);
+>>>>>>> HIVE-19027
       }
       committed = commitTransaction();
     } finally {
@@ -2185,6 +2188,7 @@ public class ObjectStore implements RawStore, Configurable {
 
   private MCreationMetadata convertToMCreationMetadata(
       CreationMetadata m) throws MetaException {
+    assert !m.isSetMaterializationTime();
     if (m == null) {
       return null;
     }
@@ -2193,8 +2197,8 @@ public class ObjectStore implements RawStore, Configurable {
       String[] names =  fullyQualifiedName.split("\\.");
       tablesUsed.add(getMTable(m.getCatName(), names[0], names[1], false).mtbl);
     }
-    return new MCreationMetadata(m.getCatName(), m.getDbName(), m.getTblName(),
-        tablesUsed, m.getValidTxnList());
+    return new MCreationMetadata(m.getDbName(), m.getTblName(),
+        tablesUsed, m.getValidTxnList(), System.currentTimeMillis());
   }
 
   private CreationMetadata convertToCreationMetadata(
@@ -2210,6 +2214,7 @@ public class ObjectStore implements RawStore, Configurable {
     }
     CreationMetadata r = new CreationMetadata(s.getCatalogName(),
         s.getDbName(), s.getTblName(), tablesUsed);
+    r.setMaterializationTime(s.getMaterializationTime());
     if (s.getTxnList() != null) {
       r.setValidTxnList(s.getTxnList());
     }
@@ -3987,10 +3992,6 @@ public class ObjectStore implements RawStore, Configurable {
     } finally {
       if (!success) {
         rollbackTransaction();
-      } else {
-        // Add to the invalidation cache if the creation signature has changed
-        MaterializationsInvalidationCache.get().alterMaterializedView(
-            dbname, tablename, cm.getTablesUsed(), cm.getValidTxnList());
       }
     }
   }

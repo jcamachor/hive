@@ -91,6 +91,7 @@ import org.apache.hadoop.hive.common.HiveStatsUtils;
 import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.common.ObjectPair;
 import org.apache.hadoop.hive.common.StatsSetupConst;
+import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.common.ValidTxnWriteIdList;
 import org.apache.hadoop.hive.common.ValidWriteIdList;
 import org.apache.hadoop.hive.common.classification.InterfaceAudience.LimitedPrivate;
@@ -176,6 +177,7 @@ import org.apache.hadoop.hive.ql.exec.SerializationUtilities;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.lockmgr.DbTxnManager;
+import org.apache.hadoop.hive.ql.lockmgr.HiveTxnManager;
 import org.apache.hadoop.hive.ql.log.PerfLogger;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelFactories;
 import org.apache.hadoop.hive.ql.optimizer.calcite.RelOptHiveTable;
@@ -1415,6 +1417,37 @@ public class Hive {
           } else {
             if (invalidationTime != 0L && invalidationTime > currentTime - diff) {
               outdated = true;
+            }
+          } else {
+            if (cm.getMaterializationTime() < currentTime - diff) {
+              if (currentTxnWriteIds == null) {
+                // If parameter is zero, materialized view cannot be outdated at all
+                LOG.debug("Materialized view " + materializedViewTable.getFullyQualifiedName() +
+                    " ignored for rewriting as we could not obtain current txn ids");
+                continue;
+              }
+              if (cm.getValidTxnList() == null) {
+                // If parameter is zero, materialized view cannot be outdated at all
+                LOG.debug("Materialized view " + materializedViewTable.getFullyQualifiedName() +
+                    " ignored for rewriting as we could not obtain materialization txn ids");
+                continue;
+              }
+              ValidTxnWriteIdList mvTxnWriteIds = new ValidTxnWriteIdList(cm.getValidTxnList());
+              boolean accepted = true;
+              for (String qName : cm.getTablesUsed()) {
+                ValidWriteIdList tableCurrentWriteIds = currentTxnWriteIds.getTableValidWriteIdList(qName);
+                ValidWriteIdList tableWriteIds = mvTxnWriteIds.getTableValidWriteIdList(qName);
+                if (tableCurrentWriteIds == null || tableWriteIds == null ||
+                    !TxnIdUtils.checkEquivalentWriteIds(tableCurrentWriteIds, tableWriteIds)) {
+                  accepted = false;
+                  break;
+                }
+              }
+              if (!accepted) {
+                LOG.debug("Materialized view " + materializedViewTable.getFullyQualifiedName() +
+                    " ignored for rewriting as its contents are outdated");
+                continue;
+              }
             }
           }
         }

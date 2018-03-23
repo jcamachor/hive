@@ -25,7 +25,7 @@ analyze table cmv_basetable_2 compute statistics for columns;
 
 -- CREATE VIEW WITH REWRITE DISABLED
 EXPLAIN
-CREATE MATERIALIZED VIEW cmv_mat_view TBLPROPERTIES('rewriting.time.window'='300s') AS
+CREATE MATERIALIZED VIEW cmv_mat_view TBLPROPERTIES('rewriting.time.window'='5min') AS
   SELECT cmv_basetable.a, cmv_basetable_2.c
   FROM cmv_basetable JOIN cmv_basetable_2 ON (cmv_basetable.a = cmv_basetable_2.a)
   WHERE cmv_basetable_2.c > 10.0

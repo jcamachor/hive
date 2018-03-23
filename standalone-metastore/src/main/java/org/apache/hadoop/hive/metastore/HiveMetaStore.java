@@ -8773,8 +8773,11 @@ public class HiveMetaStore extends ThriftHiveMetastore {
           false);
       IHMSHandler handler = newRetryingHMSHandler(baseHandler, conf);
 
+<<<<<<< HEAD
       // Initialize materializations invalidation cache
       MaterializationsInvalidationCache.get().init(conf, handler);
+=======
+>>>>>>> HIVE-19027
       TServerSocket serverSocket;
 
       if (useSasl) {

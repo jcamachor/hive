@@ -350,6 +350,7 @@ import org.slf4j.LoggerFactory;
           case 1: // SCHEMA_VERSIONS
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
+<<<<<<< HEAD
                 org.apache.thrift.protocol.TList _list920 = iprot.readListBegin();
                 struct.schemaVersions = new ArrayList<SchemaVersionDescriptor>(_list920.size);
                 SchemaVersionDescriptor _elem921;
@@ -358,6 +359,16 @@ import org.slf4j.LoggerFactory;
                   _elem921 = new SchemaVersionDescriptor();
                   _elem921.read(iprot);
                   struct.schemaVersions.add(_elem921);
+=======
+                org.apache.thrift.protocol.TList _list864 = iprot.readListBegin();
+                struct.schemaVersions = new ArrayList<SchemaVersionDescriptor>(_list864.size);
+                SchemaVersionDescriptor _elem865;
+                for (int _i866 = 0; _i866 < _list864.size; ++_i866)
+                {
+                  _elem865 = new SchemaVersionDescriptor();
+                  _elem865.read(iprot);
+                  struct.schemaVersions.add(_elem865);
+>>>>>>> HIVE-19027
                 }
                 iprot.readListEnd();
               }
@@ -383,9 +394,15 @@ import org.slf4j.LoggerFactory;
         oprot.writeFieldBegin(SCHEMA_VERSIONS_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, struct.schemaVersions.size()));
+<<<<<<< HEAD
           for (SchemaVersionDescriptor _iter923 : struct.schemaVersions)
           {
             _iter923.write(oprot);
+=======
+          for (SchemaVersionDescriptor _iter867 : struct.schemaVersions)
+          {
+            _iter867.write(oprot);
+>>>>>>> HIVE-19027
           }
           oprot.writeListEnd();
         }
@@ -416,9 +433,15 @@ import org.slf4j.LoggerFactory;
       if (struct.isSetSchemaVersions()) {
         {
           oprot.writeI32(struct.schemaVersions.size());
+<<<<<<< HEAD
           for (SchemaVersionDescriptor _iter924 : struct.schemaVersions)
           {
             _iter924.write(oprot);
+=======
+          for (SchemaVersionDescriptor _iter868 : struct.schemaVersions)
+          {
+            _iter868.write(oprot);
+>>>>>>> HIVE-19027
           }
         }
       }
@@ -430,6 +453,7 @@ import org.slf4j.LoggerFactory;
       BitSet incoming = iprot.readBitSet(1);
       if (incoming.get(0)) {
         {
+<<<<<<< HEAD
           org.apache.thrift.protocol.TList _list925 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
           struct.schemaVersions = new ArrayList<SchemaVersionDescriptor>(_list925.size);
           SchemaVersionDescriptor _elem926;
@@ -438,6 +462,16 @@ import org.slf4j.LoggerFactory;
             _elem926 = new SchemaVersionDescriptor();
             _elem926.read(iprot);
             struct.schemaVersions.add(_elem926);
+=======
+          org.apache.thrift.protocol.TList _list869 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
+          struct.schemaVersions = new ArrayList<SchemaVersionDescriptor>(_list869.size);
+          SchemaVersionDescriptor _elem870;
+          for (int _i871 = 0; _i871 < _list869.size; ++_i871)
+          {
+            _elem870 = new SchemaVersionDescriptor();
+            _elem870.read(iprot);
+            struct.schemaVersions.add(_elem870);
+>>>>>>> HIVE-19027
           }
         }
         struct.setSchemaVersionsIsSet(true);

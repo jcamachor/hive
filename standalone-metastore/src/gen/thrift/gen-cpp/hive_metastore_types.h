@@ -555,8 +555,6 @@ class CmRecycleResponse;
 
 class TableMeta;
 
-class Materialization;
-
 class WMResourcePlan;
 
 class WMNullableResourcePlan;
@@ -8584,8 +8582,9 @@ inline std::ostream& operator<<(std::ostream& out, const BasicTxnInfo& obj)
 }
 
 typedef struct _CreationMetadata__isset {
-  _CreationMetadata__isset() : validTxnList(false) {}
+  _CreationMetadata__isset() : validTxnList(false), materializationTime(false) {}
   bool validTxnList :1;
+  bool materializationTime :1;
 } _CreationMetadata__isset;
 
 class CreationMetadata {
@@ -8593,7 +8592,11 @@ class CreationMetadata {
 
   CreationMetadata(const CreationMetadata&);
   CreationMetadata& operator=(const CreationMetadata&);
+<<<<<<< HEAD
   CreationMetadata() : catName(), dbName(), tblName(), validTxnList() {
+=======
+  CreationMetadata() : dbName(), tblName(), validTxnList(), materializationTime(0) {
+>>>>>>> HIVE-19027
   }
 
   virtual ~CreationMetadata() throw();
@@ -8602,6 +8605,7 @@ class CreationMetadata {
   std::string tblName;
   std::set<std::string>  tablesUsed;
   std::string validTxnList;
+  int64_t materializationTime;
 
   _CreationMetadata__isset __isset;
 
@@ -8614,6 +8618,8 @@ class CreationMetadata {
   void __set_tablesUsed(const std::set<std::string> & val);
 
   void __set_validTxnList(const std::string& val);
+
+  void __set_materializationTime(const int64_t val);
 
   bool operator == (const CreationMetadata & rhs) const
   {
@@ -8628,6 +8634,10 @@ class CreationMetadata {
     if (__isset.validTxnList != rhs.__isset.validTxnList)
       return false;
     else if (__isset.validTxnList && !(validTxnList == rhs.validTxnList))
+      return false;
+    if (__isset.materializationTime != rhs.__isset.materializationTime)
+      return false;
+    else if (__isset.materializationTime && !(materializationTime == rhs.materializationTime))
       return false;
     return true;
   }
@@ -10178,6 +10188,7 @@ inline std::ostream& operator<<(std::ostream& out, const TableMeta& obj)
   return out;
 }
 
+<<<<<<< HEAD
 typedef struct _Materialization__isset {
   _Materialization__isset() : validTxnList(false), invalidationTime(false), sourceTablesUpdateDeleteModified(false) {}
   bool validTxnList :1;
@@ -10247,6 +10258,8 @@ inline std::ostream& operator<<(std::ostream& out, const Materialization& obj)
   return out;
 }
 
+=======
+>>>>>>> HIVE-19027
 typedef struct _WMResourcePlan__isset {
   _WMResourcePlan__isset() : status(false), queryParallelism(false), defaultPoolPath(false) {}
   bool status :1;

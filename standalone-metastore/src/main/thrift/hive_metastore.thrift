@@ -1055,6 +1055,7 @@ struct CreationMetadata {
     3: required string tblName,
     4: required set<string> tablesUsed,
     5: optional string validTxnList,
+    6: optional i64 materializationTime;
 }
 
 struct NotificationEventRequest {
@@ -1694,9 +1695,13 @@ service ThriftHiveMetastore extends fb303.FacebookService
   GetTableResult get_table_req(1:GetTableRequest req) throws (1:MetaException o1, 2:NoSuchObjectException o2)
   GetTablesResult get_table_objects_by_name_req(1:GetTablesRequest req)
 				   throws (1:MetaException o1, 2:InvalidOperationException o2, 3:UnknownDBException o3)
+<<<<<<< HEAD
   map<string, Materialization> get_materialization_invalidation_info(1:string dbname, 2:list<string> tbl_names)
 				   throws (1:MetaException o1, 2:InvalidOperationException o2, 3:UnknownDBException o3)
   void update_creation_metadata(1: string catName, 2:string dbname, 3:string tbl_name, 4:CreationMetadata creation_metadata)
+=======
+  void update_creation_metadata(1:string dbname, 2:string tbl_name, 3:CreationMetadata creation_metadata)
+>>>>>>> HIVE-19027
                    throws (1:MetaException o1, 2:InvalidOperationException o2, 3:UnknownDBException o3)
 
   // Get a list of table names that match a filter.
@@ -2164,7 +2169,7 @@ service ThriftHiveMetastore extends fb303.FacebookService
 
   // Schema calls
   void create_ischema(1:ISchema schema) throws(1:AlreadyExistsException o1,
-        NoSuchObjectException o2, 3:MetaException o3)
+        2:NoSuchObjectException o2, 3:MetaException o3)
   void alter_ischema(1:AlterISchemaRequest rqst)
         throws(1:NoSuchObjectException o1, 2:MetaException o2)
   ISchema get_ischema(1:ISchemaName name) throws (1:NoSuchObjectException o1, 2:MetaException o2)

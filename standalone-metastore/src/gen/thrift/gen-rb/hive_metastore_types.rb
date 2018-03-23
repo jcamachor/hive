@@ -3218,18 +3218,27 @@ end
 
 class CreationMetadata
   include ::Thrift::Struct, ::Thrift::Struct_Union
+<<<<<<< HEAD
   CATNAME = 1
   DBNAME = 2
   TBLNAME = 3
   TABLESUSED = 4
   VALIDTXNLIST = 5
+=======
+  DBNAME = 1
+  TBLNAME = 2
+  TABLESUSED = 3
+  VALIDTXNLIST = 4
+  MATERIALIZATIONTIME = 5
+>>>>>>> HIVE-19027
 
   FIELDS = {
     CATNAME => {:type => ::Thrift::Types::STRING, :name => 'catName'},
     DBNAME => {:type => ::Thrift::Types::STRING, :name => 'dbName'},
     TBLNAME => {:type => ::Thrift::Types::STRING, :name => 'tblName'},
     TABLESUSED => {:type => ::Thrift::Types::SET, :name => 'tablesUsed', :element => {:type => ::Thrift::Types::STRING}},
-    VALIDTXNLIST => {:type => ::Thrift::Types::STRING, :name => 'validTxnList', :optional => true}
+    VALIDTXNLIST => {:type => ::Thrift::Types::STRING, :name => 'validTxnList', :optional => true},
+    MATERIALIZATIONTIME => {:type => ::Thrift::Types::I64, :name => 'materializationTime', :optional => true}
   }
 
   def struct_fields; FIELDS; end
@@ -3848,6 +3857,7 @@ class TableMeta
   ::Thrift::Struct.generate_accessors self
 end
 
+<<<<<<< HEAD
 class Materialization
   include ::Thrift::Struct, ::Thrift::Struct_Union
   TABLESUSED = 1
@@ -3871,6 +3881,8 @@ class Materialization
   ::Thrift::Struct.generate_accessors self
 end
 
+=======
+>>>>>>> HIVE-19027
 class WMResourcePlan
   include ::Thrift::Struct, ::Thrift::Struct_Union
   NAME = 1
