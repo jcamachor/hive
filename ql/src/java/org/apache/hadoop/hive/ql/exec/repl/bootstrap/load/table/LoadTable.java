@@ -18,6 +18,7 @@
 package org.apache.hadoop.hive.ql.exec.repl.bootstrap.load.table;
 
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.MetaException;
@@ -213,7 +214,7 @@ public class LoadTable {
     } else {
       Path tablePath = new Path(
           context.warehouse.getDefaultDatabasePath(tblDesc.getDatabaseName()),
-          MetaStoreUtils.encodeTableName(tblDesc.getTableName().toLowerCase())
+          FileUtils.escapePathName(tblDesc.getTableName()).toLowerCase()
       );
       return context.warehouse.getDnsPath(tablePath).toString();
     }

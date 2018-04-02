@@ -99,7 +99,16 @@ public class ColumnStatsAutoGatherContext {
     // In dynamic-partitioned table case, it will generate TS-SEL-GBY(partitionKey)-RS-GBY-SEL-FS operator
     // However, we do not need to specify the partition-spec because (1) the data is going to be inserted to that specific partition
     // (2) we can compose the static/dynamic partition using a select operator in replaceSelectOperatorProcess..
-    String analyzeCommand = "analyze table `" + tbl.getDbName() + "`.`" + tbl.getTableName() + "`"
+    String qIdSupport = conf.getVar(HiveConf.ConfVars.HIVE_QUOTEDID_SUPPORT);
+    String quote;
+    if ("column".equals(qIdSupport)) {
+      quote = "`";
+    } else if ("standard".equals(qIdSupport)) {
+      quote = "\"";
+    } else {
+      quote = "";
+    }
+    String analyzeCommand = "analyze table " + quote + tbl.getDbName() + quote + "." + quote + tbl.getTableName() + quote
         + " compute statistics for columns ";
 
     // 2. Based on the statement, generate the selectOperator

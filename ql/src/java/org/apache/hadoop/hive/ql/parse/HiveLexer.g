@@ -25,17 +25,38 @@ import org.apache.hadoop.hive.conf.HiveConf;
 
 @lexer::members {
   private Configuration hiveConf;
-  
+  private Quotation quotation = null;
+
+  private enum Quotation {
+    NONE,
+    BACKTICKS,
+    STANDARD;
+  }
+
   public void setHiveConf(Configuration hiveConf) {
     this.hiveConf = hiveConf;
   }
-  
-  protected boolean allowQuotedId() {
+
+  protected Quotation allowQuotedId() {
+    if (quotation != null) {
+      return quotation;
+    }
     if(hiveConf == null){
-      return false;
+      quotation = Quotation.NONE;
+      return quotation;
     }
     String supportedQIds = HiveConf.getVar(hiveConf, HiveConf.ConfVars.HIVE_QUOTEDID_SUPPORT);
-    return !"none".equals(supportedQIds);
+    if ("none".equalsIgnoreCase(supportedQIds)) {
+      quotation = Quotation.NONE;
+    } else if ("column".equalsIgnoreCase(supportedQIds)) {
+      quotation = Quotation.BACKTICKS;
+    } else if ("standard".equalsIgnoreCase(supportedQIds)) {
+      quotation = Quotation.STANDARD;
+    } else {
+      throw new RuntimeException("Option not recognized for " + HiveConf.ConfVars.HIVE_QUOTEDID_SUPPORT.varname +
+          "value: " + supportedQIds);
+    }
+    return quotation;
   }
 }
 
@@ -445,9 +466,8 @@ RegexComponent
 
 StringLiteral
     :
-    ( '\'' ( ~('\''|'\\') | ('\\' .) )* '\''
-    | '\"' ( ~('\"'|'\\') | ('\\' .) )* '\"'
-    )+
+    {allowQuotedId() != Quotation.STANDARD}? ( '\"' ( ~('\"'|'\\') | ('\\' .) )* '\"' | '\'' ( ~('\''|'\\') | ('\\' .) )* '\'' )+
+    | {allowQuotedId() == Quotation.STANDARD}? ( '\'' ( ~('\''|'\\') | ('\\' .) )* '\'' )+
     ;
 
 CharSetLiteral
@@ -515,15 +535,15 @@ An Identifier can be:
 Identifier
     :
     (Letter | Digit) (Letter | Digit | '_')*
-    | {allowQuotedId()}? QuotedIdentifier  /* though at the language level we allow all Identifiers to be QuotedIdentifiers; 
-                                              at the API level only columns are allowed to be of this form */
+    | {allowQuotedId() != Quotation.NONE}? QuotedIdentifier
     | '`' RegexComponent+ '`'
     ;
 
-fragment    
-QuotedIdentifier 
+fragment
+QuotedIdentifier
     :
-    '`'  ( '``' | ~('`') )* '`' { setText(getText().substring(1, getText().length() -1 ).replaceAll("``", "`")); }
+    {allowQuotedId() == Quotation.BACKTICKS}? ('`'  ( '``' | ~('`') )* '`') { setText(getText().substring(1, getText().length() -1 ).replaceAll("``", "`")); }
+    | {allowQuotedId() == Quotation.STANDARD}? ('\"'  ~('\"')* '\"') { setText(getText().substring(1, getText().length() -1 )); }
     ;
 
 CharSetName

@@ -18,6 +18,7 @@
 package org.apache.hadoop.hive.ql.exec.repl.bootstrap.load.table;
 
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.MetaException;
@@ -104,7 +105,7 @@ public class LoadPartitions {
     } else {
       Path tablePath = new Path(
           context.warehouse.getDefaultDatabasePath(tableDesc.getDatabaseName()),
-          MetaStoreUtils.encodeTableName(tableDesc.getTableName().toLowerCase())
+          FileUtils.escapePathName(tableDesc.getTableName()).toLowerCase()
       );
       return context.warehouse.getDnsPath(tablePath).toString();
     }

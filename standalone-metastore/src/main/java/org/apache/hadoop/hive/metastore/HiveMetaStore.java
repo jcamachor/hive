@@ -1170,7 +1170,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     // Assumes that the catalog has already been set.
     private void create_database_core(RawStore ms, final Database db)
         throws AlreadyExistsException, InvalidObjectException, MetaException {
-      if (!MetaStoreUtils.validateName(db.getName(), null)) {
+      if (!MetaStoreUtils.validateName(db.getName(), conf)) {
         throw new InvalidObjectException(db.getName() + " is not a valid database name");
       }
 
@@ -1564,7 +1564,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
 
     private void create_type_core(final RawStore ms, final Type type)
         throws AlreadyExistsException, MetaException, InvalidObjectException {
-      if (!MetaStoreUtils.validateName(type.getName(), null)) {
+      if (!MetaStoreUtils.validateName(type.getName(), conf)) {
         throw new InvalidObjectException("Invalid type name");
       }
 
@@ -6738,7 +6738,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     }
 
     private void validateFunctionInfo(Function func) throws InvalidObjectException, MetaException {
-      if (!MetaStoreUtils.validateName(func.getFunctionName(), null)) {
+      if (!MetaStoreUtils.validateName(func.getFunctionName(), conf)) {
         throw new InvalidObjectException(func.getFunctionName() + " is not a valid object name");
       }
       String className = func.getClassName();

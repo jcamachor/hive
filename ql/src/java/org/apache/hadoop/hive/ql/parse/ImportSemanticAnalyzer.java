@@ -958,7 +958,7 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
         tblDesc.setLocation(
             wh.getDnsPath(new Path(
                 wh.getDefaultDatabasePath(tblDesc.getDatabaseName()),
-                org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.encodeTableName(tblDesc.getTableName().toLowerCase())
+                FileUtils.escapePathName(tblDesc.getTableName()).toLowerCase()
             )
         ).toString());
 

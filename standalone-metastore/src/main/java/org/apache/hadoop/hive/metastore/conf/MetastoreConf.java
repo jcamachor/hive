@@ -726,7 +726,7 @@ public class MetastoreConf {
         "hive.support.special.characters.tablename", true,
         "This flag should be set to true to enable support for special characters in table names.\n"
             + "When it is set to false, only [a-zA-Z_0-9]+ are supported.\n"
-            + "The only supported special character right now is '/'. This flag applies only to quoted table names.\n"
+            + "This flag applies only to quoted table names.\n"
             + "The default value is true."),
     TASK_THREADS_ALWAYS("metastore.task.threads.always", "metastore.task.threads.always",
         EventCleanerTask.class.getName() + "," +

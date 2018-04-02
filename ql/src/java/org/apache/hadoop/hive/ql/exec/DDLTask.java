@@ -5140,7 +5140,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       {
         // Default database name path is always ignored, use METASTOREWAREHOUSE and object name
         // instead
-        path = new Path(HiveConf.getVar(conf, HiveConf.ConfVars.METASTOREWAREHOUSE), org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.encodeTableName(name.toLowerCase()));
+        path = new Path(HiveConf.getVar(conf, HiveConf.ConfVars.METASTOREWAREHOUSE), FileUtils.escapePathName(name).toLowerCase());
       }
     }
     else

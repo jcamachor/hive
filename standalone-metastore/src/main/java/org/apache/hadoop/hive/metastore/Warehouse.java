@@ -214,7 +214,7 @@ public class Warehouse {
     if (dbName.equalsIgnoreCase(DEFAULT_DATABASE_NAME)) {
       return getWhRoot();
     }
-    return new Path(getWhRoot(), dbName.toLowerCase() + DATABASE_WAREHOUSE_SUFFIX);
+    return new Path(getWhRoot(), FileUtils.escapePathName(dbName).toLowerCase() + DATABASE_WAREHOUSE_SUFFIX);
   }
 
   /**
@@ -227,7 +227,7 @@ public class Warehouse {
   public Path getDefaultTablePath(Database db, String tableName)
       throws MetaException {
     return getDnsPath(new Path(getDatabasePath(db),
-        MetaStoreUtils.encodeTableName(tableName.toLowerCase())));
+        FileUtils.escapePathName(tableName.toLowerCase())));
   }
 
   public static String getQualifiedName(Table table) {

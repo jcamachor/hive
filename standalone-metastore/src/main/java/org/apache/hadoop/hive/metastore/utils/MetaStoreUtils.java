@@ -140,14 +140,6 @@ public class MetaStoreUtils {
    */
   public static final String DB_EMPTY_MARKER = "!";
 
-  // Right now we only support one special character '/'.
-  // More special characters can be added accordingly in the future.
-  // NOTE:
-  // If the following array is updated, please also be sure to update the
-  // configuration parameter documentation
-  // HIVE_SUPPORT_SPECICAL_CHARACTERS_IN_TABLE_NAMES in HiveConf as well.
-  private static final char[] specialCharactersInTableNames = new char[] { '/' };
-
   /**
    * Catches exceptions that can't be handled and bundles them to MetaException
    *
@@ -160,22 +152,6 @@ public class MetaStoreUtils {
     LOG.error(exInfo, e);
     LOG.error("Converting exception to MetaException");
     throw new MetaException(exInfo);
-  }
-
-  public static String encodeTableName(String name) {
-    // The encoding method is simple, e.g., replace
-    // all the special characters with the corresponding number in ASCII.
-    // Note that unicode is not supported in table names. And we have explicit
-    // checks for it.
-    StringBuilder sb = new StringBuilder();
-    for (char ch : name.toCharArray()) {
-      if (Character.isLetterOrDigit(ch) || ch == '_') {
-        sb.append(ch);
-      } else {
-        sb.append('-').append((int) ch).append('-');
-      }
-    }
-    return sb.toString();
   }
 
   /**
@@ -479,16 +455,11 @@ public class MetaStoreUtils {
    *              if it doesn't match the pattern.
    */
   public static boolean validateName(String name, Configuration conf) {
-    Pattern tpat;
-    String allowedCharacters = "\\w_";
-    if (conf != null
-        && MetastoreConf.getBoolVar(conf,
+    if (conf != null && MetastoreConf.getBoolVar(conf,
         MetastoreConf.ConfVars.SUPPORT_SPECICAL_CHARACTERS_IN_TABLE_NAMES)) {
-      for (Character c : specialCharactersInTableNames) {
-        allowedCharacters += c;
-      }
+      return !name.contains(".");
     }
-    tpat = Pattern.compile("[" + allowedCharacters + "]+");
+    Pattern tpat = Pattern.compile("[\\w_]+");
     Matcher m = tpat.matcher(name);
     return m.matches();
   }
