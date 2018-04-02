@@ -1589,6 +1589,22 @@ public final class FunctionRegistry {
     return fn instanceof GenericUDFOPNotEqual;
   }
 
+  public static boolean isLessThan(GenericUDF fn) {
+    return fn instanceof GenericUDFOPLessThan;
+  }
+
+  public static boolean isEqualOrLessThan(GenericUDF fn) {
+    return fn instanceof GenericUDFOPEqualOrLessThan;
+  }
+
+  public static boolean isGreaterThan(GenericUDF fn) {
+    return fn instanceof GenericUDFOPGreaterThan;
+  }
+
+  public static boolean isEqualOrGreaterThan(GenericUDF fn) {
+    return fn instanceof GenericUDFOPEqualOrGreaterThan;
+  }
+
   /**
    * Returns whether the exprNodeDesc is a node of "positive".
    */
@@ -1618,6 +1634,16 @@ public final class FunctionRegistry {
         udfClass == GenericUDFTimestamp.class || udfClass == GenericUDFToBinary.class ||
         udfClass == GenericUDFToDate.class || udfClass == GenericUDFToDecimal.class ||
         udfClass == GenericUDFToTimestampLocalTZ.class;
+  }
+
+  public static boolean isOpSimpleComparison(ExprNodeDesc desc) {
+    Class<? extends GenericUDF> func = getGenericUDFClassFromExprDesc(desc);
+    return GenericUDFOPEqual.class == func ||
+        GenericUDFOPNotEqual.class == func ||
+        GenericUDFOPLessThan.class == func ||
+        GenericUDFOPEqualOrLessThan.class == func ||
+        GenericUDFOPGreaterThan.class == func ||
+        GenericUDFOPEqualOrGreaterThan.class == func;
   }
 
   /**

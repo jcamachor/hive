@@ -18,36 +18,22 @@
 
 package org.apache.hadoop.hive.ql.io;
 
-import java.io.DataInput;
-import java.io.DataOutput;
-import java.io.IOException;
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-
 import org.apache.hadoop.conf.Configurable;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.FileUtils;
-import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.common.StringInternUtils;
 import org.apache.hadoop.hive.common.ValidTxnWriteIdList;
 import org.apache.hadoop.hive.common.ValidWriteIdList;
+import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.io.HiveIOExceptionHandlerUtil;
 import org.apache.hadoop.hive.llap.io.api.LlapIo;
 import org.apache.hadoop.hive.llap.io.api.LlapProxy;
+import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.SerializationUtilities;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
@@ -56,15 +42,17 @@ import org.apache.hadoop.hive.ql.exec.spark.SparkDynamicPartitionPruner;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.log.PerfLogger;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
+import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
+import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.ql.plan.MapWork;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.PartitionDesc;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.plan.TableScanDesc;
-import org.apache.hadoop.hive.ql.plan.VectorPartitionDesc;
-import org.apache.hadoop.hive.ql.plan.VectorPartitionDesc.VectorMapOperatorReadType;
 import org.apache.hadoop.hive.ql.session.SessionState;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
 import org.apache.hadoop.hive.serde2.ColumnProjectionUtils;
 import org.apache.hadoop.hive.serde2.Deserializer;
 import org.apache.hadoop.io.Writable;
@@ -82,6 +70,23 @@ import org.apache.hive.common.util.Ref;
 import org.apache.hive.common.util.ReflectionUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * HiveInputFormat is a parameterized InputFormat which looks at the path name
@@ -783,13 +788,19 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
     newjob.setBoolean(ColumnProjectionUtils.READ_ALL_COLUMNS, false);
     newjob.set(ColumnProjectionUtils.READ_COLUMN_IDS_CONF_STR, readColIds);
     newjob.set(ColumnProjectionUtils.READ_COLUMN_NAMES_CONF_STR, readColNames);
+    if (newjob.getBoolean(HiveConf.ConfVars.HIVEAWSS3SELECT.varname, false) &&
+        readColIds != null && !readColIds.isEmpty()) {
+      // We create the select expression
+      ColumnProjectionUtils.createProjectSelectExpression(newjob,
+          Stream.of(readColIds.split(","))
+              .map (e -> Integer.valueOf(e)).collect(Collectors.toList()));
+    }
 
     if (LOG.isInfoEnabled()) {
       LOG.info("{} = {}", ColumnProjectionUtils.READ_COLUMN_IDS_CONF_STR, readColIds);
       LOG.info("{} = {}", ColumnProjectionUtils.READ_COLUMN_NAMES_CONF_STR, readColNames);
     }
   }
-
 
   protected static PartitionDesc getPartitionDescFromPath(
       Map<Path, PartitionDesc> pathToPartitionInfo, Path dir)
@@ -867,6 +878,140 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
     }
     jobConf.set(TableScanDesc.FILTER_TEXT_CONF_STR, filterText);
     jobConf.set(TableScanDesc.FILTER_EXPR_CONF_STR, serializedFilterExpr);
+
+    LOG.info("{} = {}", TableScanDesc.FILTER_TEXT_CONF_STR, jobConf.get(TableScanDesc.FILTER_TEXT_CONF_STR));
+    LOG.info("{} = {}", TableScanDesc.FILTER_EXPR_CONF_STR, jobConf.get(TableScanDesc.FILTER_EXPR_CONF_STR));
+
+    if (jobConf.getBoolean(ConfVars.HIVEAWSS3SELECT.varname, false)) {
+      createFilterSelectExpression(jobConf, filterExpr);
+    }
+  }
+
+  private static void createFilterSelectExpression(Configuration conf, ExprNodeGenericFuncDesc expr) {
+    if (!conf.getBoolean(HiveConf.ConfVars.HIVEAWSS3SELECT.varname, false) ||
+        expr == null) {
+      // Bail out
+      return;
+    }
+    // First get existing expression (if it is there)
+    String existingSelectExpr = conf.get(Constants.FS_S3A_SELECT_EXPRESSION);
+    if (existingSelectExpr == null) {
+      existingSelectExpr = "SELECT * FROM S3OBJECT s";
+    }
+    // Second, column resolution to positions
+    String columnIds = conf.get(ColumnProjectionUtils.READ_COLUMN_IDS_CONF_STR, null);
+    String columnNames = conf.get(ColumnProjectionUtils.READ_COLUMN_NAMES_CONF_STR, null);
+    if (columnIds == null || columnNames == null) {
+      // Bail out
+      return;
+    }
+    List<Integer> columnIdList = Stream.of(columnIds.split(","))
+        .map(id -> Integer.valueOf(id) + 1)
+        .collect(Collectors.toList());
+    List<String> columnNameList = Stream.of(columnNames.split(","))
+        .collect(Collectors.toList());
+    if (columnIdList.size() != columnNameList.size()) {
+      // This should not happen, bail out
+      LOG.warn("Size of column identifiers not equal to size of column names");
+      return;
+    }
+    Map<String, Integer> nameToPos = new HashMap<>();
+    for (int i = 0; i < columnIdList.size(); i++) {
+      nameToPos.put(columnNameList.get(i), columnIdList.get(i));
+    }
+    // Third, transform and push filter
+    String whereClause = generateAndOrClause(expr, nameToPos);
+    if (whereClause != null && !whereClause.isEmpty()) {
+      existingSelectExpr += " WHERE " + whereClause;
+      conf.set(Constants.FS_S3A_SELECT_EXPRESSION, existingSelectExpr);
+      LOG.info("{} = {}", Constants.FS_S3A_SELECT_EXPRESSION, existingSelectExpr);
+    }
+  }
+
+  /**
+   * Return false if the expression has any non deterministic function
+   */
+  private static String generateAndOrClause(ExprNodeDesc desc, Map<String, Integer> nameToPos) {
+    if (FunctionRegistry.isOpAnd(desc)) {
+      List<String> conjs = new ArrayList<>();
+      for (ExprNodeDesc child : desc.getChildren()) {
+        String childExprString = generateComparisonClause(child, nameToPos);
+        if (childExprString == null) {
+          // We can continue
+          continue;
+        }
+        conjs.add(childExprString);
+      }
+      return String.join(" AND ", conjs);
+    }
+    if (FunctionRegistry.isOpOr(desc)) {
+      List<String> disjs = new ArrayList<>();
+      for (ExprNodeDesc child : desc.getChildren()) {
+        String childExprString = generateComparisonClause(child, nameToPos);
+        if (childExprString == null) {
+          // Bail out
+          return null;
+        }
+        disjs.add(childExprString);
+      }
+      return String.join(" OR ", disjs);
+    }
+    // Not supported
+    return null;
+  }
+
+  private static String generateComparisonClause(ExprNodeDesc desc, Map<String, Integer> nameToPos) {
+    if (FunctionRegistry.isOpSimpleComparison(desc)) {
+      ExprNodeDesc leftChild = desc.getChildren().get(0);
+      String left = null;
+      if (leftChild instanceof ExprNodeColumnDesc) {
+        Integer idx = nameToPos.get(leftChild.getExprString());
+        if (idx != null) {
+          left = "s._" + idx;
+        }
+      } else if (leftChild instanceof ExprNodeConstantDesc) {
+        left = leftChild.getExprString();
+      }
+      if (left == null) {
+        // Not supported
+        return null;
+      }
+      ExprNodeDesc rightChild = desc.getChildren().get(1);
+      String right = null;
+      if (rightChild instanceof ExprNodeColumnDesc) {
+        Integer idx = nameToPos.get(rightChild.getExprString());
+        if (idx != null) {
+          right = "s._" + idx;
+        }
+      } else if (rightChild instanceof ExprNodeConstantDesc) {
+        right = rightChild.getExprString();
+      }
+      if (right == null) {
+        // Not supported
+        return null;
+      }
+      GenericUDF originalOp = ((ExprNodeGenericFuncDesc) desc).getGenericUDF();
+      String comp;
+      if (FunctionRegistry.isEq(originalOp)) {
+        comp = " = ";
+      } else if (FunctionRegistry.isNeq(originalOp)) {
+        comp = " <> ";
+      } else if (FunctionRegistry.isLessThan(originalOp)) {
+        comp = " < ";
+      } else if (FunctionRegistry.isEqualOrLessThan(originalOp)) {
+        comp = " <= ";
+      } else if (FunctionRegistry.isGreaterThan(originalOp)) {
+        comp = " > ";
+      } else if (FunctionRegistry.isEqualOrGreaterThan(originalOp)) {
+        comp = " >= ";
+      } else {
+        LOG.warn("Unexpected comparison in select clause generation : " + originalOp);
+        return null;
+      }
+      return left + comp + right;
+    }
+    // Not supported
+    return null;
   }
 
   protected void pushProjectionsAndFilters(JobConf jobConf, Class inputFormatClass,

@@ -2104,7 +2104,6 @@ public class HiveConf extends Configuration {
 
     // Optimizer
     HIVEOPTINDEXFILTER("hive.optimize.index.filter", false, "Whether to enable automatic use of indexes"),
-
     HIVEOPTPPD("hive.optimize.ppd", true,
         "Whether to enable predicate pushdown"),
     HIVEOPTPPD_WINDOWING("hive.optimize.ppd.windowing", true,
@@ -2122,7 +2121,7 @@ public class HiveConf extends Configuration {
              "Minimum number of OR clauses needed to transform into IN clauses"),
     HIVECOUNTDISTINCTOPTIMIZER("hive.optimize.countdistinct", true,
                  "Whether to transform count distinct into two stages"),
-   HIVEPARTITIONCOLUMNSEPARATOR("hive.optimize.partition.columns.separate", true,
+    HIVEPARTITIONCOLUMNSEPARATOR("hive.optimize.partition.columns.separate", true,
             "Extract partition columns from IN clauses"),
     // Constant propagation optimizer
     HIVEOPTCONSTANTPROPAGATION("hive.optimize.constant.propagation", true, "Whether to enable constant propagation optimizer"),
@@ -2134,6 +2133,8 @@ public class HiveConf extends Configuration {
     HIVENULLSCANOPTIMIZE("hive.optimize.null.scan", true, "Dont scan relations which are guaranteed to not generate any rows"),
     HIVEOPTPPD_STORAGE("hive.optimize.ppd.storage", true,
         "Whether to push predicates down to storage handlers"),
+    HIVEAWSS3SELECT("hive.optimize.aws.s3", false, "Whether to generate AWS S3 select query and embed it into "
+        + "the job configuration"),
     HIVEOPTGROUPBY("hive.optimize.groupby", true,
         "Whether to enable the bucketed group by from bucketed partitions/tables."),
     HIVEOPTBUCKETMAPJOIN("hive.optimize.bucketmapjoin", false,

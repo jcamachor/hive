@@ -66,4 +66,6 @@ public class Constants {
   public static final String HADOOP_CREDENTIAL_PROVIDER_PATH_CONFIG = "hadoop.security.credential.provider.path";
 
   public static final String MATERIALIZED_VIEW_REWRITING_TIME_WINDOW = "rewriting.time.window";
+
+  public static final String FS_S3A_SELECT_EXPRESSION = "fs.s3a.select.expression";
 }

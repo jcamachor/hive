@@ -23,8 +23,11 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.conf.Constants;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.util.StringUtils;
 import org.apache.hive.common.util.HiveStringUtils;
 import org.slf4j.Logger;
@@ -120,6 +123,10 @@ public final class ColumnProjectionUtils {
     setReadColumnIDConf(conf, newConfStr);
     // Set READ_ALL_COLUMNS to false
     conf.setBoolean(READ_ALL_COLUMNS, false);
+    if (!ids.isEmpty()) {
+      // Update SELECT expr
+      createProjectSelectExpression(conf, ids);
+    }
   }
 
   /**
@@ -238,7 +245,24 @@ public final class ColumnProjectionUtils {
       }
       result.append(col);
     }
-    conf.set(READ_COLUMN_NAMES_CONF_STR, result.toString());
+    String readColNames = result.toString();
+    conf.set(READ_COLUMN_NAMES_CONF_STR, readColNames);
+  }
+
+  public static void createProjectSelectExpression(Configuration conf, List<Integer> readColIds) {
+    if (!conf.getBoolean(HiveConf.ConfVars.HIVEAWSS3SELECT.varname, false) ||
+        readColIds == null || readColIds.isEmpty()) {
+      // Bail out
+      return;
+    }
+    // Generate SELECT expression (may not be used at all)
+    // "SELECT s.col1,s.col2 FROM S3OBJECT s"
+    String selectExpr = "SELECT " +
+        readColIds.stream()
+            .map(c -> "s._" + (c + 1)).collect(Collectors.joining(",")) +
+        " FROM S3OBJECT s";
+    conf.set(Constants.FS_S3A_SELECT_EXPRESSION, selectExpr);
+    LOG.info("{} = {}", Constants.FS_S3A_SELECT_EXPRESSION, selectExpr);
   }
 
   private static String toReadColumnIDString(List<Integer> ids) {
