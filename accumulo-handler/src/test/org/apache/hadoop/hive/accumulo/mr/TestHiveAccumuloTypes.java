@@ -22,7 +22,6 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
-import java.sql.Date;
 import java.time.LocalDateTime;
 import java.util.Map.Entry;
 
@@ -39,6 +38,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.accumulo.AccumuloHiveConstants;
 import org.apache.hadoop.hive.accumulo.AccumuloHiveRow;
 import org.apache.hadoop.hive.accumulo.serde.AccumuloSerDeParameters;
+import org.apache.hadoop.hive.common.type.Date;
 import org.apache.hadoop.hive.common.type.HiveChar;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.common.type.HiveVarchar;
@@ -235,7 +235,7 @@ public class TestHiveAccumuloTypes {
 
     // date
     baos.reset();
-    Date now = new Date(System.currentTimeMillis());
+    Date now = Date.ofEpochMilli(System.currentTimeMillis());
     DateWritable dateWritable = new DateWritable(now);
     Date dateValue = dateWritable.get();
     dateWritable.write(out);
@@ -588,7 +588,7 @@ public class TestHiveAccumuloTypes {
     m.put(cfBytes, "decimal".getBytes(), baos.toByteArray());
 
     // date
-    Date now = new Date(System.currentTimeMillis());
+    Date now = Date.ofEpochMilli(System.currentTimeMillis());
     DateWritable dateWritable = new DateWritable(now);
     Date dateValue = dateWritable.get();
     baos.reset();

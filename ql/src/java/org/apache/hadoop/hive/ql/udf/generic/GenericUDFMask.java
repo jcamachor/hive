@@ -19,8 +19,7 @@
 package org.apache.hadoop.hive.ql.udf.generic;
 
 
-import java.sql.Date;
-
+import org.apache.hadoop.hive.common.type.Date;
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.serde2.io.ShortWritable;
 import org.apache.hadoop.hive.serde2.objectinspector.ConstantObjectInspector;
@@ -218,11 +217,11 @@ class MaskTransformer extends AbstractTransformer {
 
   @Override
   Date transform(final Date value) {
-    int year  = maskedYearValue  == UNMASKED_VAL ? value.getYear()  : maskedYearValue;
-    int month = maskedMonthValue == UNMASKED_VAL ? value.getMonth() : maskedMonthValue;
-    int day   = maskedDayValue   == UNMASKED_VAL ? value.getDate()  : maskedDayValue;
+    int year  = maskedYearValue  == UNMASKED_VAL ? value.getLocalDate().getYear()  : maskedYearValue;
+    int month = maskedMonthValue == UNMASKED_VAL ? value.getLocalDate().getMonthValue() : maskedMonthValue;
+    int day   = maskedDayValue   == UNMASKED_VAL ? value.getLocalDate().getDayOfMonth()  : maskedDayValue;
 
-    return new Date(year, month, day);
+    return Date.of(year, month, day);
   }
 
   protected int transformChar(final int c) {

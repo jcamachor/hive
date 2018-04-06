@@ -21,10 +21,10 @@ package org.apache.hadoop.hive.ql.udf.generic;
 import java.io.Closeable;
 import java.io.IOException;
 import java.text.ParseException;
-import java.util.Date;
 
 import org.apache.hadoop.hive.common.classification.InterfaceAudience;
 import org.apache.hadoop.hive.common.classification.InterfaceStability;
+import org.apache.hadoop.hive.common.type.Date;
 import org.apache.hadoop.hive.common.type.Timestamp;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.exec.MapredContext;
@@ -488,7 +488,7 @@ public abstract class GenericUDF implements Closeable {
   }
 
   protected Date getDateValue(DeferredObject[] arguments, int i, PrimitiveCategory[] inputTypes,
-      Converter[] converters) throws HiveException {
+                              Converter[] converters) throws HiveException {
     Object obj;
     if ((obj = arguments[i].get()) == null) {
       return null;
@@ -500,11 +500,7 @@ public abstract class GenericUDF implements Closeable {
     case VARCHAR:
     case CHAR:
       String dateStr = converters[i].convert(obj).toString();
-      try {
-        date = DateUtils.getDateFormat().parse(dateStr);
-      } catch (ParseException e) {
-        throw new UDFArgumentException("Unparsable date: " + dateStr);
-      }
+      date = Date.valueOf(dateStr);
       break;
     case TIMESTAMP:
     case DATE:

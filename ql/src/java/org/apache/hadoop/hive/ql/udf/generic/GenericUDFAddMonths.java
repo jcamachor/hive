@@ -22,9 +22,7 @@ import static org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveO
 import static org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils.PrimitiveGrouping.STRING_GROUP;
 import static org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils.PrimitiveGrouping.VOID_GROUP;
 
-import java.util.Calendar;
-import java.util.Date;
-
+import org.apache.hadoop.hive.common.type.Date;
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -34,7 +32,6 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorConverters.C
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 import org.apache.hadoop.io.Text;
-import org.apache.hive.common.util.DateUtils;
 
 /**
  * GenericUDFAddMonths.
@@ -53,7 +50,7 @@ import org.apache.hive.common.util.DateUtils;
 public class GenericUDFAddMonths extends GenericUDF {
   private transient Converter[] converters = new Converter[2];
   private transient PrimitiveCategory[] inputTypes = new PrimitiveCategory[2];
-  private final Calendar calendar = Calendar.getInstance();
+  private final Date date = new Date();
   private final Text output = new Text();
   private transient Integer numMonthsConst;
   private transient boolean isNumMonthsConst;
@@ -94,14 +91,13 @@ public class GenericUDFAddMonths extends GenericUDF {
     }
 
     int numMonthInt = numMonthV.intValue();
-    Date date = getDateValue(arguments, 0, inputTypes, converters);
-    if (date == null) {
+    Date d = getDateValue(arguments, 0, inputTypes, converters);
+    if (d == null) {
       return null;
     }
 
-    addMonth(date, numMonthInt);
-    Date newDate = calendar.getTime();
-    output.set(DateUtils.getDateFormat().format(newDate));
+    addMonth(d, numMonthInt);
+    output.set(date.toString());
     return output;
   }
 
@@ -115,23 +111,23 @@ public class GenericUDFAddMonths extends GenericUDF {
     return "add_months";
   }
 
-  protected Calendar addMonth(Date d, int numMonths) {
-    calendar.setTime(d);
+  protected Date addMonth(Date d, int numMonths) {
+    date.setTimeInDays(d.getDays());
 
-    boolean lastDatOfMonth = isLastDayOfMonth(calendar);
+    boolean lastDatOfMonth = isLastDayOfMonth(date);
 
-    calendar.add(Calendar.MONTH, numMonths);
+    date.setMonth(date.getLocalDate().getMonthValue() + numMonths);
 
     if (lastDatOfMonth) {
-      int maxDd = calendar.getActualMaximum(Calendar.DAY_OF_MONTH);
-      calendar.set(Calendar.DAY_OF_MONTH, maxDd);
+      int maxDd = date.getLocalDate().lengthOfMonth();
+      date.setDayOfMonth(maxDd);
     }
-    return calendar;
+    return date;
   }
 
-  protected boolean isLastDayOfMonth(Calendar cal) {
-    int maxDd = cal.getActualMaximum(Calendar.DAY_OF_MONTH);
-    int dd = cal.get(Calendar.DAY_OF_MONTH);
+  protected boolean isLastDayOfMonth(Date d) {
+    int maxDd = d.getLocalDate().lengthOfMonth();
+    int dd = d.getLocalDate().getDayOfMonth();
     return dd == maxDd;
   }
 }

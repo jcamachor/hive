@@ -1,0 +1,146 @@
+/**
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.apache.hadoop.hive.common.type;
+
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeFormatterBuilder;
+import java.time.format.DateTimeParseException;
+
+/**
+ * This is the internal type for Date.
+ * The full qualified input format of Date is "yyyy-MM-dd".
+ */
+public class Date implements Comparable<Date> {
+
+  private static final LocalDate EPOCH = LocalDate.of(1970, 1, 1);
+  private static final DateTimeFormatter FORMATTER;
+  static {
+    DateTimeFormatterBuilder builder = new DateTimeFormatterBuilder();
+    builder.append(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+    FORMATTER = builder.toFormatter();
+  }
+
+  private LocalDate localDate;
+
+  public Date() {
+    this(EPOCH);
+  }
+
+  public Date(LocalDate localDate) {
+    setLocalDate(localDate);
+  }
+
+  public LocalDate getLocalDate() {
+    return localDate;
+  }
+
+  public void setLocalDate(LocalDate localDate) {
+    this.localDate = localDate != null ? localDate : EPOCH;
+  }
+
+  @Override
+  public String toString() {
+    return localDate.format(FORMATTER);
+  }
+
+  public int hashCode() {
+    return localDate.hashCode();
+  }
+
+  @Override
+  public boolean equals(Object other) {
+    if (other instanceof Date) {
+      return compareTo((Date) other) == 0;
+    }
+    return false;
+  }
+
+  @Override
+  public int compareTo(Date o) {
+    return localDate.compareTo(o.localDate);
+  }
+
+  public int getDays() {
+    return (int) localDate.toEpochDay();
+  }
+
+  public long getSeconds() {
+    return localDate.atStartOfDay().toEpochSecond(ZoneOffset.UTC);
+  }
+
+  public long getMillis() {
+    return localDate.atStartOfDay().toInstant(ZoneOffset.UTC).toEpochMilli();
+  }
+
+  public void setYear(int year) {
+    localDate = localDate.withYear(year);
+  }
+
+  public void setMonth(int month) {
+    localDate = localDate.withMonth(month);
+  }
+
+  public void setDayOfMonth(int dayOfMonth) {
+    localDate = localDate.withDayOfMonth(dayOfMonth);
+  }
+
+  public void setTimeInDays(int epochDay) {
+    localDate = LocalDate.ofEpochDay(epochDay);
+  }
+
+  public void setTimeInMillis(long epochMilli) {
+    localDate = LocalDateTime.ofInstant(
+        Instant.ofEpochMilli(epochMilli), ZoneOffset.UTC).toLocalDate();
+  }
+
+  public static Date valueOf(String s) {
+    LocalDate localDate;
+    try {
+      localDate = LocalDate.parse(s, FORMATTER);
+    } catch (DateTimeParseException e) {
+      throw new IllegalArgumentException("Cannot create date, parsing error");
+    }
+    return new Date(localDate);
+  }
+
+  public static Date ofEpochDay(int epochDay) {
+    return new Date(LocalDate.ofEpochDay(epochDay));
+  }
+
+  public static Date ofEpochMilli(long epochMilli) {
+    return new Date(LocalDateTime.ofInstant(
+        Instant.ofEpochMilli(epochMilli), ZoneOffset.UTC).toLocalDate());
+  }
+
+  public static Date of(int year, int month, int dayOfMonth) {
+    return new Date(LocalDate.of(year, month, dayOfMonth));
+  }
+
+  /**
+   * Return a copy of this object.
+   */
+  public Object clone() {
+    // LocalDateTime is immutable.
+    return new Date(this.localDate);
+  }
+
+}

@@ -317,7 +317,7 @@ public class ColumnStatsUpdateTask extends Task<ColumnStatsUpdateWork> {
   private Date readDateValue(String dateStr) {
     // try either yyyy-mm-dd, or integer representing days since epoch
     try {
-      DateWritable writableVal = new DateWritable(java.sql.Date.valueOf(dateStr));
+      DateWritable writableVal = new DateWritable(org.apache.hadoop.hive.common.type.Date.valueOf(dateStr));
       return new Date(writableVal.getDays());
     } catch (IllegalArgumentException err) {
       // Fallback to integer parsing

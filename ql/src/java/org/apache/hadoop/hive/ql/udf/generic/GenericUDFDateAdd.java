@@ -17,8 +17,7 @@
  */
 package org.apache.hadoop.hive.ql.udf.generic;
 
-import java.sql.Date;
-
+import org.apache.hadoop.hive.common.type.Date;
 import org.apache.hadoop.hive.common.type.Timestamp;
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
@@ -65,7 +64,7 @@ import org.apache.hive.common.util.DateParser;
 @VectorizedExpressions({VectorUDFDateAddColScalar.class, VectorUDFDateAddScalarCol.class, VectorUDFDateAddColCol.class})
 public class GenericUDFDateAdd extends GenericUDF {
   private transient final DateParser dateParser = new DateParser();
-  private transient final Date dateVal = new Date(0);
+  private transient final Date dateVal = new Date();
   private transient Converter dateConverter;
   private transient Converter daysConverter;
   private transient PrimitiveCategory inputType1;

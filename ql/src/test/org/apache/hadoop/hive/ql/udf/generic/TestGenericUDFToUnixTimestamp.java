@@ -18,8 +18,7 @@
 
 package org.apache.hadoop.hive.ql.udf.generic;
 
-import java.sql.Date;
-
+import org.apache.hadoop.hive.common.type.Date;
 import org.apache.hadoop.hive.common.type.Timestamp;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF.DeferredJavaObject;
@@ -86,7 +85,7 @@ public class TestGenericUDFToUnixTimestamp extends TestCase {
     Date date = Date.valueOf("1970-01-01");
     runAndVerify(udf,
         new DateWritable(date),
-        new LongWritable(date.getTime() / 1000));
+        new LongWritable(date.getSeconds()));
 
     // test null values
     runAndVerify(udf, null, null);
@@ -116,7 +115,7 @@ public class TestGenericUDFToUnixTimestamp extends TestCase {
     runAndVerify(udf2,
         new Text(val),
         new Text(format),
-        new LongWritable(Date.valueOf(val).getTime() / 1000));
+        new LongWritable(Date.valueOf(val).getSeconds()));
 
     // test null values
     runAndVerify(udf2, null, null, null);

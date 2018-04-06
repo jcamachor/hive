@@ -21,7 +21,6 @@ package org.apache.hadoop.hive.ql.parse;
 import java.io.IOException;
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
-import java.sql.Date;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -43,6 +42,7 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.FileUtils;
+import org.apache.hadoop.hive.common.type.Date;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
@@ -2077,7 +2077,7 @@ public abstract class BaseSemanticAnalyzer {
       Object colValue, String originalColSpec) throws SemanticException {
     Date value;
     if (colValue instanceof DateWritable) {
-      value = ((DateWritable) colValue).get(false); // Time doesn't matter.
+      value = ((DateWritable) colValue).get(); // Time doesn't matter.
     } else if (colValue instanceof Date) {
       value = (Date) colValue;
     } else {

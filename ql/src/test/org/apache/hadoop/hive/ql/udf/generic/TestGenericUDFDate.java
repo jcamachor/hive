@@ -18,9 +18,9 @@
 
 package org.apache.hadoop.hive.ql.udf.generic;
 
-import java.sql.Date;
 import java.time.LocalDateTime;
 
+import org.apache.hadoop.hive.common.type.Date;
 import org.apache.hadoop.hive.common.type.Timestamp;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -78,7 +78,7 @@ public class TestGenericUDFDate extends TestCase {
     ObjectInspector[] arguments = {valueOI};
 
     udf.initialize(arguments);
-    DeferredObject valueObj = new DeferredJavaObject(new DateWritable(new Date(109, 06, 30)));
+    DeferredObject valueObj = new DeferredJavaObject(new DateWritable(Date.of(109, 06, 30)));
     DeferredObject[] args = {valueObj};
     DateWritable output = (DateWritable) udf.evaluate(args);
 

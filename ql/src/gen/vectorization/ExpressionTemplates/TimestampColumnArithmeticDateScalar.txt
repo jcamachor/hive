@@ -47,8 +47,7 @@ public class <ClassName> extends VectorExpression {
   public <ClassName>(int colNum, long value, int outputColumnNum) {
     super(outputColumnNum);
     this.colNum = colNum;
-    this.value = new Timestamp();
-    this.value.setTimeInMillis(DateWritable.daysToMillis((int) value));
+    this.value = Timestamp.ofEpochMilli(DateWritable.daysToMillis((int) value));
   }
 
   public <ClassName>() {

@@ -17,8 +17,7 @@
  */
 package org.apache.hadoop.hive.serde2.objectinspector.primitive;
 
-import java.sql.Date;
-
+import org.apache.hadoop.hive.common.type.Date;
 import org.apache.hadoop.hive.serde2.io.DateWritable;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 
@@ -50,7 +49,7 @@ public class JavaDateObjectInspector
     if (value == null) {
       return null;
     }
-    ((Date) o).setTime(value.getTime());
+    ((Date) o).setTimeInDays(value.getDays());
     return o;
   }
 
@@ -58,12 +57,12 @@ public class JavaDateObjectInspector
     if (d == null) {
       return null;
     }
-    ((Date) o).setTime(d.get().getTime());
+    ((Date) o).setTimeInDays(d.get().getDays());
     return o;
   }
 
   public Object create(Date value) {
-    return new Date(value.getTime());
+    return Date.ofEpochDay(value.getDays());
   }
 
 }

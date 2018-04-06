@@ -18,9 +18,9 @@
 
 package org.apache.hadoop.hive.serde2.objectinspector.primitive;
 
-import java.sql.Date;
 import java.time.ZoneId;
 
+import org.apache.hadoop.hive.common.type.Date;
 import org.apache.hadoop.hive.common.type.HiveChar;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.common.type.HiveIntervalYearMonth;
@@ -255,7 +255,7 @@ public class PrimitiveObjectInspectorConverter {
         SettableDateObjectInspector outputOI) {
       this.inputOI = inputOI;
       this.outputOI = outputOI;
-      r = outputOI.create(new Date(0));
+      r = outputOI.create(new Date());
     }
 
     public Object convert(Object input) {

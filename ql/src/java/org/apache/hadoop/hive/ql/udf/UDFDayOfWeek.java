@@ -19,10 +19,8 @@
 package org.apache.hadoop.hive.ql.udf;
 
 import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.Date;
 
+import org.apache.hadoop.hive.common.type.Date;
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDF;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedExpressions;
@@ -51,8 +49,6 @@ import org.apache.hadoop.io.Text;
 @VectorizedExpressions({VectorUDFDayOfWeekDate.class, VectorUDFDayOfWeekString.class, VectorUDFDayOfWeekTimestamp.class})
 @NDV(maxNdv = 7)
 public class UDFDayOfWeek extends UDF {
-  private final SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
-  private final Calendar calendar = Calendar.getInstance();
 
   private final IntWritable result = new IntWritable();
 
@@ -73,24 +69,22 @@ public class UDFDayOfWeek extends UDF {
       return null;
     }
     try {
-      Date date = formatter.parse(dateString.toString());
-      calendar.setTime(date);
-      result.set(calendar.get(Calendar.DAY_OF_WEEK));
+      Date date = Date.valueOf(dateString.toString());
+      result.set(date.getLocalDate().getDayOfWeek().getValue());
       return result;
-    } catch (ParseException e) {
+    } catch (IllegalArgumentException e) {
       return null;
     }
   }
 
-//  public IntWritable evaluate(DateWritable d) {
-//    if (d == null) {
-//      return null;
-//    }
-//
-//    calendar.setTime(d.get(false)); // Time doesn't matter.
-//    result.set(calendar.get(Calendar.DAY_OF_WEEK));
-//    return result;
-//  }
+  public IntWritable evaluate(DateWritable d) {
+    if (d == null) {
+      return null;
+    }
+
+    result.set(d.get().getLocalDate().getDayOfWeek().getValue());
+    return result;
+  }
 
   public IntWritable evaluate(TimestampWritable t) {
     if (t == null) {

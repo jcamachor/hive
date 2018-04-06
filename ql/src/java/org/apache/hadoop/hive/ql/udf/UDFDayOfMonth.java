@@ -18,11 +18,7 @@
 
 package org.apache.hadoop.hive.ql.udf;
 
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.Date;
-
+import org.apache.hadoop.hive.common.type.Date;
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDF;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedExpressions;
@@ -52,8 +48,6 @@ import org.apache.hadoop.io.Text;
 @VectorizedExpressions({VectorUDFDayOfMonthDate.class, VectorUDFDayOfMonthString.class, VectorUDFDayOfMonthTimestamp.class})
 @NDV(maxNdv = 31)
 public class UDFDayOfMonth extends UDF {
-  private final SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
-  private final Calendar calendar = Calendar.getInstance();
 
   private final IntWritable result = new IntWritable();
 
@@ -76,24 +70,22 @@ public class UDFDayOfMonth extends UDF {
     }
 
     try {
-      Date date = formatter.parse(dateString.toString());
-      calendar.setTime(date);
-      result.set(calendar.get(Calendar.DAY_OF_MONTH));
+      Date date = Date.valueOf(dateString.toString());
+      result.set(date.getLocalDate().getDayOfMonth());
       return result;
-    } catch (ParseException e) {
+    } catch (IllegalArgumentException e) {
       return null;
     }
   }
 
-//  public IntWritable evaluate(DateWritable d) {
-//    if (d == null) {
-//      return null;
-//    }
-//
-//    calendar.setTime(d.get(false)); // Time doesn't matter.
-//    result.set(calendar.get(Calendar.DAY_OF_MONTH));
-//    return result;
-//  }
+  public IntWritable evaluate(DateWritable d) {
+    if (d == null) {
+      return null;
+    }
+
+    result.set(d.get().getLocalDate().getDayOfMonth());
+    return result;
+  }
 
   public IntWritable evaluate(TimestampWritable t) {
     if (t == null) {

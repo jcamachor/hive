@@ -16,11 +16,11 @@
 
 package org.apache.hive.benchmark.vectorization;
 
-import java.sql.Timestamp;
 import java.util.Random;
 
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.common.type.RandomTypeUtil;
+import org.apache.hadoop.hive.common.type.Timestamp;
 import org.apache.hadoop.hive.ql.exec.vector.BytesColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.ColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.DecimalColumnVector;
@@ -144,7 +144,7 @@ public class ColumnVectorGenUtil {
     final boolean repeating, final int size, final Random rand) {
     Timestamp[] timestamps = new Timestamp[size];
     for (int i = 0; i < size; i++) {
-      timestamps[i] = new Timestamp(rand.nextInt());
+      timestamps[i] = Timestamp.ofEpochMilli(rand.nextInt());
     }
     return generateTimestampColumnVector(nulls, repeating, size, rand, timestamps);
   }

@@ -18,6 +18,8 @@
 
 package org.apache.hadoop.hive.ql.exec.vector.expressions;
 
+import org.apache.hadoop.hive.common.type.Date;
+import org.apache.hadoop.hive.common.type.Timestamp;
 import org.apache.hadoop.hive.ql.exec.vector.BytesColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.ColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
@@ -29,8 +31,6 @@ import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.Pr
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.io.Text;
 
-import java.sql.Date;
-import java.sql.Timestamp;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
@@ -46,7 +46,7 @@ public class VectorUDFDateDiffScalarCol extends VectorExpression {
 
   private transient final SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
   private transient final Text text = new Text();
-  private transient final Date date = new Date(0);
+  private transient final Date date = new Date();
 
   private int baseDate;
 
@@ -103,7 +103,7 @@ public class VectorUDFDateDiffScalarCol extends VectorExpression {
         break;
 
       case TIMESTAMP:
-        date.setTime(timestampValue.getTime());
+        date.setTimeInMillis(timestampValue.getMillis());
         baseDate = DateWritable.dateToDays(date);
         break;
 
@@ -111,7 +111,7 @@ public class VectorUDFDateDiffScalarCol extends VectorExpression {
       case CHAR:
       case VARCHAR:
         try {
-          date.setTime(formatter.parse(new String(stringValue, "UTF-8")).getTime());
+          date.setTimeInMillis(formatter.parse(new String(stringValue, "UTF-8")).getTime());
           baseDate = DateWritable.dateToDays(date);
           break;
         } catch (Exception e) {
@@ -344,7 +344,7 @@ public class VectorUDFDateDiffScalarCol extends VectorExpression {
 
   protected int evaluateTimestamp(ColumnVector columnVector, int index) {
     TimestampColumnVector tcv = (TimestampColumnVector) columnVector;
-    date.setTime(tcv.getTime(index));
+    date.setTimeInMillis(tcv.getTime(index));
     return baseDate - DateWritable.dateToDays(date);
   }
 
@@ -357,7 +357,7 @@ public class VectorUDFDateDiffScalarCol extends VectorExpression {
     BytesColumnVector bcv = (BytesColumnVector) columnVector;
     text.set(bcv.vector[i], bcv.start[i], bcv.length[i]);
     try {
-      date.setTime(formatter.parse(text.toString()).getTime());
+      date.setTimeInMillis(formatter.parse(text.toString()).getTime());
       output.vector[i] = baseDate - DateWritable.dateToDays(date);
     } catch (ParseException e) {
       output.vector[i] = 1;

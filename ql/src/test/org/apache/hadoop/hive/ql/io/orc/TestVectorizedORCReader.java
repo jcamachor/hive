@@ -19,9 +19,7 @@
 package org.apache.hadoop.hive.ql.io.orc;
 
 import java.io.File;
-import java.sql.Date;
-import java.sql.Timestamp;
-import java.util.Calendar;
+import java.time.LocalDateTime;
 import java.util.Random;
 
 import junit.framework.Assert;
@@ -29,7 +27,9 @@ import junit.framework.Assert;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.common.type.Date;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
+import org.apache.hadoop.hive.common.type.Timestamp;
 import org.apache.hadoop.hive.ql.exec.vector.BytesColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.ColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.DecimalColumnVector;
@@ -133,7 +133,7 @@ public class TestVectorizedORCReader {
     for (int i = 0; i < 21000; ++i) {
       if ((i % 7) != 0) {
         writer.addRow(new MyRecord(((i % 3) == 0), (byte)(i % 5), i, (long) 200, (short) (300 + i), (double) (400 + i),
-            words[r1.nextInt(words.length)], new Timestamp(Calendar.getInstance().getTime().getTime()),
+            words[r1.nextInt(words.length)], new Timestamp(LocalDateTime.now()),
             Date.valueOf(dates[i % 3]), HiveDecimal.create(decimalStrings[i % decimalStrings.length])));
       } else {
         writer.addRow(new MyRecord(null, null, i, (long) 200, null, null, null, null, null, null));
@@ -184,7 +184,7 @@ public class TestVectorizedORCReader {
 
             DateWritable adt = (DateWritable) a;
             long b = ((LongColumnVector) cv).vector[rowId];
-            Assert.assertEquals(adt.get().getTime(),
+            Assert.assertEquals(adt.get().getMillis(),
                 DateWritable.daysToMillis((int) b));
 
           } else if (a instanceof HiveDecimalWritable) {

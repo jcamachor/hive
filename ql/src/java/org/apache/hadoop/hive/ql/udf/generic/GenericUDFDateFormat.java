@@ -21,8 +21,8 @@ import static org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveO
 import static org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils.PrimitiveGrouping.STRING_GROUP;
 
 import java.text.SimpleDateFormat;
-import java.util.Date;
 
+import org.apache.hadoop.hive.common.type.Date;
 import org.apache.hadoop.hive.common.type.Timestamp;
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
@@ -106,7 +106,7 @@ public class GenericUDFDateFormat extends GenericUDF {
         return null;
       }
     }
-    date = new Date(getTimestampValue(arguments, 0, tsConverters).getMillis());
+    date = Date.ofEpochMilli(getTimestampValue(arguments, 0, tsConverters).getMillis());
 
     String res = formatter.format(date);
     if (res == null) {

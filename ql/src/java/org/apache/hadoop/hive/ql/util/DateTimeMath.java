@@ -17,19 +17,16 @@
  */
 package org.apache.hadoop.hive.ql.util;
 
-import java.sql.Date;
-import java.time.Instant;
-import java.time.LocalDateTime;
-import java.time.ZoneOffset;
+import org.apache.hadoop.hive.common.type.Date;
+import org.apache.hadoop.hive.common.type.HiveIntervalDayTime;
+import org.apache.hadoop.hive.common.type.HiveIntervalYearMonth;
+import org.apache.hadoop.hive.common.type.Timestamp;
+import org.apache.hadoop.hive.serde2.io.DateWritable;
+import org.apache.hive.common.util.DateUtils;
+
 import java.util.Calendar;
 import java.util.TimeZone;
 import java.util.concurrent.TimeUnit;
-
-import org.apache.hadoop.hive.common.type.HiveIntervalYearMonth;
-import org.apache.hadoop.hive.common.type.Timestamp;
-import org.apache.hadoop.hive.common.type.HiveIntervalDayTime;
-import org.apache.hadoop.hive.serde2.io.DateWritable;
-import org.apache.hive.common.util.DateUtils;
 
 
 public class DateTimeMath {
@@ -153,7 +150,7 @@ public class DateTimeMath {
       return null;
     }
 
-    Date dtResult = new Date(0);
+    Date dtResult = new Date();
     add(dt, interval, dtResult);
 
     return dtResult;
@@ -166,8 +163,8 @@ public class DateTimeMath {
 
     // Since Date millis value is in local timezone representation, do date arithmetic
     // using local timezone so the time remains at the start of the day.
-    long resultMillis = addMonthsToMillisLocal(dt.getTime(), interval.getTotalMonths());
-    result.setTime(resultMillis);
+    long resultMillis = addMonthsToMillisLocal(dt.getMillis(), interval.getTotalMonths());
+    result.setTimeInMillis(resultMillis);
     return true;
   }
 
@@ -176,7 +173,7 @@ public class DateTimeMath {
       return null;
     }
 
-    Date dtResult = new Date(0);
+    Date dtResult = new Date();
     add(interval, dt, dtResult);
 
     return dtResult;
@@ -189,8 +186,8 @@ public class DateTimeMath {
 
     // Since Date millis value is in local timezone representation, do date arithmetic
     // using local timezone so the time remains at the start of the day.
-    long resultMillis = addMonthsToMillisLocal(dt.getTime(), interval.getTotalMonths());
-    result.setTime(resultMillis);
+    long resultMillis = addMonthsToMillisLocal(dt.getMillis(), interval.getTotalMonths());
+    result.setTimeInMillis(resultMillis);
     return true;
   }
 
@@ -227,7 +224,7 @@ public class DateTimeMath {
       return null;
     }
 
-    Date dtResult = new Date(0);
+    Date dtResult = new Date();
     subtract(left, right, dtResult);
 
     return dtResult;

@@ -18,11 +18,7 @@
 
 package org.apache.hadoop.hive.ql.udf;
 
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.Date;
-
+import org.apache.hadoop.hive.common.type.Date;
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDF;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedExpressions;
@@ -52,8 +48,6 @@ import org.apache.hadoop.io.Text;
 @VectorizedExpressions({VectorUDFYearDate.class, VectorUDFYearString.class, VectorUDFYearTimestamp.class})
 @NDV(maxNdv = 20) // although technically its unbounded, its unlikely we will ever see ndv > 20
 public class UDFYear extends UDF {
-  private final SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
-  private final Calendar calendar = Calendar.getInstance();
 
   private final IntWritable result = new IntWritable();
 
@@ -76,24 +70,22 @@ public class UDFYear extends UDF {
     }
 
     try {
-      Date date = formatter.parse(dateString.toString());
-      calendar.setTime(date);
-      result.set(calendar.get(Calendar.YEAR));
+      Date date = Date.valueOf(dateString.toString());
+      result.set(date.getLocalDate().getYear());
       return result;
-    } catch (ParseException e) {
+    } catch (IllegalArgumentException e) {
       return null;
     }
   }
 
-//  public IntWritable evaluate(DateWritable d) {
-//    if (d == null) {
-//      return null;
-//    }
-//
-//    calendar.setTime(d.get(false));  // Time doesn't matter.
-//    result.set(calendar.get(Calendar.YEAR));
-//    return result;
-//  }
+  public IntWritable evaluate(DateWritable d) {
+    if (d == null) {
+      return null;
+    }
+
+    result.set(d.get().getLocalDate().getYear());
+    return result;
+  }
 
   public IntWritable evaluate(TimestampWritable t) {
     if (t == null) {

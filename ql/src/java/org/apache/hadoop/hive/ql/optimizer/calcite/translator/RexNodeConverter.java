@@ -23,7 +23,6 @@ import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -52,6 +51,7 @@ import org.apache.calcite.util.ConversionUtil;
 import org.apache.calcite.util.DateString;
 import org.apache.calcite.util.NlsString;
 import org.apache.calcite.util.TimestampString;
+import org.apache.hadoop.hive.common.type.Date;
 import org.apache.hadoop.hive.common.type.Decimal128;
 import org.apache.hadoop.hive.common.type.HiveChar;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
@@ -676,8 +676,7 @@ public class RexNodeConverter {
     case DATE:
       final Date date = (Date) value;
       calciteLiteral = rexBuilder.makeDateLiteral(
-          DateString.fromDaysSinceEpoch(
-              (int) ChronoUnit.DAYS.between(Instant.EPOCH, date.toInstant())));
+          DateString.fromDaysSinceEpoch(date.getDays()));
       break;
     case TIMESTAMP:
       final TimestampString tsString;

@@ -17,8 +17,7 @@
  */
 package org.apache.hadoop.hive.ql.udf.generic;
 
-import java.sql.Date;
-
+import org.apache.hadoop.hive.common.type.Date;
 import org.apache.hadoop.hive.common.type.Timestamp;
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
@@ -58,7 +57,7 @@ public class GenericUDFDate extends GenericUDF {
   private transient PrimitiveObjectInspector argumentOI;
   private transient DateParser dateParser = new DateParser();
   private transient final DateWritable output = new DateWritable();
-  private transient final Date date = new Date(0);
+  private transient final Date date = new Date();
 
   @Override
   public ObjectInspector initialize(ObjectInspector[] arguments) throws UDFArgumentException {

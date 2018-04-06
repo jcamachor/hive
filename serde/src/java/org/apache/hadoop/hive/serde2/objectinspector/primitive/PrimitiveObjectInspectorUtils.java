@@ -23,7 +23,6 @@ import java.io.DataOutput;
 import java.io.IOException;
 import java.nio.charset.CharacterCodingException;
 import java.nio.charset.StandardCharsets;
-import java.sql.Date;
 import java.time.DateTimeException;
 import java.time.ZoneId;
 import java.util.HashMap;
@@ -31,6 +30,7 @@ import java.util.Map;
 
 import org.apache.hadoop.hive.common.classification.InterfaceAudience;
 import org.apache.hadoop.hive.common.classification.InterfaceStability;
+import org.apache.hadoop.hive.common.type.Date;
 import org.apache.hadoop.hive.common.type.HiveChar;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.common.type.HiveIntervalDayTime;
@@ -1126,7 +1126,7 @@ public final class PrimitiveObjectInspectorUtils {
       } catch (IllegalArgumentException e) {
         Timestamp ts = getTimestampFromString(s);
         if (ts != null) {
-          result = new Date(ts.getMillis());
+          result = Date.ofEpochMilli(ts.getMillis());
         } else {
           result = null;
         }
@@ -1140,7 +1140,7 @@ public final class PrimitiveObjectInspectorUtils {
       } catch (IllegalArgumentException e) {
         Timestamp ts = getTimestampFromString(val);
         if (ts != null) {
-          result = new Date(ts.getMillis());
+          result = Date.ofEpochMilli(ts.getMillis());
         } else {
           result = null;
         }
@@ -1226,7 +1226,7 @@ public final class PrimitiveObjectInspectorUtils {
       break;
     case DATE:
       result = Timestamp.ofEpochMilli(
-          ((DateObjectInspector) inputOI).getPrimitiveWritableObject(o).get().getTime());
+          ((DateObjectInspector) inputOI).getPrimitiveWritableObject(o).get().getMillis());
       break;
     case TIMESTAMP:
       result = ((TimestampObjectInspector) inputOI).getPrimitiveWritableObject(o).getTimestamp();
@@ -1247,7 +1247,7 @@ public final class PrimitiveObjectInspectorUtils {
     return result;
   }
 
-  static Timestamp getTimestampFromString(String s) {
+  public static Timestamp getTimestampFromString(String s) {
     Timestamp result;
     s = s.trim();
     s = trimNanoTimestamp(s);

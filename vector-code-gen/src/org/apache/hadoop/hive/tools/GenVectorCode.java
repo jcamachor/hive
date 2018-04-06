@@ -3129,8 +3129,7 @@ public class GenVectorCode extends Task {
   private String getDTIScalarColumnDisplayBody(String type) {
     if (type.equals("date")) {
       return
-          "Date dt = new Date(0);" +
-          "    dt.setTime(DateWritable.daysToMillis((int) value));\n" +
+          "Date dt = Date.ofEpochMilli(DateWritable.daysToMillis((int) value));\n" +
           "    return  \"date \" + dt.toString() + \", \" + getColumnParamString(0, colNum);";
     } else {
       return
@@ -3141,8 +3140,7 @@ public class GenVectorCode extends Task {
   private String getDTIColumnScalarDisplayBody(String type) {
     if (type.equals("date")) {
       return
-          "Date dt = new Date(0);" +
-          "    dt.setTime(DateWritable.daysToMillis((int) value));\n" +
+          "Date dt = Date.ofEpochMilli(DateWritable.daysToMillis((int) value));\n" +
           "    return getColumnParamString(0, colNum) + \", date \" + dt.toString();";
     } else {
       return

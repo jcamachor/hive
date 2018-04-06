@@ -36,7 +36,7 @@ import java.util.regex.Pattern;
 public class Timestamp implements Comparable<Timestamp> {
 
   private static final LocalDateTime EPOCH = LocalDateTime.of(1970, 1, 1, 0, 0, 0);
-  private static final Pattern SINGLE_DIGIT_PATTERN = Pattern.compile("[\\+-]\\d:\\d\\d");
+  private static final Pattern SINGLE_DIGIT_PATTERN = Pattern.compile("[ ]\\d[:]\\d|[:]\\d[:]|[:]\\d($|[ ]|[.])");
   private static final DateTimeFormatter FORMATTER;
   static {
     DateTimeFormatterBuilder builder = new DateTimeFormatterBuilder();
@@ -59,19 +59,6 @@ public class Timestamp implements Comparable<Timestamp> {
   public Timestamp(LocalDateTime localDateTime) {
     setLocalDateTime(localDateTime);
   }
-
-//  public Timestamp(long seconds, int nanos) {
-//    set(seconds, nanos);
-//  }
-//
-//  /**
-//   * Obtains an instance of Instant using seconds from the epoch of 1970-01-01T00:00:00Z and
-//   * nanosecond fraction of second. Then, it creates a zoned date-time with the same instant
-//   * as that specified but in the given time-zone.
-//   */
-//  public void set(long seconds, int nanos) {
-//    setLocalDateTime(LocalDateTime.ofEpochSecond(seconds, nanos, ZoneOffset.UTC));
-//  }
 
   public LocalDateTime getLocalDateTime() {
     return localDateTime;
@@ -136,7 +123,7 @@ public class Timestamp implements Comparable<Timestamp> {
 
   public static Timestamp valueOf(String s) {
     // need to handle offset with single digital hour, see JDK-8066806
-    s = handleSingleDigitHourOffset(s);
+    s = handleSingleDigitTime(s);
     LocalDateTime localDateTime;
     try {
       localDateTime = LocalDateTime.parse(s, FORMATTER);
@@ -146,11 +133,12 @@ public class Timestamp implements Comparable<Timestamp> {
     return new Timestamp(localDateTime);
   }
 
-  private static String handleSingleDigitHourOffset(String s) {
+  private static String handleSingleDigitTime(String s) {
     Matcher matcher = SINGLE_DIGIT_PATTERN.matcher(s);
-    if (matcher.find()) {
+    while (matcher.find()) {
       int index = matcher.start() + 1;
       s = s.substring(0, index) + "0" + s.substring(index, s.length());
+      matcher = SINGLE_DIGIT_PATTERN.matcher(s);
     }
     return s;
   }

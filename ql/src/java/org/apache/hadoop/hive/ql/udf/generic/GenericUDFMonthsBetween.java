@@ -18,19 +18,12 @@
 package org.apache.hadoop.hive.ql.udf.generic;
 
 import static java.math.BigDecimal.ROUND_HALF_UP;
-import static java.util.Calendar.DATE;
-import static java.util.Calendar.HOUR_OF_DAY;
-import static java.util.Calendar.MINUTE;
-import static java.util.Calendar.MONTH;
-import static java.util.Calendar.SECOND;
-import static java.util.Calendar.YEAR;
 import static org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils.PrimitiveGrouping.DATE_GROUP;
 import static org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils.PrimitiveGrouping.STRING_GROUP;
 
 import java.math.BigDecimal;
-import java.util.Calendar;
-import java.util.Date;
 
+import org.apache.hadoop.hive.common.type.Date;
 import org.apache.hadoop.hive.common.type.Timestamp;
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
@@ -64,8 +57,8 @@ public class GenericUDFMonthsBetween extends GenericUDF {
   private transient PrimitiveCategory[] tsInputTypes = new PrimitiveCategory[2];
   private transient Converter[] dtConverters = new Converter[2];
   private transient PrimitiveCategory[] dtInputTypes = new PrimitiveCategory[2];
-  private final Calendar cal1 = Calendar.getInstance();
-  private final Calendar cal2 = Calendar.getInstance();
+  private final Date cal1 = new Date();
+  private final Date cal2 = new Date();
   private final DoubleWritable output = new DoubleWritable();
   private boolean isRoundOffNeeded = true;
 
@@ -112,7 +105,7 @@ public class GenericUDFMonthsBetween extends GenericUDF {
         return null;
       }
     }
-    date1 = new Date(ts1.getMillis());
+    date1 = Date.ofEpochMilli(ts1.getMillis());
 
     Timestamp ts2 = getTimestampValue(arguments, 1, tsConverters);
     Date date2;
@@ -122,23 +115,24 @@ public class GenericUDFMonthsBetween extends GenericUDF {
         return null;
       }
     }
-    date2 = new Date(ts2.getMillis());
+    date2 = Date.ofEpochMilli(ts2.getMillis());
 
-    cal1.setTime(date1);
-    cal2.setTime(date2);
+    cal1.setTimeInDays(date1.getDays());
+    cal2.setTimeInDays(date2.getDays());
 
     // skip day/time part if both dates are end of the month
     // or the same day of the month
-    int monDiffInt = (cal1.get(YEAR) - cal2.get(YEAR)) * 12 + (cal1.get(MONTH) - cal2.get(MONTH));
-    if (cal1.get(DATE) == cal2.get(DATE)
-        || (cal1.get(DATE) == cal1.getActualMaximum(DATE) && cal2.get(DATE) == cal2
-            .getActualMaximum(DATE))) {
+    int monDiffInt = (cal1.getLocalDate().getYear() - cal2.getLocalDate().getYear()) * 12
+        + (cal1.getLocalDate().getMonthValue() - cal2.getLocalDate().getMonthValue());
+    if (cal1.getLocalDate().getDayOfMonth() == cal2.getLocalDate().getDayOfMonth()
+        || (cal1.getLocalDate().getDayOfMonth() == cal1.getLocalDate().lengthOfMonth()
+        && cal2.getLocalDate().getDayOfMonth() == cal2.getLocalDate().lengthOfMonth())) {
       output.set(monDiffInt);
       return output;
     }
 
-    int sec1 = getDayPartInSec(cal1);
-    int sec2 = getDayPartInSec(cal2);
+    long sec1 = cal1.getSeconds();
+    long sec2 = cal2.getSeconds();
 
     // 1 sec is 0.000000373 months (1/2678400). 1 month is 31 days.
     // there should be no adjustments for leap seconds
@@ -149,15 +143,6 @@ public class GenericUDFMonthsBetween extends GenericUDF {
     }
     output.set(monBtwDbl);
     return output;
-  }
-
-  protected int getDayPartInSec(Calendar cal) {
-    int dd = cal.get(DATE);
-    int HH = cal.get(HOUR_OF_DAY);
-    int mm = cal.get(MINUTE);
-    int ss = cal.get(SECOND);
-    int dayInSec = dd * 86400 + HH * 3600 + mm * 60 + ss;
-    return dayInSec;
   }
 
   @Override

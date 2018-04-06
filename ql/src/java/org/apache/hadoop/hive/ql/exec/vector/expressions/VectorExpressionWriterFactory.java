@@ -18,7 +18,6 @@
 
 package org.apache.hadoop.hive.ql.exec.vector.expressions;
 
-import java.sql.Date;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -26,6 +25,7 @@ import java.util.Map;
 
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
+import org.apache.hadoop.hive.common.type.Date;
 import org.apache.hadoop.hive.common.type.HiveChar;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.common.type.HiveIntervalDayTime;
@@ -831,14 +831,14 @@ public final class VectorExpressionWriterFactory {
 
       public VectorExpressionWriter init(SettableDateObjectInspector objInspector) throws HiveException {
         super.init(objInspector);
-        dt = new Date(0);
+        dt = new Date();
         obj = initValue(null);
         return this;
       }
 
       @Override
       public Object writeValue(long value) {
-        dt.setTime(DateWritable.daysToMillis((int) value));
+        dt.setTimeInMillis(DateWritable.daysToMillis((int) value));
         ((SettableDateObjectInspector) this.objectInspector).set(obj, dt);
         return obj;
       }
@@ -848,14 +848,14 @@ public final class VectorExpressionWriterFactory {
         if (null == field) {
           field = initValue(null);
         }
-        dt.setTime(DateWritable.daysToMillis((int) value));
+        dt.setTimeInMillis(DateWritable.daysToMillis((int) value));
         ((SettableDateObjectInspector) this.objectInspector).set(field, dt);
         return field;
       }
 
       @Override
       public Object initValue(Object ignored) {
-        return ((SettableDateObjectInspector) this.objectInspector).create(new Date(0));
+        return ((SettableDateObjectInspector) this.objectInspector).create(new Date());
       }
 
     }.init(fieldObjInspector);

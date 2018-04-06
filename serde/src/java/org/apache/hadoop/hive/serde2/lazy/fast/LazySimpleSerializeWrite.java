@@ -20,13 +20,13 @@ package org.apache.hadoop.hive.serde2.lazy.fast;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.sql.Date;
 import java.util.ArrayDeque;
 import java.util.Deque;
 import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.codec.binary.Base64;
+import org.apache.hadoop.hive.common.type.Date;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.common.type.HiveChar;

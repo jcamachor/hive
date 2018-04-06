@@ -18,9 +18,9 @@
 
 package org.apache.hadoop.hive.ql.exec.vector.expressions;
 
+import org.apache.hadoop.hive.common.type.Date;
 import org.apache.hadoop.hive.ql.exec.vector.BytesColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.ColumnVector;
-import org.apache.hadoop.hive.ql.exec.vector.DoubleColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.TimestampColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor;
@@ -31,18 +31,13 @@ import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.Pr
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 
-import java.sql.Date;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-
 public class VectorUDFDateDiffColCol extends VectorExpression {
   private static final long serialVersionUID = 1L;
 
   private final int colNum1;
   private final int colNum2;
 
-  private transient final SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
-  private transient final Date date = new Date(0);
+  private transient final Date date = new Date();
 
   // Transient members initialized by transientInit method.
   private transient LongColumnVector dateVector1;
@@ -220,9 +215,9 @@ public class VectorUDFDateDiffColCol extends VectorExpression {
       if (!input.isNull[0]) {
         String string = new String(input.vector[0], input.start[0], input.length[0]);
         try {
-          date.setTime(formatter.parse(string).getTime());
+          date.setTimeInMillis(Date.valueOf(string).getMillis());
           output.vector[0] = DateWritable.dateToDays(date);
-        } catch (ParseException e) {
+        } catch (IllegalArgumentException e) {
           output.isNull[0] = true;
         }
       }
@@ -274,9 +269,9 @@ public class VectorUDFDateDiffColCol extends VectorExpression {
   private void setDays(BytesColumnVector input, LongColumnVector output, int i) {
     String string = new String(input.vector[i], input.start[i], input.length[i]);
     try {
-      date.setTime(formatter.parse(string).getTime());
+      date.setTimeInMillis(Date.valueOf(string).getMillis());
       output.vector[i] = DateWritable.dateToDays(date);
-    } catch (ParseException e) {
+    } catch (IllegalArgumentException e) {
       output.isNull[i] = true;
       output.noNulls = false;
     }
@@ -297,7 +292,7 @@ public class VectorUDFDateDiffColCol extends VectorExpression {
       output.isRepeating = true;
 
       if (!input.isNull[0]) {
-        date.setTime(input.getTime(0));
+        date.setTimeInMillis(input.getTime(0));
         output.vector[0] = DateWritable.dateToDays(date);
       }
       return;
@@ -310,12 +305,12 @@ public class VectorUDFDateDiffColCol extends VectorExpression {
       if (selectedInUse) {
         for (int j = 0; j < size; j++) {
           int i = sel[j];
-          date.setTime(input.getTime(i));
+          date.setTimeInMillis(input.getTime(i));
           output.vector[i] = DateWritable.dateToDays(date);
         }
       } else {
         for (int i = 0; i < size; i++) {
-          date.setTime(input.getTime(i));
+          date.setTimeInMillis(input.getTime(i));
           output.vector[i] = DateWritable.dateToDays(date);
         }
       }
@@ -334,14 +329,14 @@ public class VectorUDFDateDiffColCol extends VectorExpression {
         for (int j = 0; j < size; j++) {
           int i = sel[j];
           if (!input.isNull[i]) {
-            date.setTime(input.getTime(i));
+            date.setTimeInMillis(input.getTime(i));
             output.vector[i] = DateWritable.dateToDays(date);
           }
         }
       } else {
         for (int i = 0; i < size; i++) {
           if (!input.isNull[i]) {
-            date.setTime(input.getTime(i));
+            date.setTimeInMillis(input.getTime(i));
             output.vector[i] = DateWritable.dateToDays(date);
           }
         }

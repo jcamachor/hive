@@ -18,8 +18,7 @@
 
 package org.apache.hadoop.hive.ql.udf.ptf;
 
-import java.util.Date;
-
+import org.apache.hadoop.hive.common.type.Date;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.common.type.Timestamp;
 import org.apache.hadoop.hive.common.type.TimestampTZ;
@@ -559,7 +558,7 @@ class DateValueBoundaryScanner extends SingleValueBoundaryScanner {
     Date l2 = PrimitiveObjectInspectorUtils.getDate(v2,
         (PrimitiveObjectInspector) expressionDef.getOI());
     if (l1 != null && l2 != null) {
-        return (double)(l1.getTime() - l2.getTime())/1000 > (long)amt * 24 * 3600; // Converts amt days to milliseconds
+        return (double)(l1.getMillis() - l2.getMillis())/1000 > (long)amt * 24 * 3600; // Converts amt days to milliseconds
     }
     return l1 != l2; // True if only one date is null
   }

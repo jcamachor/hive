@@ -18,9 +18,9 @@
 
 package org.apache.hadoop.hive.ql.exec.vector.expressions.gen;
 
-import java.sql.Date;
 import java.util.Arrays;
 
+import org.apache.hadoop.hive.common.type.Date;
 import org.apache.hadoop.hive.common.type.HiveIntervalYearMonth;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
 import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor;
@@ -52,12 +52,12 @@ public class <ClassName> extends VectorExpression {
   private final Date value;
 
   private transient final HiveIntervalYearMonth scratchIntervalYearMonth2 = new HiveIntervalYearMonth();
-  private transient final Date outputDate = new Date(0);
+  private transient final Date outputDate = new Date();
   private transient final DateTimeMath dtm = new DateTimeMath();
 
   public <ClassName>(long value, int colNum, int outputColumnNum) {
     super(outputColumnNum);
-    this.value = new Date(DateWritable.daysToMillis((int) value));
+    this.value = Date.ofEpochMilli(DateWritable.daysToMillis((int) value));
     this.colNum = colNum;
   }
 

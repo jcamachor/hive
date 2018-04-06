@@ -18,13 +18,12 @@
 
 package org.apache.hadoop.hive.ql.udf;
 
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
+import java.time.DayOfWeek;
 import java.time.temporal.IsoFields;
-import java.util.Calendar;
-import java.util.Date;
+import java.time.temporal.WeekFields;
 import java.util.Locale;
 
+import org.apache.hadoop.hive.common.type.Date;
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDF;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedExpressions;
@@ -51,14 +50,13 @@ import org.apache.hadoop.io.Text;
 @VectorizedExpressions({VectorUDFWeekOfYearDate.class, VectorUDFWeekOfYearString.class, VectorUDFWeekOfYearTimestamp.class})
 @NDV(maxNdv = 52)
 public class UDFWeekOfYear extends UDF {
-  private final SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
-  private final Calendar calendar = Calendar.getInstance();
+
+  private final WeekFields weekFields;
 
   private final IntWritable result = new IntWritable();
 
   public UDFWeekOfYear() {
-    calendar.setFirstDayOfWeek(Calendar.MONDAY);
-    calendar.setMinimalDaysInFirstWeek(4);
+    weekFields = WeekFields.of(DayOfWeek.MONDAY, 4);
   }
 
   /**
@@ -75,24 +73,22 @@ public class UDFWeekOfYear extends UDF {
       return null;
     }
     try {
-      Date date = formatter.parse(dateString.toString());
-      calendar.setTime(date);
-      result.set(calendar.get(Calendar.WEEK_OF_YEAR));
+      Date date = Date.valueOf(dateString.toString());
+      result.set(date.getLocalDate().get(weekFields.weekOfWeekBasedYear()));
       return result;
-    } catch (ParseException e) {
+    } catch (IllegalArgumentException e) {
       return null;
     }
   }
 
-//  public IntWritable evaluate(DateWritable d) {
-//    if (d == null) {
-//      return null;
-//    }
-//
-//    calendar.setTime(d.get(false));  // Time doesn't matter.
-//    result.set(calendar.get(Calendar.WEEK_OF_YEAR));
-//    return result;
-//  }
+  public IntWritable evaluate(DateWritable d) {
+    if (d == null) {
+      return null;
+    }
+
+    result.set(d.get().getLocalDate().get(weekFields.weekOfWeekBasedYear()));
+    return result;
+  }
 
   public IntWritable evaluate(TimestampWritable t) {
     if (t == null) {
