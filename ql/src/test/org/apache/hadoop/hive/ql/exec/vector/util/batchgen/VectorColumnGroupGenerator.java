@@ -232,7 +232,7 @@ public class VectorColumnGroupGenerator {
 
     case TIMESTAMP:
       {
-        Timestamp value = RandomTypeUtil.getRandTimestamp(random);
+        Timestamp value = RandomTypeUtil.getRandTimestamp(random).toSqlTimestamp();
         ((Timestamp[]) array)[rowIndex] = value;
       }
       break;

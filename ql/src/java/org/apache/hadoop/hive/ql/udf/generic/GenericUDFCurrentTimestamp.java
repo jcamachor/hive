@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hive.ql.udf.generic;
 
+import org.apache.hadoop.hive.common.type.Timestamp;
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentLengthException;
@@ -48,7 +49,9 @@ public class GenericUDFCurrentTimestamp extends GenericUDF {
     }
 
     if (currentTimestamp == null) {
-      currentTimestamp = new TimestampWritable(SessionState.get().getQueryCurrentTimestamp());
+      java.sql.Timestamp ts = SessionState.get().getQueryCurrentTimestamp();
+      currentTimestamp = new TimestampWritable(
+          Timestamp.ofEpochMilli(ts.getTime(), ts.getNanos()));
     }
 
     return PrimitiveObjectInspectorFactory.writableTimestampObjectInspector;

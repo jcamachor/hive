@@ -23,6 +23,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.hadoop.hive.common.type.Timestamp;
 import org.apache.hadoop.hive.serde2.objectinspector.ListObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.MapObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StandardStructObjectInspector;
@@ -237,8 +238,11 @@ public class VectorExtractRow {
               ((LongColumnVector) colVector).vector[adjustedIndex]);
           return primitiveWritable;
         case TIMESTAMP:
-          ((TimestampWritable) primitiveWritable).set(
-              ((TimestampColumnVector) colVector).asScratchTimestamp(adjustedIndex));
+          // From java.sql.Timestamp used by vectorization to serializable org.apache.hadoop.hive.common.type.Timestamp
+          java.sql.Timestamp ts =
+              ((TimestampColumnVector) colVector).asScratchTimestamp(adjustedIndex);
+          Timestamp serializableTS = Timestamp.ofEpochMilli(ts.getTime(), ts.getNanos());
+          ((TimestampWritable) primitiveWritable).set(serializableTS);
           return primitiveWritable;
         case DATE:
           ((DateWritable) primitiveWritable).set(

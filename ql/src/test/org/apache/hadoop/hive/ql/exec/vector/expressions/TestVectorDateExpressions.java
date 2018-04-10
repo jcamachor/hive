@@ -59,8 +59,9 @@ public class TestVectorDateExpressions {
 
   /* copied over from VectorUDFTimestampFieldLong */
   private TimestampWritable toTimestampWritable(long daysSinceEpoch) {
-    Timestamp ts = new Timestamp(DateWritable.daysToMillis((int) daysSinceEpoch));
-    return new TimestampWritable(ts);
+    return new TimestampWritable(
+        org.apache.hadoop.hive.common.type.Timestamp.ofEpochMilli(
+            DateWritable.daysToMillis((int) daysSinceEpoch)));
   }
 
   private int[] getAllBoundaries() {
@@ -109,10 +110,9 @@ public class TestVectorDateExpressions {
   }
 
   private void compareToUDFYearDate(long t, int y) {
-    UDFYear udf = new UDFYear();
     TimestampWritable tsw = toTimestampWritable(t);
-    IntWritable res = udf.evaluate(tsw);
-    Assert.assertEquals(res.get(), y);
+    int res = tsw.getTimestamp().getLocalDateTime().getYear();
+    Assert.assertEquals(res, y);
   }
 
   private void verifyUDFYear(VectorizedRowBatch batch) {
@@ -171,10 +171,9 @@ public class TestVectorDateExpressions {
   }
 
   private void compareToUDFDayOfMonthDate(long t, int y) {
-    UDFDayOfMonth udf = new UDFDayOfMonth();
     TimestampWritable tsw = toTimestampWritable(t);
-    IntWritable res = udf.evaluate(tsw);
-    Assert.assertEquals(res.get(), y);
+    int res = tsw.getTimestamp().getLocalDateTime().getDayOfMonth();
+    Assert.assertEquals(res, y);
   }
 
   private void verifyUDFDayOfMonth(VectorizedRowBatch batch) {
@@ -233,10 +232,9 @@ public class TestVectorDateExpressions {
   }
 
   private void compareToUDFMonthDate(long t, int y) {
-    UDFMonth udf = new UDFMonth();
     TimestampWritable tsw = toTimestampWritable(t);
-    IntWritable res = udf.evaluate(tsw);
-    Assert.assertEquals(res.get(), y);
+    int res = tsw.getTimestamp().getLocalDateTime().getMonthValue();
+    Assert.assertEquals(res, y);
   }
 
   private void verifyUDFMonth(VectorizedRowBatch batch) {
@@ -309,7 +307,7 @@ public class TestVectorDateExpressions {
     LongWritable res = getLongWritable(tsw);
     if(res.get() != y) {
       System.out.printf("%d vs %d for %d, %d\n", res.get(), y, t,
-              tsw.getTimestamp().getTime()/1000);
+              tsw.getTimestamp().getMillis()/1000);
     }
 
     Assert.assertEquals(res.get(), y);

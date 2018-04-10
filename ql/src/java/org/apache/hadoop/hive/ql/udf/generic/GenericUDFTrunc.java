@@ -20,13 +20,10 @@
 package org.apache.hadoop.hive.ql.udf.generic;
 
 import java.math.BigDecimal;
-import java.sql.Timestamp;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.Date;
 
+import org.apache.hadoop.hive.common.type.Date;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
+import org.apache.hadoop.hive.common.type.Timestamp;
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentLengthException;
@@ -77,7 +74,6 @@ import org.apache.hadoop.io.Text;
         + " > SELECT _FUNC_(1234567891.1234567891);\n" + "OK\n" + " 1234567891")
 public class GenericUDFTrunc extends GenericUDF {
 
-  private transient SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
   private transient TimestampConverter timestampConverter;
   private transient Converter textConverter1;
   private transient Converter textConverter2;
@@ -88,7 +84,7 @@ public class GenericUDFTrunc extends GenericUDF {
   private transient Converter longConverter;
   private transient PrimitiveCategory inputType1;
   private transient PrimitiveCategory inputType2;
-  private final Calendar calendar = Calendar.getInstance();
+  private final Date date = new Date();
   private final Text output = new Text();
   private transient String fmtInput;
   private transient PrimitiveObjectInspector inputOI;
@@ -297,36 +293,35 @@ public class GenericUDFTrunc extends GenericUDF {
       fmtInput = textConverter2.convert(arguments[1].get()).toString();
     }
 
-    Date date;
+    Date d;
     switch (inputType1) {
     case STRING:
       String dateString = textConverter1.convert(arguments[0].get()).toString();
       try {
-        date = formatter.parse(dateString.toString());
-      } catch (ParseException e) {
+        d = Date.valueOf(dateString.toString());
+      } catch (IllegalArgumentException e) {
         return null;
       }
       break;
     case TIMESTAMP:
       Timestamp ts =
           ((TimestampWritable) timestampConverter.convert(arguments[0].get())).getTimestamp();
-      date = ts;
+      d = Date.ofEpochMilli(ts.getMillis());
       break;
     case DATE:
       DateWritable dw = (DateWritable) dateWritableConverter.convert(arguments[0].get());
-      date = dw.get();
+      d = dw.get();
       break;
     default:
       throw new UDFArgumentTypeException(0,
           "TRUNC() only takes STRING/TIMESTAMP/DATEWRITABLE types, got " + inputType1);
     }
 
-    if (evalDate(date) == null) {
+    if (evalDate(d) == null) {
       return null;
     }
 
-    Date newDate = calendar.getTime();
-    output.set(formatter.format(newDate));
+    output.set(date.toString());
     return output;
   }
 
@@ -427,22 +422,22 @@ public class GenericUDFTrunc extends GenericUDF {
     return getStandardDisplayString("trunc", children);
   }
 
-  private Calendar evalDate(Date d) throws UDFArgumentException {
-    calendar.setTime(d);
+  private Date evalDate(Date d) throws UDFArgumentException {
+    date.setTimeInDays(d.getDays());
     if ("MONTH".equals(fmtInput) || "MON".equals(fmtInput) || "MM".equals(fmtInput)) {
-      calendar.set(Calendar.DAY_OF_MONTH, 1);
-      return calendar;
+      date.setDayOfMonth(1);
+      return date;
     } else if ("QUARTER".equals(fmtInput) || "Q".equals(fmtInput)) {
-      int month = calendar.get(Calendar.MONTH);
+      int month = date.getLocalDate().getMonthValue();
       int quarter = month / 3;
       int monthToSet = quarter * 3;
-      calendar.set(Calendar.MONTH, monthToSet);
-      calendar.set(Calendar.DAY_OF_MONTH, 1);
-      return calendar;
+      date.setMonth(monthToSet);
+      date.setDayOfMonth(1);
+      return date;
     } else if ("YEAR".equals(fmtInput) || "YYYY".equals(fmtInput) || "YY".equals(fmtInput)) {
-      calendar.set(Calendar.MONTH, 0);
-      calendar.set(Calendar.DAY_OF_MONTH, 1);
-      return calendar;
+      date.setMonth(0);
+      date.setDayOfMonth(1);
+      return date;
     } else {
       return null;
     }

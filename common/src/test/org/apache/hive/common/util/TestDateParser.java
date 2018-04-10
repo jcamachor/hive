@@ -18,13 +18,13 @@
 package org.apache.hive.common.util;
 
 import static org.junit.Assert.*;
-import org.junit.Test;
 
-import java.sql.Date;
+import org.apache.hadoop.hive.common.type.Date;
+import org.junit.Test;
 
 public class TestDateParser {
   DateParser parser = new DateParser();
-  Date date = new Date(0);
+  Date date = new Date();
 
   void checkValidCase(String strValue, Date expected) {
     Date dateValue = parser.parseDate(strValue);

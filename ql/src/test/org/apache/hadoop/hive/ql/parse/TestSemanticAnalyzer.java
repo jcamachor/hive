@@ -19,10 +19,10 @@ package org.apache.hadoop.hive.ql.parse;
 
 import static org.junit.Assert.*;
 
-import java.sql.Date;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.hadoop.hive.common.type.Date;
 import org.apache.hadoop.hive.serde2.io.DateWritable;
 import org.junit.Test;
 

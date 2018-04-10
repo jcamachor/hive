@@ -18,11 +18,10 @@
 
 package org.apache.hadoop.hive.ql.exec.vector.expressions;
 
-import java.sql.Timestamp;
-
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.common.type.HiveIntervalDayTime;
+import org.apache.hadoop.hive.common.type.Timestamp;
 import org.apache.hadoop.hive.ql.exec.vector.*;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.DynamicValue;
@@ -128,7 +127,7 @@ public class DynamicValueVectorExpression extends VectorExpression {
     dcv.isRepeating = true;
     if (!isNullValue) {
       dcv.isNull[0] = false;
-      dcv.set(0, timestampValue);
+      dcv.set(0, timestampValue.toSqlTimestamp());
     } else {
       dcv.isNull[0] = true;
       dcv.noNulls = false;

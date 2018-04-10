@@ -19,8 +19,6 @@
 package org.apache.hadoop.hive.ql.exec.vector;
 
 import java.lang.reflect.Constructor;
-import java.sql.Date;
-import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
@@ -34,6 +32,7 @@ import java.util.TreeSet;
 import java.util.regex.Pattern;
 
 import org.apache.commons.lang.ArrayUtils;
+import org.apache.hadoop.hive.common.type.Date;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.common.type.DataTypePhysicalVariation;
@@ -42,6 +41,7 @@ import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.common.type.HiveIntervalDayTime;
 import org.apache.hadoop.hive.common.type.HiveIntervalYearMonth;
 import org.apache.hadoop.hive.common.type.HiveVarchar;
+import org.apache.hadoop.hive.common.type.Timestamp;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.exec.ExprNodeEvaluator;
@@ -1378,7 +1378,7 @@ public class VectorizationContext {
     case DATE:
       return new ConstantVectorExpression(outCol, DateWritable.dateToDays((Date) constantValue), typeInfo);
     case TIMESTAMP:
-      return new ConstantVectorExpression(outCol, (Timestamp) constantValue, typeInfo);
+      return new ConstantVectorExpression(outCol, ((Timestamp) constantValue).toSqlTimestamp(), typeInfo);
     case INTERVAL_YEAR_MONTH:
       return new ConstantVectorExpression(outCol,
           ((HiveIntervalYearMonth) constantValue).getTotalMonths(), typeInfo);

@@ -154,7 +154,8 @@ public class TestVectorTypeCasts {
     expr.evaluate(b);
     for (int i = 0; i < longValues.length; i++) {
       Timestamp timestamp = resultV.asScratchTimestamp(i);
-      long actual = TimestampWritable.getLong(timestamp);
+      long actual = TimestampWritable.getLong(
+          org.apache.hadoop.hive.common.type.Timestamp.ofEpochMilli(timestamp.getTime(), timestamp.getNanos()));
       assertEquals(actual, longValues[i]);
     }
   }
@@ -466,7 +467,8 @@ public class TestVectorTypeCasts {
       Timestamp ts = new Timestamp(millis);
       int nanos = RandomTypeUtil.randomNanos(r);
       ts.setNanos(nanos);
-      TimestampWritable tsw = new TimestampWritable(ts);
+      TimestampWritable tsw = new TimestampWritable(
+          org.apache.hadoop.hive.common.type.Timestamp.ofEpochMilli(ts.getTime(), ts.getNanos()));
       double asDouble = tsw.getDouble();
       doubleValues[i] = asDouble;
       HiveDecimal hiveDecimal = HiveDecimal.create(new BigDecimal(asDouble));
@@ -530,7 +532,8 @@ public class TestVectorTypeCasts {
       long millis = RandomTypeUtil.randomMillis(r);
       Timestamp ts = new Timestamp(millis);
       ts.setNanos(optionalNanos);
-      TimestampWritable tsw = new TimestampWritable(ts);
+      TimestampWritable tsw = new TimestampWritable(
+          org.apache.hadoop.hive.common.type.Timestamp.ofEpochMilli(ts.getTime(), ts.getNanos()));
       hiveDecimalValues[i] = tsw.getHiveDecimal();
 
       tcv.set(i, ts);

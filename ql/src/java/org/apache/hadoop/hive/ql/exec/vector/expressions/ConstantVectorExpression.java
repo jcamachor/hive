@@ -24,6 +24,7 @@ import java.sql.Timestamp;
 import org.apache.hadoop.hive.common.type.DataTypePhysicalVariation;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.common.type.HiveChar;
+import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.common.type.HiveIntervalDayTime;
 import org.apache.hadoop.hive.common.type.HiveVarchar;
 import org.apache.hadoop.hive.ql.exec.vector.*;
@@ -307,7 +308,8 @@ public class ConstantVectorExpression extends VectorExpression {
         value = decimalValue.toString();
         break;
       case TIMESTAMP:
-        value = timestampValue.toString();
+        value = org.apache.hadoop.hive.common.type.Timestamp.ofEpochMilli(
+            timestampValue.getTime(), timestampValue.getNanos()).toString();
         break;
       case INTERVAL_DAY_TIME:
         value = intervalDayTimeValue.toString();

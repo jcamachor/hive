@@ -18,12 +18,11 @@
 
 package org.apache.hadoop.hive.ql.exec.vector.expressions;
 
-import org.apache.hadoop.hive.common.type.HiveDecimal;
+import org.apache.hadoop.hive.common.type.Date;
 import org.apache.hadoop.hive.ql.exec.vector.BytesColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
-import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.serde2.io.DateWritable;
 import org.apache.hive.common.util.DateParser;
 
@@ -38,7 +37,7 @@ public class CastStringToDate extends VectorExpression {
 
   private final int inputColumn;
 
-  private transient final java.sql.Date sqlDate = new java.sql.Date(0);
+  private transient final Date sqlDate = new Date();
   private transient final DateParser dateParser = new DateParser();
 
   public CastStringToDate() {

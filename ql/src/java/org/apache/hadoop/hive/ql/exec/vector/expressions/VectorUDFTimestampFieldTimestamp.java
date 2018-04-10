@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.exec.vector.expressions;
 
 import java.util.Arrays;
 import java.util.Calendar;
+import java.util.TimeZone;
 
 import org.apache.hadoop.hive.ql.exec.vector.ColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
@@ -43,7 +44,7 @@ public abstract class VectorUDFTimestampFieldTimestamp extends VectorExpression 
   protected final int colNum;
   protected final int field;
 
-  protected transient final Calendar calendar = Calendar.getInstance();
+  protected transient final Calendar calendar = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
 
   public VectorUDFTimestampFieldTimestamp(int field, int colNum, int outputColumnNum) {
     super(outputColumnNum);
@@ -69,7 +70,7 @@ public abstract class VectorUDFTimestampFieldTimestamp extends VectorExpression 
   }
 
   protected long getTimestampField(TimestampColumnVector timestampColVector, int elementNum) {
-    calendar.setTime(timestampColVector.asScratchTimestamp(elementNum));
+    calendar.setTimeInMillis(timestampColVector.asScratchTimestamp(elementNum).getTime());
     return calendar.get(field);
   }
 

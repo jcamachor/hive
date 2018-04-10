@@ -18,26 +18,32 @@
 
 package org.apache.hadoop.hive.serde2.io;
 
-import com.google.code.tempusfugit.concurrency.annotations.*;
-import com.google.code.tempusfugit.concurrency.*;
-import org.junit.*;
+import com.google.code.tempusfugit.concurrency.ConcurrentRule;
+import com.google.code.tempusfugit.concurrency.RepeatingRule;
+import com.google.code.tempusfugit.concurrency.annotations.Concurrent;
+import com.google.code.tempusfugit.concurrency.annotations.Repeating;
+import org.apache.hadoop.hive.common.type.Date;
+import org.junit.BeforeClass;
+import org.junit.Rule;
+import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static org.junit.Assert.*;
-import java.io.*;
-import java.sql.Date;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.DataInputStream;
+import java.io.DataOutput;
+import java.io.DataOutputStream;
 import java.util.Calendar;
-import java.util.GregorianCalendar;
 import java.util.LinkedList;
 import java.util.TimeZone;
 import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 public class TestDateWritable {
   private static final Logger LOG = LoggerFactory.getLogger(TestDateWritable.class);
@@ -104,7 +110,7 @@ public class TestDateWritable {
 
     // Getters
     assertEquals(date1, dw1.get());
-    assertEquals(date1.getTime() / 1000, dw1.getTimeInSeconds());
+    assertEquals(date1.getSeconds(), dw1.getTimeInSeconds());
 
     dw4.set(Date.valueOf("1970-01-02"));
     assertEquals(1, dw4.getDays());
@@ -151,12 +157,11 @@ public class TestDateWritable {
 
   @BeforeClass
   public static void setupDateStrings() {
-    DateFormat format = new SimpleDateFormat("yyyy-MM-dd");
     Date initialDate = Date.valueOf("2014-01-01");
     Calendar cal = Calendar.getInstance();
-    cal.setTime(initialDate);
+    cal.setTimeInMillis(initialDate.getMillis());
     for (int idx = 0; idx < 365; ++idx) {
-      dateStrings[idx] = format.format(cal.getTime());
+      dateStrings[idx] = Date.ofEpochMilli(cal.getTimeInMillis()).toString();
       cal.add(1, Calendar.DAY_OF_YEAR);
     }
   }
@@ -176,21 +181,20 @@ public class TestDateWritable {
 
     @Override
     public Void call() throws Exception {
-      SimpleDateFormat sdf = new SimpleDateFormat("YYYY-MM-dd HH:mm:ss");
       // Iterate through each day of the year, make sure Date/DateWritable match
       Date originalDate = Date.valueOf("1900-01-01");
       Calendar cal = Calendar.getInstance();
-      cal.setTimeInMillis(originalDate.getTime());
+      cal.setTimeInMillis(originalDate.getMillis());
       for (int idx = 0; idx < 365*200; ++idx) {
-        originalDate = new Date(cal.getTimeInMillis());
+        originalDate = Date.ofEpochMilli(cal.getTimeInMillis());
         // Make sure originalDate is at midnight in the local time zone,
         // since DateWritable will generate dates at that time.
         originalDate = Date.valueOf(originalDate.toString());
         DateWritable dateWritable = new DateWritable(originalDate);
-        Date actual = dateWritable.get(false);
+        Date actual = dateWritable.get();
         if (!originalDate.equals(actual)) {
-          String originalStr = sdf.format(originalDate);
-          String actualStr = sdf.format(actual);
+          String originalStr = originalDate.toString();
+          String actualStr = actual.toString();
           if (originalStr.substring(0, 10).equals(actualStr.substring(0, 10))) continue;
           bad.add(new DtMismatch(originalStr, actualStr, tz));
         }

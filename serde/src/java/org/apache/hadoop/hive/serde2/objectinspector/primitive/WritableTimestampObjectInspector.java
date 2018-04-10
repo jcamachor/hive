@@ -17,8 +17,7 @@
  */
 package org.apache.hadoop.hive.serde2.objectinspector.primitive;
 
-import java.sql.Timestamp;
-
+import org.apache.hadoop.hive.common.type.Timestamp;
 import org.apache.hadoop.hive.serde2.io.TimestampWritable;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 
@@ -48,6 +47,15 @@ public class WritableTimestampObjectInspector extends
     return o;
   }
 
+  @Deprecated
+  public Object set(Object o, java.sql.Timestamp t) {
+    if (t == null) {
+      return null;
+    }
+    ((TimestampWritable) o).set(Timestamp.ofEpochMilli(t.getTime(), t.getNanos()));
+    return o;
+  }
+
   public Object set(Object o, Timestamp t) {
     if (t == null) {
       return null;
@@ -66,6 +74,10 @@ public class WritableTimestampObjectInspector extends
 
   public Object create(byte[] bytes, int offset) {
     return new TimestampWritable(bytes, offset);
+  }
+
+  public Object create(java.sql.Timestamp t) {
+    return new TimestampWritable(Timestamp.ofEpochMilli(t.getTime(), t.getNanos()));
   }
 
   public Object create(Timestamp t) {

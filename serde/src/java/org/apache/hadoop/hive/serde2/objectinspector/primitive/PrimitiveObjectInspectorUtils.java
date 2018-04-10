@@ -23,8 +23,6 @@ import java.io.DataOutput;
 import java.io.IOException;
 import java.nio.charset.CharacterCodingException;
 import java.nio.charset.StandardCharsets;
-import java.sql.Date;
-import java.sql.Timestamp;
 import java.time.DateTimeException;
 import java.time.ZoneId;
 import java.util.HashMap;
@@ -32,15 +30,16 @@ import java.util.Map;
 
 import org.apache.hadoop.hive.common.classification.InterfaceAudience;
 import org.apache.hadoop.hive.common.classification.InterfaceStability;
+import org.apache.hadoop.hive.common.type.Date;
+import org.apache.hadoop.hive.common.type.HiveChar;
+import org.apache.hadoop.hive.common.type.HiveDecimal;
+import org.apache.hadoop.hive.common.type.HiveIntervalDayTime;
+import org.apache.hadoop.hive.common.type.HiveIntervalYearMonth;
+import org.apache.hadoop.hive.common.type.HiveVarchar;
+import org.apache.hadoop.hive.common.type.Timestamp;
 import org.apache.hadoop.hive.common.type.TimestampTZ;
 import org.apache.hadoop.hive.common.type.TimestampTZUtil;
 import org.apache.hadoop.hive.ql.util.TimestampUtils;
-import org.apache.hadoop.hive.serde2.io.TimestampLocalTZWritable;
-import org.apache.hadoop.hive.common.type.HiveChar;
-import org.apache.hadoop.hive.common.type.HiveDecimal;
-import org.apache.hadoop.hive.common.type.HiveIntervalYearMonth;
-import org.apache.hadoop.hive.common.type.HiveIntervalDayTime;
-import org.apache.hadoop.hive.common.type.HiveVarchar;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.io.ByteWritable;
 import org.apache.hadoop.hive.serde2.io.DateWritable;
@@ -51,6 +50,7 @@ import org.apache.hadoop.hive.serde2.io.HiveIntervalDayTimeWritable;
 import org.apache.hadoop.hive.serde2.io.HiveIntervalYearMonthWritable;
 import org.apache.hadoop.hive.serde2.io.HiveVarcharWritable;
 import org.apache.hadoop.hive.serde2.io.ShortWritable;
+import org.apache.hadoop.hive.serde2.io.TimestampLocalTZWritable;
 import org.apache.hadoop.hive.serde2.io.TimestampWritable;
 import org.apache.hadoop.hive.serde2.lazy.LazyInteger;
 import org.apache.hadoop.hive.serde2.lazy.LazyLong;
@@ -1126,7 +1126,7 @@ public final class PrimitiveObjectInspectorUtils {
       } catch (IllegalArgumentException e) {
         Timestamp ts = getTimestampFromString(s);
         if (ts != null) {
-          result = new Date(ts.getTime());
+          result = Date.ofEpochMilli(ts.getMillis());
         } else {
           result = null;
         }
@@ -1140,7 +1140,7 @@ public final class PrimitiveObjectInspectorUtils {
       } catch (IllegalArgumentException e) {
         Timestamp ts = getTimestampFromString(val);
         if (ts != null) {
-          result = new Date(ts.getTime());
+          result = Date.ofEpochMilli(ts.getMillis());
         } else {
           result = null;
         }
@@ -1212,8 +1212,8 @@ public final class PrimitiveObjectInspectorUtils {
       result = TimestampUtils.doubleToTimestamp(((DoubleObjectInspector) inputOI).get(o));
       break;
     case DECIMAL:
-      result = TimestampUtils.decimalToTimestamp(((HiveDecimalObjectInspector) inputOI)
-                                                    .getPrimitiveJavaObject(o));
+      result = TimestampUtils.decimalToTimestamp(
+          ((HiveDecimalObjectInspector) inputOI).getPrimitiveJavaObject(o));
       break;
     case STRING:
       StringObjectInspector soi = (StringObjectInspector) inputOI;
@@ -1225,8 +1225,8 @@ public final class PrimitiveObjectInspectorUtils {
       result = getTimestampFromString(getString(o, inputOI));
       break;
     case DATE:
-      result = new Timestamp(
-          ((DateObjectInspector) inputOI).getPrimitiveWritableObject(o).get().getTime());
+      result = Timestamp.ofEpochMilli(
+          ((DateObjectInspector) inputOI).getPrimitiveWritableObject(o).get().getMillis());
       break;
     case TIMESTAMP:
       result = ((TimestampObjectInspector) inputOI).getPrimitiveWritableObject(o).getTimestamp();
@@ -1247,7 +1247,7 @@ public final class PrimitiveObjectInspectorUtils {
     return result;
   }
 
-  static Timestamp getTimestampFromString(String s) {
+  public static Timestamp getTimestampFromString(String s) {
     Timestamp result;
     s = s.trim();
     s = trimNanoTimestamp(s);
@@ -1261,7 +1261,7 @@ public final class PrimitiveObjectInspectorUtils {
     } catch (IllegalArgumentException e) {
       // Let's try to parse it as timestamp with time zone and transform
       try {
-        result = Timestamp.from(TimestampTZUtil.parse(s).getZonedDateTime().toInstant());
+        result = new Timestamp(TimestampTZUtil.parse(s).getZonedDateTime().toLocalDateTime());
       } catch (DateTimeException e2) {
         result = null;
       }

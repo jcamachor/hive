@@ -45,7 +45,7 @@ public class TestTimestampWritableAndColumnVector {
     Timestamp[] randTimestamps = new Timestamp[VectorizedRowBatch.DEFAULT_SIZE];
 
     for (int i = 0; i < VectorizedRowBatch.DEFAULT_SIZE; i++) {
-      Timestamp randTimestamp = RandomTypeUtil.getRandTimestamp(r);
+      Timestamp randTimestamp = RandomTypeUtil.getRandTimestamp(r).toSqlTimestamp();
       randTimestamps[i] = randTimestamp;
       timestampColVector.set(i, randTimestamp);
     }

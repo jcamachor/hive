@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql.exec.vector.expressions;
 
+import org.apache.hadoop.hive.common.type.Date;
 import org.apache.hadoop.hive.ql.exec.vector.BytesColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.ColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
@@ -31,7 +32,6 @@ import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.io.Text;
 import org.apache.hive.common.util.DateParser;
 
-import java.sql.Date;
 import java.util.Arrays;
 
 public class VectorUDFDateAddColScalar extends VectorExpression {
@@ -44,7 +44,7 @@ public class VectorUDFDateAddColScalar extends VectorExpression {
 
   private transient final Text text = new Text();
   private transient final DateParser dateParser = new DateParser();
-  private transient final Date date = new Date(0);
+  private transient final Date date = new Date();
 
   // Transient members initialized by transientInit method.
   private transient PrimitiveCategory primitiveCategory;
@@ -334,7 +334,7 @@ public class VectorUDFDateAddColScalar extends VectorExpression {
       outputVector.isNull[i] = true;
       return;
     }
-    long days = DateWritable.millisToDays(date.getTime());
+    long days = DateWritable.millisToDays(date.getMillis());
     if (isPositive) {
       days += numDays;
     } else {

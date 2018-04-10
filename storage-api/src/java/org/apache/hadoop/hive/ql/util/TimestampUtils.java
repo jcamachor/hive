@@ -18,15 +18,15 @@
 
 package org.apache.hadoop.hive.ql.util;
 
+import java.math.BigDecimal;
+
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.common.type.HiveDecimalV1;
+import org.apache.hadoop.hive.common.type.Timestamp;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 
-import java.math.BigDecimal;
-import java.sql.Timestamp;
-
 /**
- * Utitilities for Timestamps and the relevant conversions.
+ * Utilities for Timestamps and the relevant conversions.
  */
 public class TimestampUtils {
   public static final BigDecimal BILLION_BIG_DECIMAL = BigDecimal.valueOf(1000000000);
@@ -36,11 +36,38 @@ public class TimestampUtils {
    * @return double representation of the timestamp, accurate to nanoseconds
    */
   public static double getDouble(Timestamp ts) {
-    long seconds = millisToSeconds(ts.getTime());
+    long seconds = ts.getSeconds();
+    return seconds + ((double) ts.getNanos()) / 1000000000;
+  }
+
+  @Deprecated
+  public static double getDouble(java.sql.Timestamp ts) {
+    long seconds = ts.getSeconds();
     return seconds + ((double) ts.getNanos()) / 1000000000;
   }
 
   public static Timestamp doubleToTimestamp(double f) {
+    try {
+      long seconds = (long) f;
+
+      // We must ensure the exactness of the double's fractional portion.
+      // 0.6 as the fraction part will be converted to 0.59999... and
+      // significantly reduce the savings from binary serialization
+      BigDecimal bd = new BigDecimal(String.valueOf(f));
+
+      bd = bd.subtract(new BigDecimal(seconds)).multiply(new BigDecimal(1000000000));
+      int nanos = bd.intValue();
+
+      return Timestamp.ofEpochSecond(seconds, nanos);
+    } catch (NumberFormatException nfe) {
+      return null;
+    } catch (IllegalArgumentException iae) {
+      return null;
+    }
+  }
+
+  @Deprecated
+  public static java.sql.Timestamp doubleToSqlTimestamp(double f) {
     try {
       long seconds = (long) f;
 
@@ -58,8 +85,7 @@ public class TimestampUtils {
         millis -= 1000;
         nanos += 1000000000;
       }
-      Timestamp t = new Timestamp(millis);
-
+      java.sql.Timestamp t = new java.sql.Timestamp(millis);
       // Set remaining fractional portion to nanos
       t.setNanos(nanos);
       return t;
@@ -99,9 +125,7 @@ public class TimestampUtils {
       return null;
     }
     long seconds = nanoInstant.longValue();
-    Timestamp t = new Timestamp(seconds * 1000);
-    t.setNanos(nanos);
-    return t;
+    return Timestamp.ofEpochSecond(seconds, nanos);
   }
 
   /**
@@ -142,9 +166,42 @@ public class TimestampUtils {
     }
     long seconds = nanoInstant.longValue();
 
-    Timestamp timestamp = new Timestamp(seconds * 1000L);
-    timestamp.setNanos(nanos);
-    return timestamp;
+    return Timestamp.ofEpochSecond(seconds, nanos);
+  }
+
+  @Deprecated
+  public static java.sql.Timestamp decimalToSqlTimestamp(
+      HiveDecimalWritable decWritable,
+      HiveDecimalWritable scratchDecWritable1, HiveDecimalWritable scratchDecWritable2) {
+
+    HiveDecimalWritable nanosWritable = scratchDecWritable1;
+    nanosWritable.set(decWritable);
+    nanosWritable.mutateFractionPortion();               // Clip off seconds portion.
+    nanosWritable.mutateScaleByPowerOfTen(9);            // Bring nanoseconds into integer portion.
+    if (!nanosWritable.isSet() || !nanosWritable.isInt()) {
+      return null;
+    }
+    int nanos = nanosWritable.intValue();
+    if (nanos < 0) {
+      nanos += 1000000000;
+    }
+    nanosWritable.setFromLong(nanos);
+
+    HiveDecimalWritable nanoInstant = scratchDecWritable2;
+    nanoInstant.set(decWritable);
+    nanoInstant.mutateScaleByPowerOfTen(9);
+
+    nanoInstant.mutateSubtract(nanosWritable);
+    nanoInstant.mutateScaleByPowerOfTen(-9);              // Back to seconds.
+    if (!nanoInstant.isSet() || !nanoInstant.isLong()) {
+      return null;
+    }
+    long seconds = nanoInstant.longValue();
+
+    final java.sql.Timestamp t = new java.sql.Timestamp(seconds * 1000);
+    t.setNanos(nanos);
+
+    return t;
   }
 
   public static Timestamp decimalToTimestamp(HiveDecimalV1 dec) {
@@ -156,10 +213,8 @@ public class TimestampUtils {
       }
       long seconds =
           nanoInstant.subtract(new BigDecimal(nanos)).divide(BILLION_BIG_DECIMAL).longValue();
-      Timestamp t = new Timestamp(seconds * 1000);
-      t.setNanos(nanos);
 
-      return t;
+      return Timestamp.ofEpochSecond(seconds, nanos);
     } catch (NumberFormatException nfe) {
       return null;
     } catch (IllegalArgumentException iae) {
@@ -178,4 +233,5 @@ public class TimestampUtils {
       return (millis - 999) / 1000;
     }
   }
+
 }

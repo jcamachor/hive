@@ -19,14 +19,12 @@ package org.apache.hadoop.hive.ql.optimizer.calcite.translator;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.sql.Timestamp;
 import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 
 import org.apache.calcite.avatica.util.TimeUnit;
@@ -53,12 +51,14 @@ import org.apache.calcite.util.ConversionUtil;
 import org.apache.calcite.util.DateString;
 import org.apache.calcite.util.NlsString;
 import org.apache.calcite.util.TimestampString;
+import org.apache.hadoop.hive.common.type.Date;
 import org.apache.hadoop.hive.common.type.Decimal128;
 import org.apache.hadoop.hive.common.type.HiveChar;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.common.type.HiveIntervalDayTime;
 import org.apache.hadoop.hive.common.type.HiveIntervalYearMonth;
 import org.apache.hadoop.hive.common.type.HiveVarchar;
+import org.apache.hadoop.hive.common.type.Timestamp;
 import org.apache.hadoop.hive.common.type.TimestampTZ;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
@@ -393,8 +393,6 @@ public class RexNodeConverter {
       GenericUDF udf = func.getGenericUDF();
       if ((udf instanceof GenericUDFToChar) || (udf instanceof GenericUDFToVarchar)
           || (udf instanceof GenericUDFToDecimal) || (udf instanceof GenericUDFToDate)
-          // Calcite can not specify the scale for timestamp. As a result, all
-          // the millisecond part will be lost
           || (udf instanceof GenericUDFTimestamp) || (udf instanceof GenericUDFToTimestampLocalTZ)
           || (udf instanceof GenericUDFToBinary) || castExprUsingUDFBridge(udf)) {
         castExpr = cluster.getRexBuilder().makeAbstractCast(
@@ -676,9 +674,9 @@ public class RexNodeConverter {
       calciteLiteral = rexBuilder.makeCharLiteral(asUnicodeString((String) value));
       break;
     case DATE:
-      final Calendar cal = Calendar.getInstance(Locale.getDefault());
-      cal.setTime((Date) value);
-      calciteLiteral = rexBuilder.makeDateLiteral(DateString.fromCalendarFields(cal));
+      final Date date = (Date) value;
+      calciteLiteral = rexBuilder.makeDateLiteral(
+          DateString.fromDaysSinceEpoch(date.getDays()));
       break;
     case TIMESTAMP:
       final TimestampString tsString;
@@ -686,9 +684,7 @@ public class RexNodeConverter {
         tsString = TimestampString.fromCalendarFields((Calendar) value);
       } else {
         final Timestamp ts = (Timestamp) value;
-        final Calendar calt = Calendar.getInstance(Locale.getDefault());
-        calt.setTimeInMillis(ts.getTime());
-        tsString = TimestampString.fromCalendarFields(calt).withNanos(ts.getNanos());
+        tsString = TimestampString.fromMillisSinceEpoch(ts.getMillis()).withNanos(ts.getNanos());
       }
       // Must call makeLiteral, not makeTimestampLiteral
       // to have the RexBuilder.roundTime logic kick in

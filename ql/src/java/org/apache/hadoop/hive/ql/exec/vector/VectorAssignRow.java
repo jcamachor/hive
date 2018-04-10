@@ -18,11 +18,10 @@
 
 package org.apache.hadoop.hive.ql.exec.vector;
 
-import java.sql.Date;
-import java.sql.Timestamp;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.hadoop.hive.common.type.Date;
 import org.apache.hadoop.hive.serde2.objectinspector.ListObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.MapObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StandardUnionObjectInspector.StandardUnion;
@@ -38,6 +37,7 @@ import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.common.type.HiveIntervalDayTime;
 import org.apache.hadoop.hive.common.type.HiveIntervalYearMonth;
 import org.apache.hadoop.hive.common.type.HiveVarchar;
+import org.apache.hadoop.hive.common.type.Timestamp;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.VectorPartitionConversion;
 import org.apache.hadoop.hive.serde2.io.ByteWritable;
@@ -414,10 +414,10 @@ public class VectorAssignRow {
         case TIMESTAMP:
           if (object instanceof Timestamp) {
             ((TimestampColumnVector) columnVector).set(
-                batchIndex, ((Timestamp) object));
+                batchIndex, ((Timestamp) object).toSqlTimestamp());
           } else {
             ((TimestampColumnVector) columnVector).set(
-                batchIndex, ((TimestampWritable) object).getTimestamp());
+                batchIndex, ((TimestampWritable) object).getTimestamp().toSqlTimestamp());
           }
           break;
         case DATE:
@@ -711,7 +711,7 @@ public class VectorAssignRow {
               return;
             }
             ((TimestampColumnVector) columnVector).set(
-                batchIndex, timestamp);
+                batchIndex, timestamp.toSqlTimestamp());
           }
           break;
         case DATE:

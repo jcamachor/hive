@@ -18,7 +18,7 @@
 
 package org.apache.hadoop.hive.ql.exec.vector.expressions;
 
-import java.sql.Timestamp;
+import org.apache.hadoop.hive.common.type.Timestamp;
 
 public interface ITimestampInExpr {
   void setInListValues(Timestamp[] inVals);
