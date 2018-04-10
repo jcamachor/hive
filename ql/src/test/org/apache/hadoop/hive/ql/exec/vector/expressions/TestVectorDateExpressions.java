@@ -34,8 +34,6 @@ import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.TestVectorizedRowBatch;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.ql.udf.UDFDayOfMonth;
-import org.apache.hadoop.hive.ql.udf.UDFMonth;
 import org.apache.hadoop.hive.ql.udf.UDFWeekOfYear;
 import org.apache.hadoop.hive.ql.udf.UDFYear;
 import org.apache.hadoop.hive.serde2.io.DateWritable;
@@ -109,8 +107,8 @@ public class TestVectorDateExpressions {
   private void compareToUDFYearDate(long t, int y) {
     UDFYear udf = new UDFYear();
     TimestampWritable tsw = toTimestampWritable(t);
-    IntWritable res = udf.evaluate(tsw);
-    Assert.assertEquals(res.get(), y);
+    int res = tsw.getTimestamp().getLocalDateTime().getYear();
+    Assert.assertEquals(res, y);
   }
 
   private void verifyUDFYear(VectorizedRowBatch batch) {
@@ -169,10 +167,9 @@ public class TestVectorDateExpressions {
   }
 
   private void compareToUDFDayOfMonthDate(long t, int y) {
-    UDFDayOfMonth udf = new UDFDayOfMonth();
     TimestampWritable tsw = toTimestampWritable(t);
-    IntWritable res = udf.evaluate(tsw);
-    Assert.assertEquals(res.get(), y);
+    int res = tsw.getTimestamp().getLocalDateTime().getDayOfMonth();
+    Assert.assertEquals(res, y);
   }
 
   private void verifyUDFDayOfMonth(VectorizedRowBatch batch) {
@@ -231,10 +228,9 @@ public class TestVectorDateExpressions {
   }
 
   private void compareToUDFMonthDate(long t, int y) {
-    UDFMonth udf = new UDFMonth();
     TimestampWritable tsw = toTimestampWritable(t);
-    IntWritable res = udf.evaluate(tsw);
-    Assert.assertEquals(res.get(), y);
+    int res = tsw.getTimestamp().getLocalDateTime().getMonthValue();
+    Assert.assertEquals(res, y);
   }
 
   private void verifyUDFMonth(VectorizedRowBatch batch) {

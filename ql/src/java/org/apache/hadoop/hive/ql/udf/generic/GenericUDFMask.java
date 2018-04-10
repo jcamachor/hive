@@ -217,8 +217,9 @@ class MaskTransformer extends AbstractTransformer {
 
   @Override
   Date transform(final Date value) {
+    int actualMonthValue = maskedMonthValue + 1;
     int year  = maskedYearValue  == UNMASKED_VAL ? value.getLocalDate().getYear()  : maskedYearValue;
-    int month = maskedMonthValue == UNMASKED_VAL ? value.getLocalDate().getMonthValue() : maskedMonthValue;
+    int month = maskedMonthValue == UNMASKED_VAL ? value.getLocalDate().getMonthValue() : actualMonthValue;
     int day   = maskedDayValue   == UNMASKED_VAL ? value.getLocalDate().getDayOfMonth()  : maskedDayValue;
 
     return Date.of(year, month, day);

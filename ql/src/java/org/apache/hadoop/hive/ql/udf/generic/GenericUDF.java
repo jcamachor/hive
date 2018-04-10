@@ -25,6 +25,8 @@ import java.text.ParseException;
 import org.apache.hadoop.hive.common.classification.InterfaceAudience;
 import org.apache.hadoop.hive.common.classification.InterfaceStability;
 import org.apache.hadoop.hive.common.type.Date;
+import org.apache.hadoop.hive.common.type.HiveIntervalDayTime;
+import org.apache.hadoop.hive.common.type.HiveIntervalYearMonth;
 import org.apache.hadoop.hive.common.type.Timestamp;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.exec.MapredContext;
@@ -36,6 +38,8 @@ import org.apache.hadoop.hive.ql.udf.UDFType;
 import org.apache.hadoop.hive.serde2.io.ByteWritable;
 import org.apache.hadoop.hive.serde2.io.DateWritable;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
+import org.apache.hadoop.hive.serde2.io.HiveIntervalDayTimeWritable;
+import org.apache.hadoop.hive.serde2.io.HiveIntervalYearMonthWritable;
 import org.apache.hadoop.hive.serde2.io.ShortWritable;
 import org.apache.hadoop.hive.serde2.io.TimestampWritable;
 import org.apache.hadoop.hive.serde2.objectinspector.ConstantObjectInspector;
@@ -528,6 +532,58 @@ public abstract class GenericUDF implements Closeable {
     }
     Timestamp ts = ((TimestampWritable) writableValue).getTimestamp();
     return ts;
+  }
+
+  protected HiveIntervalYearMonth getIntervalYearMonthValue(DeferredObject[] arguments, int i, PrimitiveCategory[] inputTypes,
+      Converter[] converters) throws HiveException {
+    Object obj;
+    if ((obj = arguments[i].get()) == null) {
+      return null;
+    }
+
+    HiveIntervalYearMonth intervalYearMonth;
+    switch (inputTypes[i]) {
+      case STRING:
+      case VARCHAR:
+      case CHAR:
+        String intervalYearMonthStr = converters[i].convert(obj).toString();
+        intervalYearMonth = HiveIntervalYearMonth.valueOf(intervalYearMonthStr);
+        break;
+      case INTERVAL_YEAR_MONTH:
+        Object writableValue = converters[i].convert(obj);
+        intervalYearMonth = ((HiveIntervalYearMonthWritable) writableValue).getHiveIntervalYearMonth();
+        break;
+      default:
+        throw new UDFArgumentTypeException(0, getFuncName()
+            + " only takes INTERVAL_YEAR_MONTH and STRING_GROUP types, got " + inputTypes[i]);
+    }
+    return intervalYearMonth;
+  }
+
+  protected HiveIntervalDayTime getIntervalDayTimeValue(DeferredObject[] arguments, int i, PrimitiveCategory[] inputTypes,
+      Converter[] converters) throws HiveException {
+    Object obj;
+    if ((obj = arguments[i].get()) == null) {
+      return null;
+    }
+
+    HiveIntervalDayTime intervalDayTime;
+    switch (inputTypes[i]) {
+      case STRING:
+      case VARCHAR:
+      case CHAR:
+        String intervalDayTimeStr = converters[i].convert(obj).toString();
+        intervalDayTime = HiveIntervalDayTime.valueOf(intervalDayTimeStr);
+        break;
+      case INTERVAL_DAY_TIME:
+        Object writableValue = converters[i].convert(obj);
+        intervalDayTime = ((HiveIntervalDayTimeWritable) writableValue).getHiveIntervalDayTime();
+        break;
+      default:
+        throw new UDFArgumentTypeException(0, getFuncName()
+            + " only takes INTERVAL_DAY_TIME and STRING_GROUP types, got " + inputTypes[i]);
+    }
+    return intervalDayTime;
   }
 
   protected String getConstantStringValue(ObjectInspector[] arguments, int i) {

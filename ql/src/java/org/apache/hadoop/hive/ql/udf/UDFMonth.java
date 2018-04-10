@@ -19,18 +19,22 @@
 package org.apache.hadoop.hive.ql.udf;
 
 import org.apache.hadoop.hive.common.type.Date;
+import org.apache.hadoop.hive.common.type.HiveIntervalYearMonth;
 import org.apache.hadoop.hive.ql.exec.Description;
-import org.apache.hadoop.hive.ql.exec.UDF;
+import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
+import org.apache.hadoop.hive.ql.exec.UDFArgumentTypeException;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedExpressions;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorUDFMonthDate;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorUDFMonthString;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorUDFMonthTimestamp;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
 import org.apache.hadoop.hive.ql.udf.generic.NDV;
-import org.apache.hadoop.hive.serde2.io.DateWritable;
-import org.apache.hadoop.hive.serde2.io.HiveIntervalYearMonthWritable;
-import org.apache.hadoop.hive.serde2.io.TimestampWritable;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorConverters;
+import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 import org.apache.hadoop.io.IntWritable;
-import org.apache.hadoop.io.Text;
 
 /**
  * UDFMonth.
@@ -47,59 +51,78 @@ import org.apache.hadoop.io.Text;
     + "  > SELECT _FUNC_('2009-07-30') FROM src LIMIT 1;\n" + "  7")
 @VectorizedExpressions({VectorUDFMonthDate.class, VectorUDFMonthString.class, VectorUDFMonthTimestamp.class})
 @NDV(maxNdv = 31)
-public class UDFMonth extends UDF {
+public class UDFMonth extends GenericUDF {
 
-  private final IntWritable result = new IntWritable();
+  private transient ObjectInspectorConverters.Converter[] converters = new ObjectInspectorConverters.Converter[1];
+  private transient PrimitiveObjectInspector.PrimitiveCategory[] inputTypes = new PrimitiveObjectInspector.PrimitiveCategory[1];
+  private final IntWritable output = new IntWritable();
 
-  public UDFMonth() {
+  @Override
+  public ObjectInspector initialize(ObjectInspector[] arguments) throws UDFArgumentException {
+    checkArgsSize(arguments, 1, 1);
+    checkArgPrimitive(arguments, 0);
+    switch (((PrimitiveObjectInspector) arguments[0]).getPrimitiveCategory()) {
+      case INTERVAL_YEAR_MONTH:
+        inputTypes[0] = PrimitiveObjectInspector.PrimitiveCategory.INTERVAL_YEAR_MONTH;
+        converters[0] = ObjectInspectorConverters.getConverter(
+            arguments[0], PrimitiveObjectInspectorFactory.writableHiveIntervalYearMonthObjectInspector);
+        break;
+      case STRING:
+      case CHAR:
+      case VARCHAR:
+      case DATE:
+      case TIMESTAMP:
+      case TIMESTAMPLOCALTZ:
+      case VOID:
+        obtainDateConverter(arguments, 0, inputTypes, converters);
+        break;
+      default:
+        // build error message
+        StringBuilder sb = new StringBuilder();
+        sb.append(getFuncName());
+        sb.append(" does not take ");
+        sb.append(((PrimitiveObjectInspector) arguments[0]).getPrimitiveCategory());
+        sb.append(" type");
+        throw new UDFArgumentTypeException(0, sb.toString());
+    }
+
+    ObjectInspector outputOI = PrimitiveObjectInspectorFactory.writableIntObjectInspector;
+    return outputOI;
   }
 
-  /**
-   * Get the month from a date string.
-   *
-   * @param dateString
-   *          the dateString in the format of "yyyy-MM-dd HH:mm:ss" or
-   *          "yyyy-MM-dd".
-   * @return an int from 1 to 12. null if the dateString is not a valid date
-   *         string.
-   */
-  public IntWritable evaluate(Text dateString) {
-    if (dateString == null) {
-      return null;
+  @Override
+  public Object evaluate(DeferredObject[] arguments) throws HiveException {
+    switch (inputTypes[0]) {
+      case INTERVAL_YEAR_MONTH:
+        HiveIntervalYearMonth intervalYearMonth = getIntervalYearMonthValue(arguments, 0, inputTypes, converters);
+        if (intervalYearMonth == null) {
+          return null;
+        }
+        output.set(intervalYearMonth.getMonths());
+        break;
+      case STRING:
+      case CHAR:
+      case VARCHAR:
+      case DATE:
+      case TIMESTAMP:
+      case TIMESTAMPLOCALTZ:
+      case VOID:
+        Date date = getDateValue(arguments, 0, inputTypes, converters);
+        if (date == null) {
+          return null;
+        }
+        output.set(date.getLocalDate().getMonthValue());
     }
-    try {
-      Date date = Date.valueOf(dateString.toString());
-      result.set(date.getLocalDate().getMonthValue());
-      return result;
-    } catch (IllegalArgumentException e) {
-      return null;
-    }
+    return output;
   }
 
-  public IntWritable evaluate(DateWritable d) {
-    if (d == null) {
-      return null;
-    }
-
-    result.set(d.get().getLocalDate().getMonthValue());
-    return result;
+  @Override
+  protected String getFuncName() {
+    return "month";
   }
 
-  public IntWritable evaluate(TimestampWritable t) {
-    if (t == null) {
-      return null;
-    }
-
-    result.set(t.getTimestamp().getLocalDateTime().getMonthValue());
-    return result;
-  }
-
-  public IntWritable evaluate(HiveIntervalYearMonthWritable i) {
-    if (i == null) {
-      return null;
-    }
-
-    result.set(i.getHiveIntervalYearMonth().getMonths());
-    return result;
+  @Override
+  public String getDisplayString(String[] children) {
+    return getStandardDisplayString(getFuncName(), children);
   }
 }

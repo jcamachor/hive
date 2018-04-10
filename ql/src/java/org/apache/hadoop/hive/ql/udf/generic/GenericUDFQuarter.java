@@ -62,7 +62,7 @@ public class GenericUDFQuarter extends GenericUDF {
     if (date == null) {
       return null;
     }
-    int month = date.getLocalDate().getMonthValue();
+    int month = date.getLocalDate().getMonth().ordinal();
     int quarter = (month + 3) / 3;
 
     output.set(quarter);

@@ -60,12 +60,8 @@ public abstract class UDFDateFloor extends UDF {
     if (t == null) {
       return null;
     }
-    final long originalTimestamp = t.getTimestamp().getMillis(); // default
-    final long originalTimestampUTC = new DateTime(originalTimestamp)
-        .withZoneRetainFields(DateTimeZone.UTC).getMillis(); // default -> utc
-    final long newTimestampUTC = granularity.truncate(originalTimestampUTC); // utc
-    final long newTimestamp = new DateTime(newTimestampUTC, DateTimeZone.UTC)
-        .withZoneRetainFields(DateTimeZone.getDefault()).getMillis(); // utc -> default
+    final long originalTimestamp = t.getTimestamp().getMillis();
+    final long newTimestamp = granularity.truncate(originalTimestamp);
     resultTS.set(Timestamp.ofEpochMilli(newTimestamp));
     return resultTS;
   }

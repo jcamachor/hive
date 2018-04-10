@@ -224,12 +224,12 @@ public class TestVectorTimestampExpressions {
   private void compareToUDFYearLong(Timestamp t, int y) {
     UDFYear udf = new UDFYear();
     TimestampWritable tsw = new TimestampWritable(t);
-    IntWritable res = udf.evaluate(tsw);
-    if (res.get() != y) {
-      System.out.printf("%d vs %d for %s, %d\n", res.get(), y, t.toString(),
+    int res = tsw.getTimestamp().getLocalDateTime().getYear();
+    if (res != y) {
+      System.out.printf("%d vs %d for %s, %d\n", res, y, t.toString(),
           tsw.getTimestamp().getSeconds());
     }
-    Assert.assertEquals(res.get(), y);
+    Assert.assertEquals(res, y);
   }
 
   private void verifyUDFYear(VectorizedRowBatch batch, TestType testType)
@@ -320,10 +320,9 @@ public class TestVectorTimestampExpressions {
   }
 
   private void compareToUDFDayOfMonthLong(Timestamp t, int y) {
-    UDFDayOfMonth udf = new UDFDayOfMonth();
     TimestampWritable tsw = new TimestampWritable(t);
-    IntWritable res = udf.evaluate(tsw);
-    Assert.assertEquals(res.get(), y);
+    int res = tsw.getTimestamp().getLocalDateTime().getDayOfMonth();
+    Assert.assertEquals(res, y);
   }
 
   private void verifyUDFDayOfMonth(VectorizedRowBatch batch, TestType testType)
@@ -407,10 +406,9 @@ public class TestVectorTimestampExpressions {
   }
 
   private void compareToUDFHourLong(Timestamp t, int y) {
-    UDFHour udf = new UDFHour();
     TimestampWritable tsw = new TimestampWritable(t);
-    IntWritable res = udf.evaluate(tsw);
-    Assert.assertEquals(res.get(), y);
+    int res = tsw.getTimestamp().getLocalDateTime().getHour();
+    Assert.assertEquals(res, y);
   }
 
   private void verifyUDFHour(VectorizedRowBatch batch, TestType testType) throws HiveException {
@@ -493,10 +491,9 @@ public class TestVectorTimestampExpressions {
   }
 
   private void compareToUDFMinuteLong(Timestamp t, int y) {
-    UDFMinute udf = new UDFMinute();
     TimestampWritable tsw = new TimestampWritable(t);
-    IntWritable res = udf.evaluate(tsw);
-    Assert.assertEquals(res.get(), y);
+    int res = tsw.getTimestamp().getLocalDateTime().getMinute();
+    Assert.assertEquals(res, y);
   }
 
   private void verifyUDFMinute(VectorizedRowBatch batch, TestType testType)
@@ -580,10 +577,9 @@ public class TestVectorTimestampExpressions {
   }
 
   private void compareToUDFMonthLong(Timestamp t, int y) {
-    UDFMonth udf = new UDFMonth();
     TimestampWritable tsw = new TimestampWritable(t);
-    IntWritable res = udf.evaluate(tsw);
-    Assert.assertEquals(res.get(), y);
+    int res = tsw.getTimestamp().getLocalDateTime().getMonthValue();
+    Assert.assertEquals(res, y);
   }
 
   private void verifyUDFMonth(VectorizedRowBatch batch, TestType testType) throws HiveException {
@@ -666,10 +662,9 @@ public class TestVectorTimestampExpressions {
   }
 
   private void compareToUDFSecondLong(Timestamp t, int y) {
-    UDFSecond udf = new UDFSecond();
     TimestampWritable tsw = new TimestampWritable(t);
-    IntWritable res = udf.evaluate(tsw);
-    Assert.assertEquals(res.get(), y);
+    int res = tsw.getTimestamp().getLocalDateTime().getSecond();
+    Assert.assertEquals(res, y);
   }
 
   private void verifyUDFSecond(VectorizedRowBatch batch, TestType testType) throws HiveException {
