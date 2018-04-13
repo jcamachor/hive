@@ -84,7 +84,8 @@ public class TestVectorExpressionWriters {
 
 
   private Writable getWritableValue(TypeInfo ti, Timestamp value) {
-    return new TimestampWritable(value);
+    return new TimestampWritable(
+        org.apache.hadoop.hive.common.type.Timestamp.ofEpochMilli(value.getTime(), value.getNanos()));
   }
 
   private Writable getWritableValue(TypeInfo ti, HiveDecimal value) {
@@ -116,7 +117,8 @@ public class TestVectorExpressionWriters {
       return new BooleanWritable( value == 0 ? false : true);
     } else if (ti.equals(TypeInfoFactory.timestampTypeInfo)) {
       Timestamp ts = new Timestamp(value);
-      TimestampWritable tw = new TimestampWritable(ts);
+      TimestampWritable tw = new TimestampWritable(
+          org.apache.hadoop.hive.common.type.Timestamp.ofEpochMilli(ts.getTime(), ts.getNanos()));
       return tw;
     }
     return null;

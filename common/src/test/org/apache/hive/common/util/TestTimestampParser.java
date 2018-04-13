@@ -18,11 +18,10 @@
 
 package org.apache.hive.common.util;
 
-import java.sql.Timestamp;
-import java.util.Arrays;
-import java.util.List;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 
-import static org.junit.Assert.*;
+import org.apache.hadoop.hive.common.type.Timestamp;
 import org.junit.Test;
 
 public class TestTimestampParser {
@@ -133,10 +132,10 @@ public class TestTimestampParser {
     TimestampParser tp = new TimestampParser(patterns);
 
     ValidTimestampCase[] validCases = {
-        new ValidTimestampCase("0", new Timestamp(0)),
-        new ValidTimestampCase("-1000000", new Timestamp(-1000000)),
-        new ValidTimestampCase("1420509274123", new Timestamp(1420509274123L)),
-        new ValidTimestampCase("1420509274123.456789", new Timestamp(1420509274123L)),
+        new ValidTimestampCase("0", Timestamp.ofEpochMilli(0)),
+        new ValidTimestampCase("-1000000", Timestamp.ofEpochMilli(-1000000)),
+        new ValidTimestampCase("1420509274123", Timestamp.ofEpochMilli(1420509274123L)),
+        new ValidTimestampCase("1420509274123.456789", Timestamp.ofEpochMilli(1420509274123L)),
 
         // Other format pattern should also work
         new ValidTimestampCase("1945-12-31T23:59:59",

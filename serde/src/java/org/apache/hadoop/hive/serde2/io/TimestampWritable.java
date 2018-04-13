@@ -20,11 +20,10 @@ package org.apache.hadoop.hive.serde2.io;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
-import java.sql.Timestamp;
 import java.time.format.DateTimeFormatter;
-import java.util.Date;
 
 import org.apache.hadoop.hive.common.type.HiveDecimal;
+import org.apache.hadoop.hive.common.type.Timestamp;
 import org.apache.hadoop.hive.ql.util.TimestampUtils;
 import org.apache.hadoop.hive.serde2.ByteStream.RandomAccessOutput;
 import org.apache.hadoop.hive.serde2.lazybinary.LazyBinaryUtils;
@@ -34,7 +33,6 @@ import org.apache.hadoop.io.WritableUtils;
 
 /**
  * TimestampWritable
- * Writable equivalent of java.sq.Timestamp
  *
  * Timestamps are of the format
  *    YYYY-MM-DD HH:MM:SS.[fff...]
@@ -67,7 +65,7 @@ public class TimestampWritable implements WritableComparable<TimestampWritable> 
 
   public static final DateTimeFormatter DATE_TIME_FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
-  private Timestamp timestamp = new Timestamp(0);
+  private Timestamp timestamp = new Timestamp();
 
   /**
    * true if data is stored in timestamp field rather than byte arrays.
@@ -113,20 +111,12 @@ public class TimestampWritable implements WritableComparable<TimestampWritable> 
     clearTimestamp();
   }
 
-  public void setTime(long time) {
-    timestamp.setTime(time);
-    bytesEmpty = true;
-    timestampEmpty = false;
-  }
-
   public void set(Timestamp t) {
     if (t == null) {
-      timestamp.setTime(0);
-      timestamp.setNanos(0);
+      timestamp.setLocalDateTime(null);
       return;
     }
-    timestamp.setTime(t.getTime());
-    timestamp.setNanos(t.getNanos());
+    timestamp.setLocalDateTime(t.getLocalDateTime());
     bytesEmpty = true;
     timestampEmpty = false;
   }
@@ -144,12 +134,10 @@ public class TimestampWritable implements WritableComparable<TimestampWritable> 
   }
 
   public static void updateTimestamp(Timestamp timestamp, long secondsAsMillis, int nanos) {
-    ((Date) timestamp).setTime(secondsAsMillis);
-    timestamp.setNanos(nanos);
+    timestamp.setTimeInMillis(secondsAsMillis, nanos);
   }
 
   public void setInternal(long secondsAsMillis, int nanos) {
-
     // This is our way of documenting that we are MUTATING the contents of
     // this writable's internal timestamp.
     updateTimestamp(timestamp, secondsAsMillis, nanos);
@@ -173,7 +161,7 @@ public class TimestampWritable implements WritableComparable<TimestampWritable> 
    */
   public long getSeconds() {
     if (!timestampEmpty) {
-      return TimestampUtils.millisToSeconds(timestamp.getTime());
+      return timestamp.toEpochSecond();
     } else if (!bytesEmpty) {
       return TimestampWritable.getSeconds(currentBytes, offset);
     } else {
@@ -305,7 +293,7 @@ public class TimestampWritable implements WritableComparable<TimestampWritable> 
   public double getDouble() {
     double seconds, nanos;
     if (bytesEmpty) {
-      seconds = TimestampUtils.millisToSeconds(timestamp.getTime());
+      seconds = timestamp.toEpochSecond();
       nanos = timestamp.getNanos();
     } else {
       seconds = getSeconds();
@@ -315,7 +303,7 @@ public class TimestampWritable implements WritableComparable<TimestampWritable> 
   }
 
   public static long getLong(Timestamp timestamp) {
-    return timestamp.getTime() / 1000;
+    return timestamp.toEpochSecond();
   }
 
   public void readFields(DataInput in) throws IOException {
@@ -386,7 +374,17 @@ public class TimestampWritable implements WritableComparable<TimestampWritable> 
       return timestamp.toString();
     }
 
-    return timestamp.toLocalDateTime().format(DATE_TIME_FORMAT);
+    String timestampString = timestamp.toString();
+    if (timestampString.length() > 19) {
+      if (timestampString.length() == 21) {
+        if (timestampString.substring(19).compareTo(".0") == 0) {
+          return timestamp.getLocalDateTime().format(DATE_TIME_FORMAT);
+        }
+      }
+      return timestamp.getLocalDateTime().format(DATE_TIME_FORMAT) + timestampString.substring(19);
+    }
+
+    return timestamp.getLocalDateTime().format(DATE_TIME_FORMAT);
   }
 
   @Override
@@ -400,8 +398,7 @@ public class TimestampWritable implements WritableComparable<TimestampWritable> 
   private void populateTimestamp() {
     long seconds = getSeconds();
     int nanos = getNanos();
-    timestamp.setTime(seconds * 1000);
-    timestamp.setNanos(nanos);
+    timestamp.setTimeInSeconds(seconds, nanos);
   }
 
   /** Static methods **/
@@ -461,10 +458,9 @@ public class TimestampWritable implements WritableComparable<TimestampWritable> 
    */
   public static void convertTimestampToBytes(Timestamp t, byte[] b,
       int offset) {
-    long millis = t.getTime();
+    long seconds = t.toEpochSecond();
     int nanos = t.getNanos();
 
-    long seconds = TimestampUtils.millisToSeconds(millis);
     boolean hasSecondVInt = seconds < 0 || seconds > Integer.MAX_VALUE;
     boolean hasDecimal = setNanosBytes(nanos, b, offset+4, hasSecondVInt);
 
@@ -527,6 +523,14 @@ public class TimestampWritable implements WritableComparable<TimestampWritable> 
     return result;
   }
 
+  @Deprecated
+  public static HiveDecimal getHiveDecimal(java.sql.Timestamp timestamp) {
+    // The BigDecimal class recommends not converting directly from double to BigDecimal,
+    // so we convert through a string...
+    Double timestampDouble = TimestampUtils.getDouble(timestamp);
+    HiveDecimal result = HiveDecimal.create(timestampDouble.toString());
+    return result;
+  }
 
   /**
    * Converts the time in seconds or milliseconds to a timestamp.
@@ -534,22 +538,26 @@ public class TimestampWritable implements WritableComparable<TimestampWritable> 
    * @return the timestamp
    */
   public static Timestamp longToTimestamp(long time, boolean intToTimestampInSeconds) {
-      // If the time is in seconds, converts it to milliseconds first.
-      return new Timestamp(intToTimestampInSeconds ?  time * 1000 : time);
+    // If the time is in seconds, converts it to milliseconds first.
+    if (intToTimestampInSeconds) {
+      return Timestamp.ofEpochSecond(time);
+    }
+    return Timestamp.ofEpochMilli(time);
   }
 
   public static void setTimestamp(Timestamp t, byte[] bytes, int offset) {
     long seconds = getSeconds(bytes, offset);
-    t.setTime(seconds * 1000);
+    int nanos;
     if (hasDecimalOrSecondVInt(bytes[offset])) {
-      t.setNanos(getNanos(bytes, offset + 4));
+      nanos = getNanos(bytes, offset + 4);
     } else {
-      t.setNanos(0);
+      nanos = 0;
     }
+    t.setTimeInSeconds(seconds, nanos);
   }
 
   public static Timestamp createTimestamp(byte[] bytes, int offset) {
-    Timestamp t = new Timestamp(0);
+    Timestamp t = new Timestamp();
     TimestampWritable.setTimestamp(t, bytes, offset);
     return t;
   }

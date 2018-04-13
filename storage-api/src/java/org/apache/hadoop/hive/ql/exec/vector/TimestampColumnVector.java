@@ -485,7 +485,10 @@ public class TimestampColumnVector extends ColumnVector {
     if (noNulls || !isNull[row]) {
       scratchTimestamp.setTime(time[row]);
       scratchTimestamp.setNanos(nanos[row]);
-      buffer.append(scratchTimestamp.toString());
+      // Create timestamp
+      org.apache.hadoop.hive.common.type.Timestamp ts =
+          org.apache.hadoop.hive.common.type.Timestamp.ofEpochMilli(time[row], nanos[row]);
+      buffer.append(ts.toString());
     } else {
       buffer.append("null");
     }

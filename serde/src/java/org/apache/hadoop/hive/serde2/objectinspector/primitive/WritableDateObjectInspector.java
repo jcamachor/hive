@@ -17,8 +17,7 @@
  */
 package org.apache.hadoop.hive.serde2.objectinspector.primitive;
 
-import java.sql.Date;
-
+import org.apache.hadoop.hive.common.type.Date;
 import org.apache.hadoop.hive.serde2.io.DateWritable;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 
@@ -54,12 +53,26 @@ public class WritableDateObjectInspector extends
     return o;
   }
 
+  @Deprecated
+  public Object set(Object o, java.sql.Date d) {
+    if (d == null) {
+      return null;
+    }
+    ((DateWritable) o).set(Date.ofEpochMilli(d.getTime()));
+    return o;
+  }
+
   public Object set(Object o, DateWritable d) {
     if (d == null) {
       return null;
     }
     ((DateWritable) o).set(d);
     return o;
+  }
+
+  @Deprecated
+  public Object create(java.sql.Date value) {
+    return new DateWritable(Date.ofEpochMilli(value.getTime()));
   }
 
   public Object create(Date d) {

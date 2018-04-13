@@ -22,7 +22,6 @@ package org.apache.hive.hcatalog.data;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
-import java.sql.Date;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -30,9 +29,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import org.apache.hadoop.hive.common.type.Date;
 import org.apache.hadoop.hive.common.type.HiveChar;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.common.type.HiveVarchar;
+import org.apache.hadoop.hive.common.type.Timestamp;
 import org.apache.hadoop.hive.serde2.io.DateWritable;
 import org.apache.hadoop.hive.serde2.io.HiveCharWritable;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
@@ -217,7 +218,7 @@ public abstract class ReaderWriter {
       new DateWritable((Date)val).write(out);
       return;
     case DataType.TIMESTAMP:
-      new TimestampWritable((java.sql.Timestamp)val).write(out);
+      new TimestampWritable((Timestamp)val).write(out);
       return;
     default:
       throw new IOException("Unexpected data type " + type +

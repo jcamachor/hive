@@ -18,10 +18,10 @@
 
 package org.apache.hadoop.hive.ql.io.parquet.vector;
 
+import org.apache.hadoop.hive.common.type.Timestamp;
 import org.apache.parquet.column.Dictionary;
 
 import java.io.IOException;
-import java.sql.Timestamp;
 
 /**
  * The interface to wrap the underlying Parquet dictionary and non dictionary encoded page reader.

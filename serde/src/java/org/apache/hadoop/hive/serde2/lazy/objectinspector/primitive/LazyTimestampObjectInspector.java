@@ -17,9 +17,9 @@
  */
 package org.apache.hadoop.hive.serde2.lazy.objectinspector.primitive;
 
-import java.sql.Timestamp;
 import java.util.List;
 
+import org.apache.hadoop.hive.common.type.Timestamp;
 import org.apache.hadoop.hive.serde2.io.TimestampWritable;
 import org.apache.hadoop.hive.serde2.lazy.LazyTimestamp;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.TimestampObjectInspector;

@@ -17,8 +17,7 @@
  */
 package org.apache.hadoop.hive.serde2.objectinspector.primitive;
 
-import java.sql.Timestamp;
-
+import org.apache.hadoop.hive.common.type.Timestamp;
 import org.apache.hadoop.hive.serde2.io.TimestampWritable;
 
 
@@ -26,11 +25,17 @@ public interface SettableTimestampObjectInspector extends TimestampObjectInspect
 
   Object set(Object o, byte[] bytes, int offset);
 
+  @Deprecated
+  Object set(Object o, java.sql.Timestamp t);
+
   Object set(Object o, Timestamp t);
 
   Object set(Object o, TimestampWritable t);
 
   Object create(byte[] bytes, int offset);
+
+  @Deprecated
+  Object create (java.sql.Timestamp t);
 
   Object create (Timestamp t);
 }

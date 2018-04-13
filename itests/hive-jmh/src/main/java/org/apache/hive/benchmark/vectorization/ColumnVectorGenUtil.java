@@ -156,7 +156,7 @@ public class ColumnVectorGenUtil {
     tcv.noNulls = !nulls;
     tcv.isRepeating = repeating;
 
-    Timestamp repeatingTimestamp = RandomTypeUtil.getRandTimestamp(rand);
+    Timestamp repeatingTimestamp = RandomTypeUtil.getRandTimestamp(rand).toSqlTimestamp();
 
     int nullFrequency = generateNullFrequency(rand);
 
@@ -168,7 +168,7 @@ public class ColumnVectorGenUtil {
       } else {
         tcv.isNull[i] = false;
         if (!repeating) {
-          Timestamp randomTimestamp = RandomTypeUtil.getRandTimestamp(rand);
+          Timestamp randomTimestamp = RandomTypeUtil.getRandTimestamp(rand).toSqlTimestamp();
           tcv.set(i, randomTimestamp);
           timestampValues[i] = randomTimestamp;
         } else {

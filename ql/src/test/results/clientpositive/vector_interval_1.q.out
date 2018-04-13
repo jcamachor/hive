@@ -719,7 +719,7 @@ STAGE PLANS:
                   className: VectorSelectOperator
                   native: true
                   projectedOutputColumnNums: [0, 5, 6, 7]
-                  selectExpressions: TimestampColSubtractTimestampColumn(col 0:timestamp, col 0:timestamp) -> 5:interval_day_time, TimestampScalarSubtractTimestampColumn(val 2001-01-01 01:02:03.0, col 0:timestamp) -> 6:interval_day_time, TimestampColSubtractTimestampScalar(col 0:timestamp, val 2001-01-01 01:02:03.0) -> 7:interval_day_time
+                  selectExpressions: TimestampColSubtractTimestampColumn(col 0:timestamp, col 0:timestamp) -> 5:interval_day_time, TimestampScalarSubtractTimestampColumn(val 2000-12-31 17:02:03.0, col 0:timestamp) -> 6:interval_day_time, TimestampColSubtractTimestampScalar(col 0:timestamp, val 2000-12-31 17:02:03.0) -> 7:interval_day_time
               Statistics: Num rows: 2 Data size: 442 Basic stats: COMPLETE Column stats: NONE
               Reduce Output Operator
                 key expressions: _col0 (type: timestamp)
@@ -826,7 +826,7 @@ STAGE PLANS:
                   className: VectorSelectOperator
                   native: true
                   projectedOutputColumnNums: [1, 5, 6, 7]
-                  selectExpressions: DateColSubtractDateColumn(col 1:date, col 1:date) -> 5:interval_day_time, DateScalarSubtractDateColumn(val 2001-01-01 00:00:00.0, col 1:date) -> 6:interval_day_time, DateColSubtractDateScalar(col 1:date, val 2001-01-01 00:00:00.0) -> 7:interval_day_time
+                  selectExpressions: DateColSubtractDateColumn(col 1:date, col 1:date) -> 5:interval_day_time, DateScalarSubtractDateColumn(val 2000-12-31 16:00:00.0, col 1:date) -> 6:interval_day_time, DateColSubtractDateScalar(col 1:date, val 2000-12-31 16:00:00.0) -> 7:interval_day_time
               Statistics: Num rows: 2 Data size: 442 Basic stats: COMPLETE Column stats: NONE
               Reduce Output Operator
                 key expressions: _col0 (type: date)
@@ -939,7 +939,7 @@ STAGE PLANS:
                   className: VectorSelectOperator
                   native: true
                   projectedOutputColumnNums: [1, 5, 6, 7, 8, 9, 10]
-                  selectExpressions: TimestampColSubtractDateColumn(col 0:timestamp, col 1:date) -> 5:interval_day_time, TimestampScalarSubtractDateColumn(val 2001-01-01 01:02:03.0, col 1:date) -> 6:interval_day_time, TimestampColSubtractDateScalar(col 0:timestamp, val 2001-01-01 00:00:00.0) -> 7:interval_day_time, DateColSubtractTimestampColumn(col 1:date, col 0:timestamp) -> 8:interval_day_time, DateColSubtractTimestampScalar(col 1:date, val 2001-01-01 01:02:03.0) -> 9:interval_day_time, DateScalarSubtractTimestampColumn(val 2001-01-01 00:00:00.0, col 0:timestamp) -> 10:interval_day_time
+                  selectExpressions: TimestampColSubtractDateColumn(col 0:timestamp, col 1:date) -> 5:interval_day_time, TimestampScalarSubtractDateColumn(val 2000-12-31 17:02:03.0, col 1:date) -> 6:interval_day_time, TimestampColSubtractDateScalar(col 0:timestamp, val 2000-12-31 16:00:00.0) -> 7:interval_day_time, DateColSubtractTimestampColumn(col 1:date, col 0:timestamp) -> 8:interval_day_time, DateColSubtractTimestampScalar(col 1:date, val 2000-12-31 17:02:03.0) -> 9:interval_day_time, DateScalarSubtractTimestampColumn(val 2000-12-31 16:00:00.0, col 0:timestamp) -> 10:interval_day_time
               Statistics: Num rows: 2 Data size: 442 Basic stats: COMPLETE Column stats: NONE
               Reduce Output Operator
                 key expressions: _col0 (type: date)

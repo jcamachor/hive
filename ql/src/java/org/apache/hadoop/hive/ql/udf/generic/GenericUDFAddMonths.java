@@ -23,8 +23,9 @@ import static org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveO
 import static org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils.PrimitiveGrouping.VOID_GROUP;
 
 import java.util.Calendar;
-import java.util.Date;
+import java.util.TimeZone;
 
+import org.apache.hadoop.hive.common.type.Date;
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -34,7 +35,6 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorConverters.C
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 import org.apache.hadoop.io.Text;
-import org.apache.hive.common.util.DateUtils;
 
 /**
  * GenericUDFAddMonths.
@@ -53,7 +53,7 @@ import org.apache.hive.common.util.DateUtils;
 public class GenericUDFAddMonths extends GenericUDF {
   private transient Converter[] converters = new Converter[2];
   private transient PrimitiveCategory[] inputTypes = new PrimitiveCategory[2];
-  private final Calendar calendar = Calendar.getInstance();
+  private final Calendar calendar = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
   private final Text output = new Text();
   private transient Integer numMonthsConst;
   private transient boolean isNumMonthsConst;
@@ -100,8 +100,8 @@ public class GenericUDFAddMonths extends GenericUDF {
     }
 
     addMonth(date, numMonthInt);
-    Date newDate = calendar.getTime();
-    output.set(DateUtils.getDateFormat().format(newDate));
+    Date newDate = Date.ofEpochMilli(calendar.getTimeInMillis());
+    output.set(newDate.toString());
     return output;
   }
 
@@ -116,7 +116,7 @@ public class GenericUDFAddMonths extends GenericUDF {
   }
 
   protected Calendar addMonth(Date d, int numMonths) {
-    calendar.setTime(d);
+    calendar.setTimeInMillis(d.toEpochMilli());
 
     boolean lastDatOfMonth = isLastDayOfMonth(calendar);
 

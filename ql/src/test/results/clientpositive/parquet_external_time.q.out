@@ -22,4 +22,4 @@ POSTHOOK: query: select * from timetest_parquet
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@timetest_parquet
 #### A masked pattern was here ####
-2011-01-01 00:30:30.111111111
+2011-01-01 08:30:30.111111111
