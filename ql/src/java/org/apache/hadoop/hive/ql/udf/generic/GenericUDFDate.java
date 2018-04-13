@@ -17,9 +17,8 @@
  */
 package org.apache.hadoop.hive.ql.udf.generic;
 
-import java.sql.Date;
-import java.sql.Timestamp;
-
+import org.apache.hadoop.hive.common.type.Date;
+import org.apache.hadoop.hive.common.type.Timestamp;
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentLengthException;
@@ -58,7 +57,7 @@ public class GenericUDFDate extends GenericUDF {
   private transient PrimitiveObjectInspector argumentOI;
   private transient DateParser dateParser = new DateParser();
   private transient final DateWritable output = new DateWritable();
-  private transient final Date date = new Date(0);
+  private transient final Date date = new Date();
 
   @Override
   public ObjectInspector initialize(ObjectInspector[] arguments) throws UDFArgumentException {
@@ -119,7 +118,7 @@ public class GenericUDFDate extends GenericUDF {
     case TIMESTAMP:
       Timestamp ts = ((TimestampWritable) timestampConverter.convert(arguments[0].get()))
           .getTimestamp();
-      output.set(DateWritable.millisToDays(ts.getTime()));
+      output.set(DateWritable.millisToDays(ts.toEpochMilli()));
       break;
     case TIMESTAMPLOCALTZ:
     case DATE:

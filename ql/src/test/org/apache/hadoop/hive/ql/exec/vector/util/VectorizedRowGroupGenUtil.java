@@ -86,7 +86,7 @@ public class VectorizedRowGroupGenUtil {
     tcv.noNulls = !nulls;
     tcv.isRepeating = repeating;
 
-    Timestamp repeatingTimestamp = RandomTypeUtil.getRandTimestamp(rand);
+    Timestamp repeatingTimestamp = RandomTypeUtil.getRandTimestamp(rand).toSqlTimestamp();
 
     int nullFrequency = generateNullFrequency(rand);
 
@@ -98,7 +98,7 @@ public class VectorizedRowGroupGenUtil {
       }else {
         tcv.isNull[i] = false;
         if (!repeating) {
-          Timestamp randomTimestamp = RandomTypeUtil.getRandTimestamp(rand);
+          Timestamp randomTimestamp = RandomTypeUtil.getRandTimestamp(rand).toSqlTimestamp();
           tcv.set(i,  randomTimestamp);
           timestampValues[i] = randomTimestamp;
         } else {

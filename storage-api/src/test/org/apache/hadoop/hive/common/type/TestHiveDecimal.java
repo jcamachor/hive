@@ -17,9 +17,10 @@
  */
 package org.apache.hadoop.hive.common.type;
 
-import java.sql.Timestamp;
-import java.util.Random;
-import java.util.Arrays;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
@@ -27,15 +28,15 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.util.Arrays;
+import java.util.Random;
 
-import org.apache.hadoop.hive.serde2.io.HiveDecimalWritableV1;
-import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.StringExpr;
 import org.apache.hadoop.hive.ql.util.TimestampUtils;
-
-import org.junit.*;
-
-import static org.junit.Assert.*;
+import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
+import org.apache.hadoop.hive.serde2.io.HiveDecimalWritableV1;
+import org.junit.Assert;
+import org.junit.Test;
 
 public class TestHiveDecimal extends HiveDecimalTestBase {
 

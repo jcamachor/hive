@@ -183,7 +183,7 @@ public class DynamicValueVectorExpression extends VectorExpression {
       case DATE:
         longValue = DateWritable.dateToDays(PrimitiveObjectInspectorUtils.getDate(val, poi));
       case TIMESTAMP:
-        timestampValue = PrimitiveObjectInspectorUtils.getTimestamp(val, poi);
+        timestampValue = PrimitiveObjectInspectorUtils.getTimestamp(val, poi).toSqlTimestamp();
         break;
       case INTERVAL_YEAR_MONTH:
         longValue = PrimitiveObjectInspectorUtils.getHiveIntervalYearMonth(val, poi).getTotalMonths();

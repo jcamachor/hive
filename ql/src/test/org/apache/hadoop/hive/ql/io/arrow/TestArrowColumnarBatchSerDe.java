@@ -26,6 +26,7 @@ import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.common.type.HiveIntervalDayTime;
 import org.apache.hadoop.hive.common.type.HiveIntervalYearMonth;
 import org.apache.hadoop.hive.common.type.HiveVarchar;
+import org.apache.hadoop.hive.common.type.Timestamp;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.AbstractSerDe;
 import org.apache.hadoop.hive.serde2.SerDeException;
@@ -58,7 +59,6 @@ import org.apache.hadoop.io.Writable;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.sql.Timestamp;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -109,7 +109,7 @@ public class TestArrowColumnarBatchSerDe {
   private final static Object[][] DTI_ROWS = {
       {
           new DateWritable(DateWritable.millisToDays(NOW)),
-          new TimestampWritable(new Timestamp(NOW)),
+          new TimestampWritable(Timestamp.ofEpochMilli(NOW)),
           new HiveIntervalYearMonthWritable(new HiveIntervalYearMonth(1, 2)),
           new HiveIntervalDayTimeWritable(new HiveIntervalDayTime(1, 2, 3, 4, 5_000_000))
       },
@@ -341,7 +341,7 @@ public class TestArrowColumnarBatchSerDe {
                         newArrayList(text("hello")),
                         input -> text(input.toString().toUpperCase())),
                     intW(0))), // c16:array<struct<m:map<string,string>,n:int>>
-            new TimestampWritable(new Timestamp(NOW)), // c17:timestamp
+            new TimestampWritable(Timestamp.ofEpochMilli(NOW)), // c17:timestamp
             decimalW(HiveDecimal.create(0, 0)), // c18:decimal(16,7)
             new BytesWritable("Hello".getBytes()), // c19:binary
             new DateWritable(123), // c20:date
@@ -651,7 +651,7 @@ public class TestArrowColumnarBatchSerDe {
 
     StandardUnionObjectInspector.StandardUnion[][] dtiUnions = {
         {union(0, new DateWritable(DateWritable.millisToDays(NOW)))},
-        {union(1, new TimestampWritable(new Timestamp(NOW)))},
+        {union(1, new TimestampWritable(Timestamp.ofEpochMilli(NOW)))},
         {union(2, new HiveIntervalYearMonthWritable(new HiveIntervalYearMonth(1, 2)))},
         {union(3, new HiveIntervalDayTimeWritable(new HiveIntervalDayTime(1, 2, 3, 4, 5_000_000)))},
     };

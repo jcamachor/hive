@@ -47,7 +47,7 @@ public class CastDecimalToTimestamp extends FuncDecimalToTimestamp {
   @Override
   protected void func(TimestampColumnVector outV, DecimalColumnVector inV,  int i) {
     Timestamp timestamp =
-        TimestampUtils.decimalToTimestamp(
+        TimestampUtils.decimalToSqlTimestamp(
             inV.vector[i],
             scratchHiveDecimalWritable1, scratchHiveDecimalWritable2);
     outV.set(i, timestamp);

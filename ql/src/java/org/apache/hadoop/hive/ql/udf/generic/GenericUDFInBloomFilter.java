@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.udf.generic;
 
 import org.apache.hadoop.hive.common.io.NonSyncByteArrayInputStream;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
+import org.apache.hadoop.hive.common.type.Timestamp;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentLengthException;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentTypeException;
@@ -37,10 +38,8 @@ import org.apache.hadoop.io.IOUtils;
 import org.apache.hadoop.io.Text;
 import org.apache.hive.common.util.BloomKFilter;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.sql.Timestamp;
 
 /**
  * GenericUDF to lookup a value in BloomFilter
@@ -153,7 +152,7 @@ public class GenericUDFInBloomFilter extends GenericUDF {
       case TIMESTAMP:
         Timestamp vTimeStamp = ((TimestampObjectInspector) valObjectInspector).
                 getPrimitiveJavaObject(arguments[0].get());
-        return bloomFilter.testLong(vTimeStamp.getTime());
+        return bloomFilter.testLong(vTimeStamp.toEpochMilli());
       case CHAR:
         Text vChar = ((HiveCharObjectInspector) valObjectInspector).
                 getPrimitiveWritableObject(arguments[0].get()).getStrippedValue();

@@ -29,6 +29,7 @@ import io.druid.query.metadata.metadata.SegmentMetadataQuery;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.type.HiveChar;
 import org.apache.hadoop.hive.common.type.HiveVarchar;
+import org.apache.hadoop.hive.common.type.Timestamp;
 import org.apache.hadoop.hive.common.type.TimestampTZ;
 import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -83,7 +84,6 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.sql.Timestamp;
 import java.time.Instant;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
@@ -319,8 +319,7 @@ public class DruidSerDe extends AbstractSerDe {
       switch (types[i].getPrimitiveCategory()) {
         case TIMESTAMP:
         res = ((TimestampObjectInspector) fields.get(i).getFieldObjectInspector())
-            .getPrimitiveJavaObject(
-                values.get(i)).getTime();
+            .getPrimitiveJavaObject(values.get(i)).toEpochMilli();
           break;
         case TIMESTAMPLOCALTZ:
           res = ((TimestampLocalTZObjectInspector) fields.get(i).getFieldObjectInspector())
@@ -374,7 +373,7 @@ public class DruidSerDe extends AbstractSerDe {
         .equals(Constants.DRUID_TIMESTAMP_GRANULARITY_COL_NAME));
     value.put(Constants.DRUID_TIMESTAMP_GRANULARITY_COL_NAME,
             ((TimestampObjectInspector) fields.get(granularityFieldIndex).getFieldObjectInspector())
-                    .getPrimitiveJavaObject(values.get(granularityFieldIndex)).getTime()
+                    .getPrimitiveJavaObject(values.get(granularityFieldIndex)).toEpochMilli()
     );
     if (values.size() == columns.length + 2) {
       // Then partition number if any.

@@ -1609,7 +1609,7 @@ public class GenVectorCode extends Task {
       defaultValue = "new Timestamp(0)";
       vectorType = "Timestamp";
       getPrimitiveMethod = "getTimestamp";
-      getValueMethod = "";
+      getValueMethod = ".toSqlTimestamp()";
       conversionMethod = "";
     } else {
       throw new IllegalArgumentException("Type " + operandType + " not supported");

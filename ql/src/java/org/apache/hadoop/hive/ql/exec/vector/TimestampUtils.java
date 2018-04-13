@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.exec.vector;
 
 import java.util.concurrent.TimeUnit;
 
+import org.apache.hadoop.hive.common.type.Timestamp;
 import org.apache.hadoop.hive.serde2.io.DateWritable;
 import org.apache.hadoop.hive.serde2.io.HiveIntervalDayTimeWritable;
 import org.apache.hadoop.hive.serde2.io.TimestampWritable;
@@ -36,7 +37,13 @@ public final class TimestampUtils {
   public static TimestampWritable timestampColumnVectorWritable(
       TimestampColumnVector timestampColVector, int elementNum,
       TimestampWritable timestampWritable) {
-    timestampWritable.set(timestampColVector.asScratchTimestamp(elementNum));
+    java.sql.Timestamp ts = timestampColVector.asScratchTimestamp(elementNum);
+    if (ts == null) {
+      timestampWritable.set((Timestamp) null);
+      return timestampWritable;
+    }
+    Timestamp newTS = Timestamp.ofEpochMilli(ts.getTime(), ts.getNanos());
+    timestampWritable.set(newTS);
     return timestampWritable;
   }
 

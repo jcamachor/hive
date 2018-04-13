@@ -44,7 +44,7 @@ public class CastDoubleToTimestamp extends VectorExpression {
   private void setDouble(TimestampColumnVector timestampColVector,
       double[] vector, int elementNum) {
     timestampColVector.set(elementNum,
-        TimestampUtils.doubleToTimestamp(vector[elementNum]));
+        TimestampUtils.doubleToSqlTimestamp(vector[elementNum]));
   }
 
   @Override

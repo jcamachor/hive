@@ -160,6 +160,7 @@ public final class OrcFileMetadata implements FileMetadata, ConsumerFileMetadata
     return stripes.size();
   }
 
+  @Override
   public TypeDescription getSchema() throws FileFormatException {
     return OrcUtils.convertTypeFromProtobuf(this.types, 0);
   }

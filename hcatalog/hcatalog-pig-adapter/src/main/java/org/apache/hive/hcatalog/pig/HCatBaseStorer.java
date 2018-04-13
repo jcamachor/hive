@@ -419,7 +419,7 @@ abstract class HCatBaseStorer extends StoreFunc implements StoreMetadata {
         return new HiveVarchar(varcharVal, vti.getLength());
       case TIMESTAMP:
         DateTime dt = (DateTime)pigObj;
-        return new Timestamp(dt.getMillis());//getMillis() returns UTC time regardless of TZ
+        return new Timestamp(dt.getMillis());//toEpochMilli() returns UTC time regardless of TZ
       case DATE:
         /**
          * We ignore any TZ setting on Pig value since java.sql.Date doesn't have it (in any

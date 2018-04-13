@@ -32,6 +32,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.NavigableMap;
+import java.util.TimeZone;
 import java.util.TreeMap;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CompletionService;
@@ -2155,7 +2156,12 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
     // eliminate stripes that doesn't satisfy the predicate condition
     List<PredicateLeaf> sargLeaves = sarg.getLeaves();
     int[] filterColumns = RecordReaderImpl.mapTranslatedSargColumns(types, sargLeaves);
-    TypeDescription schema = OrcUtils.convertTypeFromProtobuf(types, 0);
+    TypeDescription schema = null;
+    try {
+      schema = OrcUtils.convertTypeFromProtobuf(types, 0);
+    } catch (FileFormatException e) {
+      e.printStackTrace();
+    }
     SchemaEvolution evolution = new SchemaEvolution(schema, null);
     return pickStripesInternal(sarg, filterColumns, stripeStats, stripeCount, null, evolution);
   }

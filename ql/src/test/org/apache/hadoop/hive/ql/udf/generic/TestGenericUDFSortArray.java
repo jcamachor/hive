@@ -18,12 +18,12 @@
 
 package org.apache.hadoop.hive.ql.udf.generic;
 
-import java.sql.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import static java.util.Arrays.asList;
 
+import org.apache.hadoop.hive.common.type.Date;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.serde2.io.DateWritable;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
@@ -93,22 +93,22 @@ public class TestGenericUDFSortArray {
     udf.initialize(inputOIs);
 
     Object i1 = asList(new Text("a"), new DoubleWritable(3.1415),
-        new DateWritable(new Date(2015, 5, 26)),
+        new DateWritable(Date.of(2015, 5, 26)),
         asList(new IntWritable(1), new IntWritable(3),
             new IntWritable(2), new IntWritable(4)));
 
     Object i2 = asList(new Text("b"), new DoubleWritable(3.14),
-        new DateWritable(new Date(2015, 5, 26)),
+        new DateWritable(Date.of(2015, 5, 26)),
         asList(new IntWritable(1), new IntWritable(3),
             new IntWritable(2), new IntWritable(4)));
 
     Object i3 = asList(new Text("a"), new DoubleWritable(3.1415),
-        new DateWritable(new Date(2015, 5, 25)),
+        new DateWritable(Date.of(2015, 5, 25)),
         asList(new IntWritable(1), new IntWritable(3),
             new IntWritable(2), new IntWritable(5)));
 
     Object i4 = asList(new Text("a"), new DoubleWritable(3.1415),
-        new DateWritable(new Date(2015, 5, 25)),
+        new DateWritable(Date.of(2015, 5, 25)),
         asList(new IntWritable(1), new IntWritable(3),
             new IntWritable(2), new IntWritable(4)));
 

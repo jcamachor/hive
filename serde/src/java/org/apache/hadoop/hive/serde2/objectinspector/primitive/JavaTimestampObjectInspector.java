@@ -17,8 +17,7 @@
  */
 package org.apache.hadoop.hive.serde2.objectinspector.primitive;
 
-import java.sql.Timestamp;
-
+import org.apache.hadoop.hive.common.type.Timestamp;
 import org.apache.hadoop.hive.serde2.io.TimestampWritable;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 
@@ -45,20 +44,27 @@ public class JavaTimestampObjectInspector
       return null;
     }
     Timestamp source = (Timestamp) o;
-    Timestamp copy = new Timestamp(source.getTime());
-    copy.setNanos(source.getNanos());
-    return copy;
+    return new Timestamp(source.getLocalDateTime());
   }
 
   public Timestamp get(Object o) {
     return (Timestamp) o;
   }
 
+  @Deprecated
+  public Object set(Object o, java.sql.Timestamp value) {
+    if (value == null) {
+      return null;
+    }
+    ((Timestamp) o).setTimeInMillis(value.getTime(), value.getNanos());
+    return o;
+  }
+
   public Object set(Object o, Timestamp value) {
     if (value == null) {
       return null;
     }
-    ((Timestamp) o).setTime(value.getTime());
+    ((Timestamp) o).setLocalDateTime(value.getLocalDateTime());
     return o;
   }
 
@@ -72,13 +78,17 @@ public class JavaTimestampObjectInspector
       return null;
     }
     Timestamp t = (Timestamp) o;
-    t.setTime(tw.getTimestamp().getTime());
-    t.setNanos(tw.getTimestamp().getNanos());
+    t.setLocalDateTime(tw.getTimestamp().getLocalDateTime());
     return t;
   }
 
+  @Deprecated
+  public Object create(java.sql.Timestamp value) {
+    return Timestamp.ofEpochMilli(value.getTime(), value.getNanos());
+  }
+
   public Object create(Timestamp value) {
-    return new Timestamp(value.getTime());
+    return new Timestamp(value.getLocalDateTime());
   }
 
   public Object create(byte[] bytes, int offset) {
