@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.io.orc;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.TimeZone;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
@@ -175,7 +176,7 @@ public class VectorizedOrcInputFormat extends FileInputFormat<NullWritable, Vect
 
     Path path = fSplit.getPath();
 
-    OrcFile.ReaderOptions opts = OrcFile.readerOptions(conf);
+    OrcFile.ReaderOptions opts = OrcFile.readerOptions(conf).timeZone(TimeZone.getTimeZone("UTC"));
     if(fSplit instanceof OrcSplit){
       OrcSplit orcSplit = (OrcSplit) fSplit;
       if (orcSplit.hasFooter()) {
@@ -197,7 +198,7 @@ public class VectorizedOrcInputFormat extends FileInputFormat<NullWritable, Vect
     for (FileStatus file : files) {
       try {
         OrcFile.createReader(file.getPath(),
-            OrcFile.readerOptions(conf).filesystem(fs));
+            OrcFile.readerOptions(conf).filesystem(fs).timeZone(TimeZone.getTimeZone("UTC")));
       } catch (IOException e) {
         return false;
       }

@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.TimeZone;
 import java.util.concurrent.Callable;
 
 import org.apache.hadoop.hive.common.io.encoded.EncodedColumnBatch;
@@ -209,6 +210,7 @@ public class OrcEncodedDataConsumer
       ConsumerStripeMetadata stripeMetadata, TypeDescription fileSchema) throws IOException {
     TreeReaderFactory.Context context = new TreeReaderFactory.ReaderContext()
             .setSchemaEvolution(evolution).skipCorrupt(skipCorrupt)
+            .readerTimeZone(TimeZone.getTimeZone("UTC").getID())
             .writerTimeZone(stripeMetadata.getWriterTimezone());
     this.batchSchemas = includes.getBatchReaderTypes(fileSchema);
     StructTreeReader treeReader = EncodedTreeReaderFactory.createRootTreeReader(

@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
+import java.util.TimeZone;
 
 import org.apache.orc.CompressionKind;
 import org.apache.orc.TypeDescription;
@@ -123,7 +124,8 @@ public class OrcOutputFormat extends FileOutputFormat<NullWritable, OrcSerdeRow>
   }
 
   private OrcFile.WriterOptions getOptions(JobConf conf, Properties props) {
-    OrcFile.WriterOptions result = OrcFile.writerOptions(props, conf);
+    OrcFile.WriterOptions result = OrcFile.writerOptions(props, conf)
+        .timeZone(TimeZone.getTimeZone("UTC"));
     if (props != null) {
       final String columnNameProperty =
           props.getProperty(IOConstants.COLUMNS);
@@ -279,7 +281,8 @@ public class OrcOutputFormat extends FileOutputFormat<NullWritable, OrcSerdeRow>
         getRawRecordWriter(Path path, Options options) throws IOException {
     final Path filename = AcidUtils.createFilename(path, options);
     final OrcFile.WriterOptions opts =
-        OrcFile.writerOptions(options.getTableProperties(), options.getConfiguration());
+        OrcFile.writerOptions(options.getTableProperties(), options.getConfiguration())
+            .timeZone(TimeZone.getTimeZone("UTC"));
     if (!options.isWritingBase()) {
       opts.bufferSize(OrcRecordUpdater.DELTA_BUFFER_SIZE)
           .stripeSize(OrcRecordUpdater.DELTA_STRIPE_SIZE)

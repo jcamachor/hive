@@ -33,6 +33,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.NavigableMap;
+import java.util.TimeZone;
 import java.util.TreeMap;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CompletionService;
@@ -115,6 +116,7 @@ import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.util.StringUtils;
 import org.apache.hive.common.util.Ref;
 import org.apache.orc.ColumnStatistics;
+import org.apache.orc.FileFormatException;
 import org.apache.orc.OrcProto;
 import org.apache.orc.OrcProto.Footer;
 import org.apache.orc.OrcUtils;
@@ -561,7 +563,7 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
       }
       try {
         OrcFile.createReader(file.getPath(),
-            OrcFile.readerOptions(conf).filesystem(fs).maxLength(file.getLen()));
+            OrcFile.readerOptions(conf).filesystem(fs).maxLength(file.getLen()).timeZone(TimeZone.getTimeZone("UTC")));
       } catch (IOException e) {
         return false;
       }
@@ -1618,7 +1620,8 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
         Reader orcReader = OrcFile.createReader(file.getPath(),
             OrcFile.readerOptions(context.conf)
                 .filesystem(fs)
-                .maxLength(AcidUtils.getLogicalLength(fs, file)));
+                .maxLength(AcidUtils.getLogicalLength(fs, file))
+                .timeZone(TimeZone.getTimeZone("UTC")));
         orcTail = new OrcTail(orcReader.getFileTail(), orcReader.getSerializedFileFooter(),
             file.getModificationTime());
         if (context.cacheStripeDetails) {
@@ -1934,7 +1937,7 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
       if (vectorMode) {
         return createVectorizedReader(inputSplit, conf, reporter);
       } else {
-        OrcFile.ReaderOptions readerOptions = OrcFile.readerOptions(conf);
+        OrcFile.ReaderOptions readerOptions = OrcFile.readerOptions(conf).timeZone(TimeZone.getTimeZone("UTC"));
         if (inputSplit instanceof OrcSplit) {
           OrcSplit split = (OrcSplit) inputSplit;
           readerOptions.maxLength(split.getFileLength()).orcTail(split.getOrcTail());
@@ -2131,6 +2134,7 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
     Reader reader;
     if (orcSplit.hasBase()) {
       OrcFile.ReaderOptions readerOptions = OrcFile.readerOptions(conf);
+      readerOptions.timeZone(TimeZone.getTimeZone("UTC"));
       readerOptions.maxLength(orcSplit.getFileLength());
       if (orcSplit.hasFooter()) {
         readerOptions.orcTail(orcSplit.getOrcTail());
@@ -2153,7 +2157,12 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
     // eliminate stripes that doesn't satisfy the predicate condition
     List<PredicateLeaf> sargLeaves = sarg.getLeaves();
     int[] filterColumns = RecordReaderImpl.mapTranslatedSargColumns(types, sargLeaves);
-    TypeDescription schema = OrcUtils.convertTypeFromProtobuf(types, 0);
+    TypeDescription schema = null;
+    try {
+      schema = OrcUtils.convertTypeFromProtobuf(types, 0);
+    } catch (FileFormatException e) {
+      e.printStackTrace();
+    }
     SchemaEvolution evolution = new SchemaEvolution(schema, null);
     return pickStripesInternal(sarg, filterColumns, stripeStats, stripeCount, null, evolution);
   }

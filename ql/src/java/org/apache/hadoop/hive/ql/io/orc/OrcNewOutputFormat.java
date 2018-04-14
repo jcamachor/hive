@@ -19,6 +19,7 @@ package org.apache.hadoop.hive.ql.io.orc;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.TimeZone;
 
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.ql.io.orc.OrcSerde.OrcSerdeRow;
@@ -72,8 +73,8 @@ public class OrcNewOutputFormat extends
   public RecordWriter getRecordWriter(TaskAttemptContext context)
       throws IOException, InterruptedException {
     Path file = getDefaultWorkFile(context, "");
-    return new
-        OrcRecordWriter(file, OrcFile.writerOptions(
-            ShimLoader.getHadoopShims().getConfiguration(context)));
+    return new OrcRecordWriter(file,
+        OrcFile.writerOptions(ShimLoader.getHadoopShims().getConfiguration(context))
+            .timeZone(TimeZone.getTimeZone("UTC")));
   }
 }

@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.io.orc;
 
 import java.io.IOException;
 import java.util.Properties;
+import java.util.TimeZone;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
@@ -77,6 +78,11 @@ public final class OrcFile extends org.apache.orc.OrcFile {
 
     public ReaderOptions orcTail(OrcTail orcTail) {
       super.orcTail(orcTail);
+      return this;
+    }
+
+    public ReaderOptions timeZone(TimeZone timeZone) {
+      super.timeZone(timeZone);
       return this;
     }
   }
@@ -270,6 +276,11 @@ public final class OrcFile extends org.apache.orc.OrcFile {
 
     public WriterOptions physicalWriter(PhysicalWriter writer) {
       super.physicalWriter(writer);
+      return this;
+    }
+
+    public WriterOptions timeZone(TimeZone timeZone) {
+      super.timeZone(timeZone);
       return this;
     }
 
