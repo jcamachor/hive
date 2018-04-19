@@ -19,15 +19,17 @@
 package org.apache.hadoop.hive.ql.exec.vector;
 
 import junit.framework.TestCase;
+import org.apache.hadoop.hive.common.type.Date;
 import org.apache.hadoop.hive.common.type.HiveChar;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.common.type.HiveIntervalDayTime;
 import org.apache.hadoop.hive.common.type.HiveIntervalYearMonth;
 import org.apache.hadoop.hive.common.type.HiveVarchar;
+import org.apache.hadoop.hive.common.type.Timestamp;
 import org.apache.hadoop.hive.serde2.fast.DeserializeRead;
 import org.apache.hadoop.hive.serde2.fast.SerializeWrite;
 import org.apache.hadoop.hive.serde2.io.ByteWritable;
-import org.apache.hadoop.hive.serde2.io.DateWritable;
+import org.apache.hadoop.hive.serde2.io.DateWritableV2;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.hive.serde2.io.HiveCharWritable;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
@@ -56,8 +58,6 @@ import org.apache.hadoop.io.Text;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.sql.Date;
-import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -240,7 +240,7 @@ public class VectorVerifyFast {
       case DATE:
       {
         Date value = deserializeRead.currentDateWritable.get();
-        Date expected = ((DateWritable) object).get();
+        Date expected = ((DateWritableV2) object).get();
         if (!value.equals(expected)) {
           TestCase.fail("Date field mismatch (expected " + expected.toString() + " found " + value.toString() + ")");
         }
@@ -390,7 +390,7 @@ public class VectorVerifyFast {
       break;
       case DATE:
       {
-        Date value = ((DateWritable) object).get();
+        Date value = ((DateWritableV2) object).get();
         serializeWrite.writeDate(value);
       }
       break;
@@ -567,7 +567,7 @@ public class VectorVerifyFast {
     case DECIMAL:
       return new HiveDecimalWritable(deserializeRead.currentHiveDecimalWritable);
     case DATE:
-      return new DateWritable(deserializeRead.currentDateWritable);
+      return new DateWritableV2(deserializeRead.currentDateWritable);
     case TIMESTAMP:
       return new TimestampWritable(deserializeRead.currentTimestampWritable);
     case INTERVAL_YEAR_MONTH:

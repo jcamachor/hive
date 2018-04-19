@@ -103,7 +103,7 @@ group by c1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
-2012-01-01 01:02:03	10
+2012-01-01 09:02:03	10
 test.comment=Queries using non-deterministic functions should not use results cache
 PREHOOK: query: explain
 select c1, count(*)
@@ -121,6 +121,7 @@ STAGE DEPENDENCIES:
 
 STAGE PLANS:
   Stage: Stage-1
+<<<<<<< HEAD:ql/src/test/results/clientpositive/llap/results_cache_2.q.out
     Tez
 #### A masked pattern was here ####
       Edges:
@@ -171,6 +172,48 @@ STAGE PLANS:
                         input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                         serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+=======
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: src
+            Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: (UDFToDouble(key) < 10.0D) (type: boolean)
+              Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
+              Select Operator
+                Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
+                Group By Operator
+                  aggregations: count()
+                  keys: TIMESTAMP'2012-01-01 09:02:03.0' (type: timestamp)
+                  mode: hash
+                  outputColumnNames: _col0, _col1
+                  Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
+                  Reduce Output Operator
+                    key expressions: _col0 (type: timestamp)
+                    sort order: +
+                    Map-reduce partition columns: _col0 (type: timestamp)
+                    Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
+                    value expressions: _col1 (type: bigint)
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations: count(VALUE._col0)
+          keys: KEY._col0 (type: timestamp)
+          mode: mergepartial
+          outputColumnNames: _col0, _col1
+          Statistics: Num rows: 83 Data size: 881 Basic stats: COMPLETE Column stats: NONE
+          Select Operator
+            expressions: TIMESTAMP'2012-01-01 09:02:03.0' (type: timestamp), _col1 (type: bigint)
+            outputColumnNames: _col0, _col1
+            Statistics: Num rows: 83 Data size: 881 Basic stats: COMPLETE Column stats: NONE
+            File Output Operator
+              compressed: false
+              Statistics: Num rows: 83 Data size: 881 Basic stats: COMPLETE Column stats: NONE
+              table:
+                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+>>>>>>> rest of work:ql/src/test/results/clientpositive/results_cache_2.q.out
 
   Stage: Stage-0
     Fetch Operator

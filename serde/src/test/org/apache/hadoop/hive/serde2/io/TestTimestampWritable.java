@@ -26,7 +26,6 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.math.BigDecimal;
-import java.sql.Timestamp;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -40,6 +39,7 @@ import org.junit.*;
 import static org.junit.Assert.*;
 
 import org.apache.hadoop.hive.common.type.HiveDecimal;
+import org.apache.hadoop.hive.common.type.Timestamp;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.io.WritableUtils;
 
@@ -68,10 +68,10 @@ public class TestTimestampWritable {
   private static long getSeconds(Timestamp ts) {
     // To compute seconds, we first subtract the milliseconds stored in the nanos field of the
     // Timestamp from the result of getTime().
-    long seconds = (ts.getTime() - ts.getNanos() / 1000000) / 1000;
+    long seconds = (ts.toEpochMilli() - ts.getNanos() / 1000000) / 1000;
 
     // It should also be possible to calculate this based on ts.getTime() only.
-    assertEquals(seconds, TimestampUtils.millisToSeconds(ts.getTime()));
+    assertEquals(seconds, TimestampUtils.millisToSeconds(ts.toEpochMilli()));
 
     return seconds;
   }
@@ -181,9 +181,9 @@ public class TestTimestampWritable {
     fromBinSort.setBinarySortable(binarySortableBytes, binarySortableOffset);
     assertTSWEquals(tsw, fromBinSort);
 
-    long timeSeconds = ts.getTime() / 1000;
+    long timeSeconds = ts.toEpochSecond();
     if (0 <= timeSeconds && timeSeconds <= Integer.MAX_VALUE) {
-      assertEquals(new Timestamp(timeSeconds * 1000),
+      assertEquals(Timestamp.ofEpochSecond(timeSeconds),
         fromIntAndVInts((int) timeSeconds, 0).getTimestamp());
 
       int nanos = reverseNanos(ts.getNanos());
@@ -288,7 +288,7 @@ public class TestTimestampWritable {
     Random rand = new Random(294722773L);
     for (int i = 0; i < 10000; ++i) {
       long millis = ((long) rand.nextInt(Integer.MAX_VALUE)) * 1000;
-      checkTimestampWithAndWithoutNanos(new Timestamp(millis), randomNanos(rand));
+      checkTimestampWithAndWithoutNanos(Timestamp.ofEpochMilli(millis), randomNanos(rand));
     }
   }
 
@@ -306,7 +306,7 @@ public class TestTimestampWritable {
     Random rand = new Random(789149717L);
     for (int i = 0; i < 10000; ++i) {
       long millis = randomMillis(MIN_FOUR_DIGIT_YEAR_MILLIS, MAX_FOUR_DIGIT_YEAR_MILLIS, rand);
-      checkTimestampWithAndWithoutNanos(new Timestamp(millis), randomNanos(rand));
+      checkTimestampWithAndWithoutNanos(Timestamp.ofEpochMilli(millis), randomNanos(rand));
     }
   }
 
@@ -315,7 +315,7 @@ public class TestTimestampWritable {
   public void testTimestampsInFullRange() throws IOException {
     Random rand = new Random(2904974913L);
     for (int i = 0; i < 10000; ++i) {
-      checkTimestampWithAndWithoutNanos(new Timestamp(rand.nextLong()), randomNanos(rand));
+      checkTimestampWithAndWithoutNanos(Timestamp.ofEpochMilli(rand.nextLong()), randomNanos(rand));
     }
   }
 
@@ -326,9 +326,8 @@ public class TestTimestampWritable {
     for (int nanosPrecision = 0; nanosPrecision <= 4; ++nanosPrecision) {
       for (int i = 0; i < 10000; ++i) {
         long millis = randomMillis(MIN_FOUR_DIGIT_YEAR_MILLIS, MAX_FOUR_DIGIT_YEAR_MILLIS, rand);
-        Timestamp ts = new Timestamp(millis);
         int nanos = randomNanos(rand, nanosPrecision);
-        ts.setNanos(nanos);
+        Timestamp ts = Timestamp.ofEpochMilli(millis, nanos);
         TimestampWritable tsw = new TimestampWritable(ts);
         double asDouble = tsw.getDouble();
         int recoveredNanos =
@@ -356,7 +355,7 @@ public class TestTimestampWritable {
   public void testDecimalToTimestampRandomly() {
     Random rand = new Random(294729777L);
     for (int i = 0; i < 10000; ++i) {
-      Timestamp ts = new Timestamp(
+      Timestamp ts = Timestamp.ofEpochMilli(
           randomMillis(MIN_FOUR_DIGIT_YEAR_MILLIS, MAX_FOUR_DIGIT_YEAR_MILLIS, rand));
       ts.setNanos(randomNanos(rand, 9));  // full precision
       assertEquals(ts, TimestampUtils.decimalToTimestamp(timestampToDecimal(ts)));
@@ -367,8 +366,8 @@ public class TestTimestampWritable {
   @Concurrent(count=4)
   @Repeating(repetition=100)
   public void testDecimalToTimestampCornerCases() {
-    Timestamp ts = new Timestamp(parseToMillis("1969-03-04 05:44:33"));
-    assertEquals(0, ts.getTime() % 1000);
+    Timestamp ts = Timestamp.ofEpochMilli(parseToMillis("1969-03-04 05:44:33"));
+    assertEquals(0, ts.toEpochMilli() % 1000);
     for (int nanos : new int[] { 100000, 900000, 999100000, 999900000 }) {
       ts.setNanos(nanos);
       HiveDecimal d = timestampToDecimal(ts);
@@ -473,8 +472,7 @@ public class TestTimestampWritable {
     Random rand = new Random(5972977L);
     List<TimestampWritable> tswList = new ArrayList<TimestampWritable>();
     for (int i = 0; i < 50; ++i) {
-      Timestamp ts = new Timestamp(rand.nextLong());
-      ts.setNanos(randomNanos(rand));
+      Timestamp ts = Timestamp.ofEpochMilli(rand.nextLong(), randomNanos(rand));
       tswList.add(new TimestampWritable(ts));
     }
     for (TimestampWritable tsw1 : tswList) {
@@ -509,10 +507,10 @@ public class TestTimestampWritable {
   }
 
   private static void verifySetTimestamp(long time) {
-    Timestamp t1 = new Timestamp(time);
+    Timestamp t1 = Timestamp.ofEpochMilli(time);
     TimestampWritable writable = new TimestampWritable(t1);
     byte[] bytes = writable.getBytes();
-    Timestamp t2 = new Timestamp(0);
+    Timestamp t2 = new Timestamp();
     TimestampWritable.setTimestamp(t2, bytes, 0);
     assertEquals(t1, t2);
   }

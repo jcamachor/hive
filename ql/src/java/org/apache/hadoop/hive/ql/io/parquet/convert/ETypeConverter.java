@@ -14,15 +14,15 @@
 package org.apache.hadoop.hive.ql.io.parquet.convert;
 
 import java.math.BigDecimal;
-import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Map;
 
+import org.apache.hadoop.hive.common.type.Timestamp;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.io.parquet.timestamp.NanoTime;
 import org.apache.hadoop.hive.ql.io.parquet.timestamp.NanoTimeUtils;
 import org.apache.hadoop.hive.serde.serdeConstants;
-import org.apache.hadoop.hive.serde2.io.DateWritable;
+import org.apache.hadoop.hive.serde2.io.DateWritableV2;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 import org.apache.hadoop.hive.serde2.io.TimestampWritable;
@@ -449,13 +449,13 @@ public enum ETypeConverter {
       };
     }
   },
-  EDATE_CONVERTER(DateWritable.class) {
+  EDATE_CONVERTER(DateWritableV2.class) {
     @Override
     PrimitiveConverter getConverter(final PrimitiveType type, final int index, final ConverterParent parent, TypeInfo hiveTypeInfo) {
       return new PrimitiveConverter() {
         @Override
         public void addInt(final int value) {
-          parent.set(index, new DateWritable(value));
+          parent.set(index, new DateWritableV2(value));
         }
       };
     }

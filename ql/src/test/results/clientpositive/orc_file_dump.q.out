@@ -102,34 +102,34 @@ Type: struct<t:tinyint,si:smallint,i:int,b:bigint,f:float,d:double,bo:boolean,s:
 Stripe Statistics:
   Stripe 1:
     Column 0: count: 1049 hasNull: false
-    Column 1: count: 1046 hasNull: true min: -3 max: 124 sum: 62430
-    Column 2: count: 1046 hasNull: true min: 256 max: 511 sum: 398889
-    Column 3: count: 1049 hasNull: false min: 65536 max: 65791 sum: 68881051
-    Column 4: count: 1049 hasNull: false min: 4294967296 max: 4294967551 sum: 4505420825953
-    Column 5: count: 1049 hasNull: false min: 0.07999999821186066 max: 99.91999816894531 sum: 52744.70002820343
-    Column 6: count: 1049 hasNull: false min: 0.02 max: 49.85 sum: 26286.349999999977
-    Column 7: count: 1049 hasNull: false true: 526
-    Column 8: count: 1049 hasNull: false min:  max: zach zipper sum: 13443
-    Column 9: count: 1049 hasNull: false min: 2013-03-01 09:11:58.703 max: 2013-03-01 09:11:58.703
-    Column 10: count: 1049 hasNull: false min: 0.08 max: 99.94 sum: 53646.16
-    Column 11: count: 1049 hasNull: false sum: 13278
+    Column 1: count: 1046 hasNull: true bytesOnDisk: 979 min: -3 max: 124 sum: 62430
+    Column 2: count: 1046 hasNull: true bytesOnDisk: 1458 min: 256 max: 511 sum: 398889
+    Column 3: count: 1049 hasNull: false bytesOnDisk: 1704 min: 65536 max: 65791 sum: 68881051
+    Column 4: count: 1049 hasNull: false bytesOnDisk: 1998 min: 4294967296 max: 4294967551 sum: 4505420825953
+    Column 5: count: 1049 hasNull: false bytesOnDisk: 2925 min: 0.07999999821186066 max: 99.91999816894531 sum: 52744.70002820343
+    Column 6: count: 1049 hasNull: false bytesOnDisk: 3323 min: 0.02 max: 49.85 sum: 26286.349999999977
+    Column 7: count: 1049 hasNull: false bytesOnDisk: 137 true: 526
+    Column 8: count: 1049 hasNull: false bytesOnDisk: 3430 min:  max: zach zipper sum: 13443
+    Column 9: count: 1049 hasNull: false bytesOnDisk: 1802 min: 2013-03-01 09:11:58.703 max: 2013-03-01 09:11:58.703
+    Column 10: count: 1049 hasNull: false bytesOnDisk: 2369 min: 0.08 max: 99.94 sum: 53646.16
+    Column 11: count: 1049 hasNull: false bytesOnDisk: 2468 sum: 13278
 
 File Statistics:
   Column 0: count: 1049 hasNull: false
-  Column 1: count: 1046 hasNull: true min: -3 max: 124 sum: 62430
-  Column 2: count: 1046 hasNull: true min: 256 max: 511 sum: 398889
-  Column 3: count: 1049 hasNull: false min: 65536 max: 65791 sum: 68881051
-  Column 4: count: 1049 hasNull: false min: 4294967296 max: 4294967551 sum: 4505420825953
-  Column 5: count: 1049 hasNull: false min: 0.07999999821186066 max: 99.91999816894531 sum: 52744.70002820343
-  Column 6: count: 1049 hasNull: false min: 0.02 max: 49.85 sum: 26286.349999999977
-  Column 7: count: 1049 hasNull: false true: 526
-  Column 8: count: 1049 hasNull: false min:  max: zach zipper sum: 13443
-  Column 9: count: 1049 hasNull: false min: 2013-03-01 09:11:58.703 max: 2013-03-01 09:11:58.703
-  Column 10: count: 1049 hasNull: false min: 0.08 max: 99.94 sum: 53646.16
-  Column 11: count: 1049 hasNull: false sum: 13278
+  Column 1: count: 1046 hasNull: true bytesOnDisk: 979 min: -3 max: 124 sum: 62430
+  Column 2: count: 1046 hasNull: true bytesOnDisk: 1458 min: 256 max: 511 sum: 398889
+  Column 3: count: 1049 hasNull: false bytesOnDisk: 1704 min: 65536 max: 65791 sum: 68881051
+  Column 4: count: 1049 hasNull: false bytesOnDisk: 1998 min: 4294967296 max: 4294967551 sum: 4505420825953
+  Column 5: count: 1049 hasNull: false bytesOnDisk: 2925 min: 0.07999999821186066 max: 99.91999816894531 sum: 52744.70002820343
+  Column 6: count: 1049 hasNull: false bytesOnDisk: 3323 min: 0.02 max: 49.85 sum: 26286.349999999977
+  Column 7: count: 1049 hasNull: false bytesOnDisk: 137 true: 526
+  Column 8: count: 1049 hasNull: false bytesOnDisk: 3430 min:  max: zach zipper sum: 13443
+  Column 9: count: 1049 hasNull: false bytesOnDisk: 1802 min: 2013-03-01 09:11:58.703 max: 2013-03-01 09:11:58.703
+  Column 10: count: 1049 hasNull: false bytesOnDisk: 2369 min: 0.08 max: 99.94 sum: 53646.16
+  Column 11: count: 1049 hasNull: false bytesOnDisk: 2468 sum: 13278
 
 Stripes:
-  Stripe: offset: 3 data: 22593 rows: 1049 tail: 252 index: 8962
+  Stripe: offset: 3 data: 22593 rows: 1049 tail: 242 index: 8962
     Stream: column 0 section ROW_INDEX start: 3 length 20
     Stream: column 0 section BLOOM_FILTER_UTF8 start: 23 length 34
     Stream: column 1 section ROW_INDEX start: 57 length 58
@@ -269,7 +269,7 @@ Stripes:
       Entry 1: numHashFunctions: 4 bitCount: 6272 popCount: 98 loadFactor: 0.0156 expectedFpp: 5.9604645E-8
       Stripe level merge: numHashFunctions: 4 bitCount: 6272 popCount: 102 loadFactor: 0.0163 expectedFpp: 6.9948186E-8
 
-File length: 32438 bytes
+File length: 32502 bytes
 Padding length: 0 bytes
 Padding ratio: 0%
 ________________________________________________________________________________________________________________________
@@ -299,34 +299,34 @@ Type: struct<t:tinyint,si:smallint,i:int,b:bigint,f:float,d:double,bo:boolean,s:
 Stripe Statistics:
   Stripe 1:
     Column 0: count: 1049 hasNull: false
-    Column 1: count: 1046 hasNull: true min: -3 max: 124 sum: 62430
-    Column 2: count: 1046 hasNull: true min: 256 max: 511 sum: 398889
-    Column 3: count: 1049 hasNull: false min: 65536 max: 65791 sum: 68881051
-    Column 4: count: 1049 hasNull: false min: 4294967296 max: 4294967551 sum: 4505420825953
-    Column 5: count: 1049 hasNull: false min: 0.07999999821186066 max: 99.91999816894531 sum: 52744.70002820343
-    Column 6: count: 1049 hasNull: false min: 0.02 max: 49.85 sum: 26286.349999999977
-    Column 7: count: 1049 hasNull: false true: 526
-    Column 8: count: 1049 hasNull: false min:  max: zach zipper sum: 13443
-    Column 9: count: 1049 hasNull: false min: 2013-03-01 09:11:58.703 max: 2013-03-01 09:11:58.703
-    Column 10: count: 1049 hasNull: false min: 0.08 max: 99.94 sum: 53646.16
-    Column 11: count: 1049 hasNull: false sum: 13278
+    Column 1: count: 1046 hasNull: true bytesOnDisk: 979 min: -3 max: 124 sum: 62430
+    Column 2: count: 1046 hasNull: true bytesOnDisk: 1458 min: 256 max: 511 sum: 398889
+    Column 3: count: 1049 hasNull: false bytesOnDisk: 1704 min: 65536 max: 65791 sum: 68881051
+    Column 4: count: 1049 hasNull: false bytesOnDisk: 1998 min: 4294967296 max: 4294967551 sum: 4505420825953
+    Column 5: count: 1049 hasNull: false bytesOnDisk: 2925 min: 0.07999999821186066 max: 99.91999816894531 sum: 52744.70002820343
+    Column 6: count: 1049 hasNull: false bytesOnDisk: 3323 min: 0.02 max: 49.85 sum: 26286.349999999977
+    Column 7: count: 1049 hasNull: false bytesOnDisk: 137 true: 526
+    Column 8: count: 1049 hasNull: false bytesOnDisk: 3430 min:  max: zach zipper sum: 13443
+    Column 9: count: 1049 hasNull: false bytesOnDisk: 1802 min: 2013-03-01 09:11:58.703 max: 2013-03-01 09:11:58.703
+    Column 10: count: 1049 hasNull: false bytesOnDisk: 2369 min: 0.08 max: 99.94 sum: 53646.16
+    Column 11: count: 1049 hasNull: false bytesOnDisk: 2468 sum: 13278
 
 File Statistics:
   Column 0: count: 1049 hasNull: false
-  Column 1: count: 1046 hasNull: true min: -3 max: 124 sum: 62430
-  Column 2: count: 1046 hasNull: true min: 256 max: 511 sum: 398889
-  Column 3: count: 1049 hasNull: false min: 65536 max: 65791 sum: 68881051
-  Column 4: count: 1049 hasNull: false min: 4294967296 max: 4294967551 sum: 4505420825953
-  Column 5: count: 1049 hasNull: false min: 0.07999999821186066 max: 99.91999816894531 sum: 52744.70002820343
-  Column 6: count: 1049 hasNull: false min: 0.02 max: 49.85 sum: 26286.349999999977
-  Column 7: count: 1049 hasNull: false true: 526
-  Column 8: count: 1049 hasNull: false min:  max: zach zipper sum: 13443
-  Column 9: count: 1049 hasNull: false min: 2013-03-01 09:11:58.703 max: 2013-03-01 09:11:58.703
-  Column 10: count: 1049 hasNull: false min: 0.08 max: 99.94 sum: 53646.16
-  Column 11: count: 1049 hasNull: false sum: 13278
+  Column 1: count: 1046 hasNull: true bytesOnDisk: 979 min: -3 max: 124 sum: 62430
+  Column 2: count: 1046 hasNull: true bytesOnDisk: 1458 min: 256 max: 511 sum: 398889
+  Column 3: count: 1049 hasNull: false bytesOnDisk: 1704 min: 65536 max: 65791 sum: 68881051
+  Column 4: count: 1049 hasNull: false bytesOnDisk: 1998 min: 4294967296 max: 4294967551 sum: 4505420825953
+  Column 5: count: 1049 hasNull: false bytesOnDisk: 2925 min: 0.07999999821186066 max: 99.91999816894531 sum: 52744.70002820343
+  Column 6: count: 1049 hasNull: false bytesOnDisk: 3323 min: 0.02 max: 49.85 sum: 26286.349999999977
+  Column 7: count: 1049 hasNull: false bytesOnDisk: 137 true: 526
+  Column 8: count: 1049 hasNull: false bytesOnDisk: 3430 min:  max: zach zipper sum: 13443
+  Column 9: count: 1049 hasNull: false bytesOnDisk: 1802 min: 2013-03-01 09:11:58.703 max: 2013-03-01 09:11:58.703
+  Column 10: count: 1049 hasNull: false bytesOnDisk: 2369 min: 0.08 max: 99.94 sum: 53646.16
+  Column 11: count: 1049 hasNull: false bytesOnDisk: 2468 sum: 13278
 
 Stripes:
-  Stripe: offset: 3 data: 22593 rows: 1049 tail: 249 index: 13609
+  Stripe: offset: 3 data: 22593 rows: 1049 tail: 240 index: 13609
     Stream: column 0 section ROW_INDEX start: 3 length 20
     Stream: column 0 section BLOOM_FILTER_UTF8 start: 23 length 43
     Stream: column 1 section ROW_INDEX start: 66 length 58
@@ -466,7 +466,7 @@ Stripes:
       Entry 1: numHashFunctions: 7 bitCount: 9600 popCount: 174 loadFactor: 0.0181 expectedFpp: 6.426078E-13
       Stripe level merge: numHashFunctions: 7 bitCount: 9600 popCount: 181 loadFactor: 0.0189 expectedFpp: 8.4693775E-13
 
-File length: 37082 bytes
+File length: 37147 bytes
 Padding length: 0 bytes
 Padding ratio: 0%
 ________________________________________________________________________________________________________________________
@@ -508,34 +508,34 @@ Type: struct<t:tinyint,si:smallint,i:int,b:bigint,f:float,d:double,bo:boolean,s:
 Stripe Statistics:
   Stripe 1:
     Column 0: count: 1049 hasNull: false
-    Column 1: count: 1046 hasNull: true min: -3 max: 124 sum: 62430
-    Column 2: count: 1046 hasNull: true min: 256 max: 511 sum: 398889
-    Column 3: count: 1049 hasNull: false min: 65536 max: 65791 sum: 68881051
-    Column 4: count: 1049 hasNull: false min: 4294967296 max: 4294967551 sum: 4505420825953
-    Column 5: count: 1049 hasNull: false min: 0.07999999821186066 max: 99.91999816894531 sum: 52744.70002820343
-    Column 6: count: 1049 hasNull: false min: 0.02 max: 49.85 sum: 26286.349999999977
-    Column 7: count: 1049 hasNull: false true: 526
-    Column 8: count: 1049 hasNull: false min:  max: zach zipper sum: 13443
-    Column 9: count: 1049 hasNull: false min: 2013-03-01 09:11:58.703 max: 2013-03-01 09:11:58.703
-    Column 10: count: 1049 hasNull: false min: 0.08 max: 99.94 sum: 53646.16
-    Column 11: count: 1049 hasNull: false sum: 13278
+    Column 1: count: 1046 hasNull: true bytesOnDisk: 979 min: -3 max: 124 sum: 62430
+    Column 2: count: 1046 hasNull: true bytesOnDisk: 1458 min: 256 max: 511 sum: 398889
+    Column 3: count: 1049 hasNull: false bytesOnDisk: 1704 min: 65536 max: 65791 sum: 68881051
+    Column 4: count: 1049 hasNull: false bytesOnDisk: 1998 min: 4294967296 max: 4294967551 sum: 4505420825953
+    Column 5: count: 1049 hasNull: false bytesOnDisk: 2925 min: 0.07999999821186066 max: 99.91999816894531 sum: 52744.70002820343
+    Column 6: count: 1049 hasNull: false bytesOnDisk: 3323 min: 0.02 max: 49.85 sum: 26286.349999999977
+    Column 7: count: 1049 hasNull: false bytesOnDisk: 137 true: 526
+    Column 8: count: 1049 hasNull: false bytesOnDisk: 3430 min:  max: zach zipper sum: 13443
+    Column 9: count: 1049 hasNull: false bytesOnDisk: 1802 min: 2013-03-01 09:11:58.703 max: 2013-03-01 09:11:58.703
+    Column 10: count: 1049 hasNull: false bytesOnDisk: 2369 min: 0.08 max: 99.94 sum: 53646.16
+    Column 11: count: 1049 hasNull: false bytesOnDisk: 2468 sum: 13278
 
 File Statistics:
   Column 0: count: 1049 hasNull: false
-  Column 1: count: 1046 hasNull: true min: -3 max: 124 sum: 62430
-  Column 2: count: 1046 hasNull: true min: 256 max: 511 sum: 398889
-  Column 3: count: 1049 hasNull: false min: 65536 max: 65791 sum: 68881051
-  Column 4: count: 1049 hasNull: false min: 4294967296 max: 4294967551 sum: 4505420825953
-  Column 5: count: 1049 hasNull: false min: 0.07999999821186066 max: 99.91999816894531 sum: 52744.70002820343
-  Column 6: count: 1049 hasNull: false min: 0.02 max: 49.85 sum: 26286.349999999977
-  Column 7: count: 1049 hasNull: false true: 526
-  Column 8: count: 1049 hasNull: false min:  max: zach zipper sum: 13443
-  Column 9: count: 1049 hasNull: false min: 2013-03-01 09:11:58.703 max: 2013-03-01 09:11:58.703
-  Column 10: count: 1049 hasNull: false min: 0.08 max: 99.94 sum: 53646.16
-  Column 11: count: 1049 hasNull: false sum: 13278
+  Column 1: count: 1046 hasNull: true bytesOnDisk: 979 min: -3 max: 124 sum: 62430
+  Column 2: count: 1046 hasNull: true bytesOnDisk: 1458 min: 256 max: 511 sum: 398889
+  Column 3: count: 1049 hasNull: false bytesOnDisk: 1704 min: 65536 max: 65791 sum: 68881051
+  Column 4: count: 1049 hasNull: false bytesOnDisk: 1998 min: 4294967296 max: 4294967551 sum: 4505420825953
+  Column 5: count: 1049 hasNull: false bytesOnDisk: 2925 min: 0.07999999821186066 max: 99.91999816894531 sum: 52744.70002820343
+  Column 6: count: 1049 hasNull: false bytesOnDisk: 3323 min: 0.02 max: 49.85 sum: 26286.349999999977
+  Column 7: count: 1049 hasNull: false bytesOnDisk: 137 true: 526
+  Column 8: count: 1049 hasNull: false bytesOnDisk: 3430 min:  max: zach zipper sum: 13443
+  Column 9: count: 1049 hasNull: false bytesOnDisk: 1802 min: 2013-03-01 09:11:58.703 max: 2013-03-01 09:11:58.703
+  Column 10: count: 1049 hasNull: false bytesOnDisk: 2369 min: 0.08 max: 99.94 sum: 53646.16
+  Column 11: count: 1049 hasNull: false bytesOnDisk: 2468 sum: 13278
 
 Stripes:
-  Stripe: offset: 3 data: 22593 rows: 1049 tail: 252 index: 8962
+  Stripe: offset: 3 data: 22593 rows: 1049 tail: 242 index: 8962
     Stream: column 0 section ROW_INDEX start: 3 length 20
     Stream: column 0 section BLOOM_FILTER_UTF8 start: 23 length 34
     Stream: column 1 section ROW_INDEX start: 57 length 58
@@ -675,7 +675,7 @@ Stripes:
       Entry 1: numHashFunctions: 4 bitCount: 6272 popCount: 98 loadFactor: 0.0156 expectedFpp: 5.9604645E-8
       Stripe level merge: numHashFunctions: 4 bitCount: 6272 popCount: 102 loadFactor: 0.0163 expectedFpp: 6.9948186E-8
 
-File length: 32438 bytes
+File length: 32502 bytes
 Padding length: 0 bytes
 Padding ratio: 0%
 ________________________________________________________________________________________________________________________

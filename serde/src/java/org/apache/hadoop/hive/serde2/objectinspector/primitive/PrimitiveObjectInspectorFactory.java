@@ -24,7 +24,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.io.ByteWritable;
-import org.apache.hadoop.hive.serde2.io.DateWritable;
+import org.apache.hadoop.hive.serde2.io.DateWritableV2;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.hive.serde2.io.HiveCharWritable;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
@@ -346,7 +346,7 @@ public final class PrimitiveObjectInspectorFactory {
       return new WritableConstantHiveVarcharObjectInspector((VarcharTypeInfo)typeInfo,
           (HiveVarcharWritable)value);
     case DATE:
-      return new WritableConstantDateObjectInspector((DateWritable)value);
+      return new WritableConstantDateObjectInspector((DateWritableV2)value);
     case TIMESTAMP:
       return new WritableConstantTimestampObjectInspector((TimestampWritable)value);
     case TIMESTAMPLOCALTZ:

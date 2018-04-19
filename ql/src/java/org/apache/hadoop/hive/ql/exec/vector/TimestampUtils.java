@@ -20,7 +20,8 @@ package org.apache.hadoop.hive.ql.exec.vector;
 
 import java.util.concurrent.TimeUnit;
 
-import org.apache.hadoop.hive.serde2.io.DateWritable;
+import org.apache.hadoop.hive.common.type.Timestamp;
+import org.apache.hadoop.hive.serde2.io.DateWritableV2;
 import org.apache.hadoop.hive.serde2.io.HiveIntervalDayTimeWritable;
 import org.apache.hadoop.hive.serde2.io.TimestampWritable;
 
@@ -30,13 +31,19 @@ public final class TimestampUtils {
   static final long NANOSECONDS_PER_MILLISECOND = TimeUnit.MILLISECONDS.toNanos(1);
 
   public static long daysToNanoseconds(long daysSinceEpoch) {
-    return DateWritable.daysToMillis((int) daysSinceEpoch) * NANOSECONDS_PER_MILLISECOND;
+    return DateWritableV2.daysToMillis((int) daysSinceEpoch) * NANOSECONDS_PER_MILLISECOND;
   }
 
   public static TimestampWritable timestampColumnVectorWritable(
       TimestampColumnVector timestampColVector, int elementNum,
       TimestampWritable timestampWritable) {
-    timestampWritable.set(timestampColVector.asScratchTimestamp(elementNum));
+    java.sql.Timestamp ts = timestampColVector.asScratchTimestamp(elementNum);
+    if (ts == null) {
+      timestampWritable.set((Timestamp) null);
+      return timestampWritable;
+    }
+    Timestamp newTS = Timestamp.ofEpochMilli(ts.getTime(), ts.getNanos());
+    timestampWritable.set(newTS);
     return timestampWritable;
   }
 

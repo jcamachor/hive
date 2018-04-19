@@ -20,14 +20,14 @@ package org.apache.hadoop.hive.serde2.lazy.fast;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.sql.Date;
-import java.sql.Timestamp;
 import java.util.ArrayDeque;
 import java.util.Deque;
 import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.codec.binary.Base64;
+import org.apache.hadoop.hive.common.type.Date;
+import org.apache.hadoop.hive.serde2.io.DateWritableV2;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.common.type.HiveChar;
@@ -35,8 +35,8 @@ import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.common.type.HiveIntervalDayTime;
 import org.apache.hadoop.hive.common.type.HiveIntervalYearMonth;
 import org.apache.hadoop.hive.common.type.HiveVarchar;
+import org.apache.hadoop.hive.common.type.Timestamp;
 import org.apache.hadoop.hive.serde2.ByteStream.Output;
-import org.apache.hadoop.hive.serde2.io.DateWritable;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 import org.apache.hadoop.hive.serde2.io.HiveIntervalDayTimeWritable;
 import org.apache.hadoop.hive.serde2.io.HiveIntervalYearMonthWritable;
@@ -77,7 +77,7 @@ public final class LazySimpleSerializeWrite implements SerializeWrite {
   private Deque<Integer> indexStack = new ArrayDeque<Integer>();
 
   // For thread safety, we allocate private writable objects for our use only.
-  private DateWritable dateWritable;
+  private DateWritableV2 dateWritable;
   private TimestampWritable timestampWritable;
   private HiveIntervalYearMonthWritable hiveIntervalYearMonthWritable;
   private HiveIntervalDayTimeWritable hiveIntervalDayTimeWritable;
@@ -299,7 +299,7 @@ public final class LazySimpleSerializeWrite implements SerializeWrite {
   public void writeDate(Date date) throws IOException {
     beginPrimitive();
     if (dateWritable == null) {
-      dateWritable = new DateWritable();
+      dateWritable = new DateWritableV2();
     }
     dateWritable.set(date);
     LazyDate.writeUTF8(output, dateWritable);
@@ -311,7 +311,7 @@ public final class LazySimpleSerializeWrite implements SerializeWrite {
   public void writeDate(int dateAsDays) throws IOException {
     beginPrimitive();
     if (dateWritable == null) {
-      dateWritable = new DateWritable();
+      dateWritable = new DateWritableV2();
     }
     dateWritable.set(dateAsDays);
     LazyDate.writeUTF8(output, dateWritable);

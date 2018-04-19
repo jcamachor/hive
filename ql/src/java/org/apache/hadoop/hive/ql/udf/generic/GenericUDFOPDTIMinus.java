@@ -18,20 +18,20 @@
 
 package org.apache.hadoop.hive.ql.udf.generic;
 
-import java.sql.Date;
-import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.hadoop.hive.common.type.Date;
 import org.apache.hadoop.hive.common.type.HiveIntervalDayTime;
 import org.apache.hadoop.hive.common.type.HiveIntervalYearMonth;
+import org.apache.hadoop.hive.common.type.Timestamp;
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.NoMatchingMethodException;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentTypeException;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.util.DateTimeMath;
-import org.apache.hadoop.hive.serde2.io.DateWritable;
+import org.apache.hadoop.hive.serde2.io.DateWritableV2;
 import org.apache.hadoop.hive.serde2.io.HiveIntervalDayTimeWritable;
 import org.apache.hadoop.hive.serde2.io.HiveIntervalYearMonthWritable;
 import org.apache.hadoop.hive.serde2.io.TimestampWritable;
@@ -58,7 +58,7 @@ public class GenericUDFOPDTIMinus extends GenericUDFBaseDTI {
   protected transient Converter dt1Converter;
   protected transient Converter dt2Converter;
 
-  protected transient DateWritable dateResult = new DateWritable();
+  protected transient DateWritableV2 dateResult = new DateWritableV2();
   protected transient TimestampWritable timestampResult = new TimestampWritable();
   protected transient HiveIntervalYearMonthWritable intervalYearMonthResult =
       new HiveIntervalYearMonthWritable();
@@ -222,7 +222,7 @@ public class GenericUDFOPDTIMinus extends GenericUDFBaseDTI {
     }
   }
 
-  protected DateWritable handleDateResult(Date result) {
+  protected DateWritableV2 handleDateResult(Date result) {
     if (result == null) {
       return null;
     }

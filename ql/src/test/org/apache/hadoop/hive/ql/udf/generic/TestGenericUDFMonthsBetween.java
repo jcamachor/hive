@@ -17,13 +17,12 @@
  */
 package org.apache.hadoop.hive.ql.udf.generic;
 
-import java.sql.Date;
-import java.sql.Timestamp;
-
+import org.apache.hadoop.hive.common.type.Date;
+import org.apache.hadoop.hive.common.type.Timestamp;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF.DeferredJavaObject;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF.DeferredObject;
-import org.apache.hadoop.hive.serde2.io.DateWritable;
+import org.apache.hadoop.hive.serde2.io.DateWritableV2;
 import org.apache.hadoop.hive.serde2.io.TimestampWritable;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
@@ -269,8 +268,8 @@ public class TestGenericUDFMonthsBetween extends TestCase {
 
   protected void runTestDt(String dt1, String dt2, Double expDiff, GenericUDFMonthsBetween udf)
       throws HiveException {
-    DateWritable dtWr1 = dt1 == null ? null : new DateWritable(Date.valueOf(dt1));
-    DateWritable dtWr2 = dt2 == null ? null : new DateWritable(Date.valueOf(dt2));
+    DateWritableV2 dtWr1 = dt1 == null ? null : new DateWritableV2(Date.valueOf(dt1));
+    DateWritableV2 dtWr2 = dt2 == null ? null : new DateWritableV2(Date.valueOf(dt2));
     DeferredJavaObject valueObj1 = new DeferredJavaObject(dtWr1);
     DeferredJavaObject valueObj2 = new DeferredJavaObject(dtWr2);
     DeferredObject[] args = new DeferredObject[] { valueObj1, valueObj2 };

@@ -17,20 +17,20 @@
  */
 package org.apache.hadoop.hive.serde2.lazy;
 
-import java.sql.Date;
-import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.hadoop.hive.common.type.Date;
 import org.apache.hadoop.hive.common.type.HiveChar;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.common.type.HiveIntervalDayTime;
 import org.apache.hadoop.hive.common.type.HiveIntervalYearMonth;
 import org.apache.hadoop.hive.common.type.HiveVarchar;
+import org.apache.hadoop.hive.common.type.Timestamp;
 import org.apache.hadoop.hive.serde2.io.ByteWritable;
-import org.apache.hadoop.hive.serde2.io.DateWritable;
+import org.apache.hadoop.hive.serde2.io.DateWritableV2;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.hive.serde2.io.HiveCharWritable;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
@@ -301,7 +301,7 @@ public class VerifyLazy {
             throw new RuntimeException("Expected LazyDate");
           }
           Date value = ((LazyDate) primitiveObject).getWritableObject().get();
-          Date expected = ((DateWritable) expectedObject).get();
+          Date expected = ((DateWritableV2) expectedObject).get();
           if (!value.equals(expected)) {
             throw new RuntimeException("Date field mismatch (expected " + expected + " found " + value + ")");
           }

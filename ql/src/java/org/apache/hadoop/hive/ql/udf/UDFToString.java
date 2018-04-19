@@ -21,7 +21,7 @@ package org.apache.hadoop.hive.ql.udf;
 import org.apache.hadoop.hive.ql.exec.UDF;
 import org.apache.hadoop.hive.serde2.ByteStream;
 import org.apache.hadoop.hive.serde2.io.ByteWritable;
-import org.apache.hadoop.hive.serde2.io.DateWritable;
+import org.apache.hadoop.hive.serde2.io.DateWritableV2;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 import org.apache.hadoop.hive.serde2.io.ShortWritable;
@@ -135,7 +135,7 @@ public class UDFToString extends UDF {
       return i;
   }
 
-  public Text evaluate(DateWritable d) {
+  public Text evaluate(DateWritableV2 d) {
     if (d == null) {
       return null;
     } else {

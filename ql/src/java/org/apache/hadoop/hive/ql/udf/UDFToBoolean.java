@@ -30,7 +30,7 @@ import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.CastLongToBooleanVi
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.CastDateToBooleanViaLongToLong;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.CastTimestampToBoolean;
 import org.apache.hadoop.hive.serde2.io.ByteWritable;
-import org.apache.hadoop.hive.serde2.io.DateWritable;
+import org.apache.hadoop.hive.serde2.io.DateWritableV2;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 import org.apache.hadoop.hive.serde2.io.ShortWritable;
@@ -179,7 +179,7 @@ public class UDFToBoolean extends UDF {
     return booleanWritable;
   }
 
-  public BooleanWritable evaluate(DateWritable d) {
+  public BooleanWritable evaluate(DateWritableV2 d) {
     // date value to boolean doesn't make any sense.
     return null;
   }

@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
+import org.apache.hadoop.hive.serde2.io.DateWritableV2;
 import org.apache.hadoop.hive.serde2.io.TimestampLocalTZWritable;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.TimestampLocalTZObjectInspector;
 import org.slf4j.Logger;
@@ -37,7 +38,6 @@ import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.SerDeSpec;
 import org.apache.hadoop.hive.serde2.SerDeStats;
 import org.apache.hadoop.hive.serde2.SerDeUtils;
-import org.apache.hadoop.hive.serde2.io.DateWritable;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.serde2.io.HiveIntervalDayTimeWritable;
@@ -318,7 +318,7 @@ public class LazyBinarySerDe extends AbstractSerDe {
   }
 
   public static void writeDateToByteStream(RandomAccessOutput byteStream,
-                                            DateWritable date) {
+                                            DateWritableV2 date) {
     LazyBinaryUtils.writeVInt(byteStream, date.getDays());
   }
 
@@ -505,7 +505,7 @@ public class LazyBinarySerDe extends AbstractSerDe {
       }
 
       case DATE: {
-        DateWritable d = ((DateObjectInspector) poi).getPrimitiveWritableObject(obj);
+        DateWritableV2 d = ((DateObjectInspector) poi).getPrimitiveWritableObject(obj);
         writeDateToByteStream(byteStream, d);
         return;
       }

@@ -25,11 +25,8 @@ import static junit.framework.Assert.assertTrue;
 
 import java.io.File;
 import java.io.IOException;
-import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.nio.ByteBuffer;
-import java.sql.Date;
-import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -43,12 +40,14 @@ import com.google.common.primitives.Longs;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.common.type.Date;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
+import org.apache.hadoop.hive.common.type.Timestamp;
 import org.apache.hadoop.hive.ql.io.sarg.PredicateLeaf;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgumentFactory;
 import org.apache.hadoop.hive.serde2.io.ByteWritable;
-import org.apache.hadoop.hive.serde2.io.DateWritable;
+import org.apache.hadoop.hive.serde2.io.DateWritableV2;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 import org.apache.hadoop.hive.serde2.io.ShortWritable;
@@ -1315,7 +1314,7 @@ public class TestOrcFile {
             new TimestampWritable(Timestamp.valueOf(year + "-05-05 12:34:56."
                 + ms)));
         row.setFieldValue(1,
-            new DateWritable(new Date(year - 1900, 11, 25)));
+            new DateWritableV2(Date.of(year - 1900, 11, 25)));
         writer.addRow(row);
       }
     }
@@ -1329,7 +1328,7 @@ public class TestOrcFile {
         assertEquals(new TimestampWritable
                 (Timestamp.valueOf(year + "-05-05 12:34:56." + ms)),
             row.getFieldValue(0));
-        assertEquals(new DateWritable(new Date(year - 1900, 11, 25)),
+        assertEquals(new DateWritableV2(Date.of(year - 1900, 11, 25)),
             row.getFieldValue(1));
       }
     }

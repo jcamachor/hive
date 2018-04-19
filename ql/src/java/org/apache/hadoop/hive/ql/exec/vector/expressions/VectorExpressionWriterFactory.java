@@ -69,7 +69,6 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.hadoop.hive.serde2.typeinfo.UnionTypeInfo;
 import org.apache.hadoop.io.Text;
-import org.apache.hive.common.util.DateUtils;
 
 /**
  * VectorExpressionWritableFactory helper class for generating VectorExpressionWritable objects.
@@ -823,7 +822,7 @@ public final class VectorExpressionWriterFactory {
 
       @Override
       public Object writeValue(long value) {
-        dt.setTime(DateWritable.daysToMillis((int) value));
+        dt.setTime(DateWritableV2.daysToMillis((int) value));
         ((SettableDateObjectInspector) this.objectInspector).set(obj, dt);
         return obj;
       }
@@ -833,7 +832,7 @@ public final class VectorExpressionWriterFactory {
         if (null == field) {
           field = initValue(null);
         }
-        dt.setTime(DateWritable.daysToMillis((int) value));
+        dt.setTime(DateWritableV2.daysToMillis((int) value));
         ((SettableDateObjectInspector) this.objectInspector).set(field, dt);
         return field;
       }

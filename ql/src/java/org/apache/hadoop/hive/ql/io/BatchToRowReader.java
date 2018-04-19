@@ -24,6 +24,7 @@ import org.apache.hadoop.hive.llap.DebugUtils;
 
 import java.util.Arrays;
 
+import org.apache.hadoop.hive.serde2.io.DateWritableV2;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -46,7 +47,6 @@ import org.apache.hadoop.hive.ql.exec.vector.UnionColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatchCtx;
 import org.apache.hadoop.hive.serde2.io.ByteWritable;
-import org.apache.hadoop.hive.serde2.io.DateWritable;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.hive.serde2.io.HiveCharWritable;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
@@ -423,18 +423,18 @@ public abstract class BatchToRowReader<StructType, UnionType>
     }
   }
 
-  public static DateWritable nextDate(ColumnVector vector,
-                               int row,
-                               Object previous) {
+  public static DateWritableV2 nextDate(ColumnVector vector,
+                                        int row,
+                                        Object previous) {
     if (vector.isRepeating) {
       row = 0;
     }
     if (vector.noNulls || !vector.isNull[row]) {
-      DateWritable result;
-      if (previous == null || previous.getClass() != DateWritable.class) {
-        result = new DateWritable();
+      DateWritableV2 result;
+      if (previous == null || previous.getClass() != DateWritableV2.class) {
+        result = new DateWritableV2();
       } else {
-        result = (DateWritable) previous;
+        result = (DateWritableV2) previous;
       }
       int date = (int) ((LongColumnVector) vector).vector[row];
       result.set(date);

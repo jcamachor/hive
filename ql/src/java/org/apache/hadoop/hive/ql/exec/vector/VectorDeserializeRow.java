@@ -31,7 +31,7 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.VectorPartitionConversion;
 import org.apache.hadoop.hive.serde2.fast.DeserializeRead;
 import org.apache.hadoop.hive.serde2.io.ByteWritable;
-import org.apache.hadoop.hive.serde2.io.DateWritable;
+import org.apache.hadoop.hive.serde2.io.DateWritableV2;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.hive.serde2.io.HiveCharWritable;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
@@ -556,7 +556,7 @@ public final class VectorDeserializeRow<T extends DeserializeRead> {
       break;
     case TIMESTAMP:
       ((TimestampColumnVector) colVector).set(
-          batchIndex, deserializeRead.currentTimestampWritable.getTimestamp());
+          batchIndex, deserializeRead.currentTimestampWritable.getTimestamp().toSqlTimestamp());
       break;
     case DATE:
       ((LongColumnVector) colVector).vector[batchIndex] = deserializeRead.currentDateWritable.getDays();
@@ -1087,9 +1087,9 @@ public final class VectorDeserializeRow<T extends DeserializeRead> {
     case DATE:
       {
         if (writable == null) {
-          writable = new DateWritable();
+          writable = new DateWritableV2();
         }
-        ((DateWritable) writable).set(deserializeRead.currentDateWritable);
+        ((DateWritableV2) writable).set(deserializeRead.currentDateWritable);
       }
       break;
     case FLOAT:

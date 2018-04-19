@@ -29,7 +29,7 @@ import org.apache.hadoop.hive.ql.exec.vector.expressions.NullUtil;
 import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor;
 import org.apache.hadoop.hive.ql.exec.vector.*;
 import org.apache.hadoop.hive.ql.util.DateTimeMath;
-import org.apache.hadoop.hive.serde2.io.DateWritable;
+import org.apache.hadoop.hive.serde2.io.DateWritableV2;
 
 /**
  * Generated from template TimestampColumnArithmeticDateScalar.txt, which covers binary arithmetic
@@ -48,7 +48,7 @@ public class <ClassName> extends VectorExpression {
     super(outputColumnNum);
     this.colNum = colNum;
     this.value = new Timestamp(0);
-    this.value.setTime(DateWritable.daysToMillis((int) value));
+    this.value.setTime(DateWritableV2.daysToMillis((int) value));
   }
 
   public <ClassName>() {

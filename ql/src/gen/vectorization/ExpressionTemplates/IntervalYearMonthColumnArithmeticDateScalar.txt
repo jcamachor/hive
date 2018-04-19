@@ -29,7 +29,7 @@ import org.apache.hadoop.hive.ql.exec.vector.expressions.NullUtil;
 import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor;
 import org.apache.hadoop.hive.ql.exec.vector.*;
 import org.apache.hadoop.hive.ql.util.DateTimeMath;
-import org.apache.hadoop.hive.serde2.io.DateWritable;
+import org.apache.hadoop.hive.serde2.io.DateWritableV2;
 
 /**
  * Generated from template DateColumnArithmeticIntervalYearMonthScalar.txt, which covers binary arithmetic
@@ -49,7 +49,7 @@ public class <ClassName> extends VectorExpression {
   public <ClassName>(int colNum, long value, int outputColumnNum) {
     super(outputColumnNum);
     this.colNum = colNum;
-    this.value = new Date(DateWritable.daysToMillis((int) value));
+    this.value = new Date(DateWritableV2.daysToMillis((int) value));
   }
 
   public <ClassName>() {
@@ -95,7 +95,7 @@ public class <ClassName> extends VectorExpression {
         scratchIntervalYearMonth1.set((int) vector1[0]);
         dtm.<OperatorMethod>(
             scratchIntervalYearMonth1, value, outputDate);
-        outputVector[0] = DateWritable.dateToDays(outputDate);
+        outputVector[0] = DateWritableV2.dateToDays(outputDate);
       } else {
         outputIsNull[0] = true;
         outputColVector.noNulls = false;
@@ -117,7 +117,7 @@ public class <ClassName> extends VectorExpression {
             scratchIntervalYearMonth1.set((int) vector1[i]);
             dtm.<OperatorMethod>(
                 scratchIntervalYearMonth1, value, outputDate);
-            outputVector[i] = DateWritable.dateToDays(outputDate);
+            outputVector[i] = DateWritableV2.dateToDays(outputDate);
           }
          } else {
            for(int j = 0; j != n; j++) {
@@ -125,7 +125,7 @@ public class <ClassName> extends VectorExpression {
              scratchIntervalYearMonth1.set((int) vector1[i]);
              dtm.<OperatorMethod>(
                  scratchIntervalYearMonth1, value, outputDate);
-             outputVector[i] = DateWritable.dateToDays(outputDate);
+             outputVector[i] = DateWritableV2.dateToDays(outputDate);
            }
          }
       } else {
@@ -140,7 +140,7 @@ public class <ClassName> extends VectorExpression {
           scratchIntervalYearMonth1.set((int) vector1[i]);
           dtm.<OperatorMethod>(
               scratchIntervalYearMonth1, value, outputDate);
-          outputVector[i] = DateWritable.dateToDays(outputDate);
+          outputVector[i] = DateWritableV2.dateToDays(outputDate);
         }
       }
     } else /* there are NULLs in the inputColVector */ {
@@ -157,7 +157,7 @@ public class <ClassName> extends VectorExpression {
             scratchIntervalYearMonth1.set((int) vector1[i]);
             dtm.<OperatorMethod>(
                 scratchIntervalYearMonth1, value, outputDate);
-            outputVector[i] = DateWritable.dateToDays(outputDate);
+            outputVector[i] = DateWritableV2.dateToDays(outputDate);
           } else {
             outputIsNull[i] = true;
             outputColVector.noNulls = false;
@@ -169,7 +169,7 @@ public class <ClassName> extends VectorExpression {
             scratchIntervalYearMonth1.set((int) vector1[i]);
             dtm.<OperatorMethod>(
                 scratchIntervalYearMonth1, value, outputDate);
-            outputVector[i] = DateWritable.dateToDays(outputDate);
+            outputVector[i] = DateWritableV2.dateToDays(outputDate);
             outputIsNull[i] = false;
           } else {
             outputIsNull[i] = true;

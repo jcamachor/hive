@@ -32,7 +32,7 @@ import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 abstract public class TimestampToStringUnaryUDF extends VectorExpression {
   private static final long serialVersionUID = 1L;
 
-  private final int inputColumn;
+  protected final int inputColumn;
 
   public TimestampToStringUnaryUDF(int inputColumn, int outputColumnNum) {
     super(outputColumnNum);

@@ -17,15 +17,14 @@
  */
 package org.apache.hadoop.hive.ql.udf.generic;
 
-import java.sql.Date;
-import java.sql.Timestamp;
-
 import junit.framework.TestCase;
 
+import org.apache.hadoop.hive.common.type.Date;
+import org.apache.hadoop.hive.common.type.Timestamp;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF.DeferredJavaObject;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF.DeferredObject;
-import org.apache.hadoop.hive.serde2.io.DateWritable;
+import org.apache.hadoop.hive.serde2.io.DateWritableV2;
 import org.apache.hadoop.hive.serde2.io.TimestampWritable;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
@@ -166,7 +165,7 @@ public class TestGenericUDFQuarter extends TestCase {
   }
 
   private void runAndVerifyDt(String str, Integer expResult, GenericUDF udf) throws HiveException {
-    DeferredObject valueObj0 = new DeferredJavaObject(str != null ? new DateWritable(
+    DeferredObject valueObj0 = new DeferredJavaObject(str != null ? new DateWritableV2(
         Date.valueOf(str)) : null);
     DeferredObject[] args = { valueObj0 };
     IntWritable output = (IntWritable) udf.evaluate(args);

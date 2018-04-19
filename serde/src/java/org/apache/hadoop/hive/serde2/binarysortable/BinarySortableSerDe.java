@@ -43,7 +43,7 @@ import org.apache.hadoop.hive.serde2.SerDeSpec;
 import org.apache.hadoop.hive.serde2.SerDeStats;
 import org.apache.hadoop.hive.serde2.SerDeUtils;
 import org.apache.hadoop.hive.serde2.io.ByteWritable;
-import org.apache.hadoop.hive.serde2.io.DateWritable;
+import org.apache.hadoop.hive.serde2.io.DateWritableV2;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.hive.serde2.io.HiveCharWritable;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
@@ -407,8 +407,8 @@ public class BinarySortableSerDe extends AbstractSerDe {
       }
 
       case DATE: {
-        DateWritable d = reuse == null ? new DateWritable()
-            : (DateWritable) reuse;
+        DateWritableV2 d = reuse == null ? new DateWritableV2()
+            : (DateWritableV2) reuse;
         d.set(deserializeInt(buffer, invert));
         return d;
       }

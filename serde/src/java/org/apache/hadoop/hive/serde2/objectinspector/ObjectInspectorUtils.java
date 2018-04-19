@@ -31,6 +31,7 @@ import java.util.Map;
 
 import org.apache.hadoop.hive.serde2.ByteStream;
 import org.apache.hadoop.hive.serde2.binarysortable.BinarySortableSerDe;
+import org.apache.hadoop.hive.serde2.io.DateWritableV2;
 import org.apache.hadoop.hive.serde2.io.TimestampLocalTZWritable;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.SettableTimestampLocalTZObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.TimestampLocalTZObjectInspector;
@@ -39,7 +40,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.SerDeException;
-import org.apache.hadoop.hive.serde2.io.DateWritable;
 import org.apache.hadoop.hive.serde2.io.HiveCharWritable;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 import org.apache.hadoop.hive.serde2.io.HiveIntervalDayTimeWritable;
@@ -1112,9 +1112,9 @@ public final class ObjectInspectorUtils {
       }
 
       case DATE: {
-        DateWritable d1 = ((DateObjectInspector) poi1)
+        DateWritableV2 d1 = ((DateObjectInspector) poi1)
             .getPrimitiveWritableObject(o1);
-        DateWritable d2 = ((DateObjectInspector) poi2)
+        DateWritableV2 d2 = ((DateObjectInspector) poi2)
             .getPrimitiveWritableObject(o2);
         return d1.compareTo(d2);
       }

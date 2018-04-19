@@ -26,7 +26,7 @@ import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.serde2.io.DateWritable;
+import org.apache.hadoop.hive.serde2.io.DateWritableV2;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hive.common.util.DateUtils;
@@ -69,7 +69,7 @@ public abstract class VectorUDFTimestampFieldDate extends VectorExpression {
   }
 
   protected long getDateField(long days) {
-    calendar.setTimeInMillis(DateWritable.daysToMillis((int) days));
+    calendar.setTimeInMillis(DateWritableV2.daysToMillis((int) days));
     return calendar.get(field);
   }
 

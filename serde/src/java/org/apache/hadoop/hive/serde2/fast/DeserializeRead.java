@@ -22,7 +22,7 @@ import java.io.IOException;
 import java.util.Arrays;
 
 import org.apache.hadoop.hive.common.type.DataTypePhysicalVariation;
-import org.apache.hadoop.hive.serde2.io.DateWritable;
+import org.apache.hadoop.hive.serde2.io.DateWritableV2;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 import org.apache.hadoop.hive.serde2.io.HiveIntervalDayTimeWritable;
 import org.apache.hadoop.hive.serde2.io.HiveIntervalYearMonthWritable;
@@ -75,7 +75,7 @@ public abstract class DeserializeRead {
       switch (((PrimitiveTypeInfo) typeInfo).getPrimitiveCategory()) {
       case DATE:
         if (currentDateWritable == null) {
-          currentDateWritable = new DateWritable();
+          currentDateWritable = new DateWritableV2();
         }
         break;
       case TIMESTAMP:
@@ -343,7 +343,7 @@ public abstract class DeserializeRead {
   /*
    * DATE.
    */
-  public DateWritable currentDateWritable;
+  public DateWritableV2 currentDateWritable;
 
   /*
    * TIMESTAMP.
