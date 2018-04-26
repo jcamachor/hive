@@ -31,6 +31,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
+import java.util.TimeZone;
 import java.util.stream.Collectors;
 
 import com.google.common.base.Preconditions;
@@ -421,10 +422,12 @@ public class DruidSerDe extends AbstractSerDe {
       }
       switch (types[i].getPrimitiveCategory()) {
         case TIMESTAMP:
-          output.add(new TimestampWritable(Timestamp.valueOf(ZonedDateTime
-              .ofInstant(Instant.ofEpochMilli(((Number) value).longValue()),
-                  tsTZTypeInfo.timeZone()
-              ).format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")).toString())));
+          output.add(
+              new TimestampWritable(Timestamp.valueOf(
+                  ZonedDateTime.ofInstant(
+                      Instant.ofEpochMilli(((Number) value).longValue()),
+                      TimeZone.getTimeZone("UTC").toZoneId())
+                  .format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")).toString())));
           break;
         case TIMESTAMPLOCALTZ:
           output.add(
