@@ -766,7 +766,7 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
     if (sarg != null && rowIndexStride != 0) {
       sargApp = new RecordReaderImpl.SargApplier(sarg,
           rowIndexStride, evolution,
-          OrcFile.WriterVersion.from(fileMetadata.getWriterVersionNum()));
+          OrcFile.WriterVersion.from(OrcFile.WriterImplementation.ORC_JAVA, fileMetadata.getWriterVersionNum()));
     }
     boolean hasAnyData = false;
     // stripeRgs should have been initialized by this time with an empty array.

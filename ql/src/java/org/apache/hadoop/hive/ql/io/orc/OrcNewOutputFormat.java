@@ -72,8 +72,7 @@ public class OrcNewOutputFormat extends
   public RecordWriter getRecordWriter(TaskAttemptContext context)
       throws IOException, InterruptedException {
     Path file = getDefaultWorkFile(context, "");
-    return new
-        OrcRecordWriter(file, OrcFile.writerOptions(
-            ShimLoader.getHadoopShims().getConfiguration(context)));
+    return new OrcRecordWriter(file,
+        OrcFile.writerOptions(ShimLoader.getHadoopShims().getConfiguration(context)));
   }
 }

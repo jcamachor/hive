@@ -33,6 +33,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.NavigableMap;
+import java.util.TimeZone;
 import java.util.TreeMap;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CompletionService;
@@ -115,6 +116,7 @@ import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.util.StringUtils;
 import org.apache.hive.common.util.Ref;
 import org.apache.orc.ColumnStatistics;
+import org.apache.orc.FileFormatException;
 import org.apache.orc.OrcProto;
 import org.apache.orc.OrcProto.Footer;
 import org.apache.orc.OrcUtils;
@@ -2155,7 +2157,12 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
     // eliminate stripes that doesn't satisfy the predicate condition
     List<PredicateLeaf> sargLeaves = sarg.getLeaves();
     int[] filterColumns = RecordReaderImpl.mapTranslatedSargColumns(types, sargLeaves);
-    TypeDescription schema = OrcUtils.convertTypeFromProtobuf(types, 0);
+    TypeDescription schema = null;
+    try {
+      schema = OrcUtils.convertTypeFromProtobuf(types, 0);
+    } catch (FileFormatException e) {
+      e.printStackTrace();
+    }
     SchemaEvolution evolution = new SchemaEvolution(schema, null);
     return pickStripesInternal(sarg, filterColumns, stripeStats, stripeCount, null, evolution);
   }

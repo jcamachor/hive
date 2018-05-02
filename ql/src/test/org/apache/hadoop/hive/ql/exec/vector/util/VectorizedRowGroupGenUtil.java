@@ -82,6 +82,7 @@ public class VectorizedRowGroupGenUtil {
   public static TimestampColumnVector generateTimestampColumnVector(
       boolean nulls, boolean repeating, int size, Random rand, Timestamp[] timestampValues) {
     TimestampColumnVector tcv = new TimestampColumnVector(size);
+    tcv.setIsUTC(true);
 
     tcv.noNulls = !nulls;
     tcv.isRepeating = repeating;

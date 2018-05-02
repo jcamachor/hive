@@ -24,7 +24,6 @@ import java.util.Properties;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.orc.FileMetadata;
@@ -58,6 +57,7 @@ public final class OrcFile extends org.apache.orc.OrcFile {
   public static class ReaderOptions extends org.apache.orc.OrcFile.ReaderOptions {
     public ReaderOptions(Configuration conf) {
       super(conf);
+      super.useUTCTimestamp(true);
     }
 
     public ReaderOptions filesystem(FileSystem fs) {
@@ -77,6 +77,11 @@ public final class OrcFile extends org.apache.orc.OrcFile {
 
     public ReaderOptions orcTail(OrcTail orcTail) {
       super.orcTail(orcTail);
+      return this;
+    }
+
+    public ReaderOptions useUTCTimestamp(boolean value) {
+      super.useUTCTimestamp(value);
       return this;
     }
   }
@@ -104,6 +109,7 @@ public final class OrcFile extends org.apache.orc.OrcFile {
 
     WriterOptions(Properties tableProperties, Configuration conf) {
       super(tableProperties, conf);
+      super.useUTCTimestamp(true);
     }
 
    /**
@@ -270,6 +276,11 @@ public final class OrcFile extends org.apache.orc.OrcFile {
 
     public WriterOptions physicalWriter(PhysicalWriter writer) {
       super.physicalWriter(writer);
+      return this;
+    }
+
+    public WriterOptions useUTCTimestamp(boolean value) {
+      super.useUTCTimestamp(value);
       return this;
     }
 

@@ -95,6 +95,7 @@ import org.apache.orc.OrcProto.ColumnEncoding;
 import org.apache.orc.TypeDescription;
 import org.apache.orc.PhysicalWriter;
 import org.apache.orc.PhysicalWriter.OutputReceiver;
+import org.apache.orc.impl.PhysicalFsWriter;
 import org.apache.orc.impl.SchemaEvolution;
 import org.apache.orc.impl.StreamName;
 import org.apache.tez.common.CallableWithNdc;
@@ -561,6 +562,11 @@ public class SerDeEncodedDataReader extends CallableWithNdc<Void>
     @Override
     public CompressionCodec getCompressionCodec() {
       return null;
+    }
+
+    @Override
+    public long getFileBytes(int i) {
+      return 100000L;
     }
   }
 

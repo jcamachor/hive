@@ -141,7 +141,9 @@ public class VectorizedBatchUtil {
         case INTERVAL_YEAR_MONTH:
           return new LongColumnVector(VectorizedRowBatch.DEFAULT_SIZE);
         case TIMESTAMP:
-          return new TimestampColumnVector(VectorizedRowBatch.DEFAULT_SIZE);
+          TimestampColumnVector vector = new TimestampColumnVector(VectorizedRowBatch.DEFAULT_SIZE);
+          vector.setIsUTC(true);
+          return vector;
         case INTERVAL_DAY_TIME:
           return new IntervalDayTimeColumnVector(VectorizedRowBatch.DEFAULT_SIZE);
         case FLOAT:
@@ -593,7 +595,9 @@ public class VectorizedBatchUtil {
             dec64ColVector.precision,
             dec64ColVector.scale);
     } else if (source instanceof TimestampColumnVector) {
-      return new TimestampColumnVector(((TimestampColumnVector) source).getLength());
+      TimestampColumnVector vector = new TimestampColumnVector(((TimestampColumnVector) source).getLength());
+      vector.setIsUTC(true);
+      return vector;
     } else if (source instanceof IntervalDayTimeColumnVector) {
       return new IntervalDayTimeColumnVector(((IntervalDayTimeColumnVector) source).getLength());
     } else if (source instanceof ListColumnVector) {

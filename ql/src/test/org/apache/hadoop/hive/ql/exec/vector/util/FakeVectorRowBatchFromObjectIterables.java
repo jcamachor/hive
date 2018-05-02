@@ -101,7 +101,9 @@ public class FakeVectorRowBatchFromObjectIterables extends FakeVectorRowBatchBas
           }
         };
       } else if (types[i].equalsIgnoreCase("timestamp")) {
-        batch.cols[i] = new TimestampColumnVector(batchSize);
+        TimestampColumnVector vector = new TimestampColumnVector(batchSize);
+        vector.setIsUTC(true);
+        batch.cols[i] = vector;
         columnAssign[i] = new ColumnVectorAssign() {
           @Override
           public void assign(

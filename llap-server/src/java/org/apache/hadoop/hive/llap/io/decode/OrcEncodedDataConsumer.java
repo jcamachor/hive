@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.TimeZone;
 import java.util.concurrent.Callable;
 
 import org.apache.hadoop.hive.common.io.encoded.EncodedColumnBatch;
@@ -216,6 +217,7 @@ public class OrcEncodedDataConsumer
       ConsumerStripeMetadata stripeMetadata, TypeDescription fileSchema) throws IOException {
     TreeReaderFactory.Context context = new TreeReaderFactory.ReaderContext()
             .setSchemaEvolution(evolution).skipCorrupt(skipCorrupt)
+            .useUTCTimestamp(true)
             .writerTimeZone(stripeMetadata.getWriterTimezone());
     this.batchSchemas = includes.getBatchReaderTypes(fileSchema);
     StructTreeReader treeReader = EncodedTreeReaderFactory.createRootTreeReader(
@@ -249,7 +251,9 @@ public class OrcEncodedDataConsumer
       case VARCHAR:
         return new BytesColumnVector(batchSize);
       case TIMESTAMP:
-        return new TimestampColumnVector(batchSize);
+        TimestampColumnVector vector = new TimestampColumnVector(batchSize);
+        vector.setIsUTC(true);
+        return vector;
       case DECIMAL:
         return new DecimalColumnVector(batchSize, type.getPrecision(),
             type.getScale());

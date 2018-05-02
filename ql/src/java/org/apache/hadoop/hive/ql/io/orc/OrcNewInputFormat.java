@@ -51,8 +51,8 @@ public class OrcNewInputFormat extends InputFormat<NullWritable, OrcStruct>{
     Path path = fileSplit.getPath();
     Configuration conf = ShimLoader.getHadoopShims()
         .getConfiguration(context);
-    return new OrcRecordReader(OrcFile.createReader(path,
-                                                   OrcFile.readerOptions(conf)),
+    return new OrcRecordReader(
+        OrcFile.createReader(path, OrcFile.readerOptions(conf)),
         ShimLoader.getHadoopShims().getConfiguration(context),
         fileSplit.getStart(), fileSplit.getLength());
   }

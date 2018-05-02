@@ -22,7 +22,9 @@ import java.util.List;
 
 import org.apache.hadoop.hive.ql.io.orc.OrcInputFormat;
 import org.apache.orc.CompressionKind;
+import org.apache.orc.FileFormatException;
 import org.apache.orc.FileMetadata;
+import org.apache.orc.OrcFile;
 import org.apache.orc.OrcProto;
 import org.apache.orc.OrcProto.StripeStatistics;
 import org.apache.orc.OrcUtils;
@@ -154,6 +156,16 @@ public final class OrcFileMetadata implements FileMetadata, ConsumerFileMetadata
   }
 
   public TypeDescription getSchema() {
-    return OrcUtils.convertTypeFromProtobuf(this.types, 0);
+    try {
+      return OrcUtils.convertTypeFromProtobuf(this.types, 0);
+    } catch (FileFormatException e) {
+      e.printStackTrace();
+    }
+    return null;
+  }
+
+  @Override
+  public int getWriterImplementation() {
+    return OrcFile.WriterImplementation.ORC_JAVA.getId();
   }
 }
