@@ -1,0 +1,281 @@
+PREHOOK: query: create table test1( name String, id int, address String)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@test1
+POSTHOOK: query: create table test1( name String, id int, address String)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@test1
+PREHOOK: query: insert into test1 values("Young", 1, "Sydney"), ("Jin", 2, "Mel")
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@test1
+POSTHOOK: query: insert into test1 values("Young", 1, "Sydney"), ("Jin", 2, "Mel")
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@test1
+POSTHOOK: Lineage: test1.address SCRIPT []
+POSTHOOK: Lineage: test1.id SCRIPT []
+POSTHOOK: Lineage: test1.name SCRIPT []
+PREHOOK: query: analyze table test1 compute statistics for columns
+PREHOOK: type: ANALYZE_TABLE
+PREHOOK: Input: default@test1
+PREHOOK: Output: default@test1
+#### A masked pattern was here ####
+POSTHOOK: query: analyze table test1 compute statistics for columns
+POSTHOOK: type: ANALYZE_TABLE
+POSTHOOK: Input: default@test1
+POSTHOOK: Output: default@test1
+#### A masked pattern was here ####
+PREHOOK: query: create view test1_view as select * from test1
+PREHOOK: type: CREATEVIEW
+PREHOOK: Input: default@test1
+PREHOOK: Output: database:default
+PREHOOK: Output: default@test1_view
+POSTHOOK: query: create view test1_view as select * from test1
+POSTHOOK: type: CREATEVIEW
+POSTHOOK: Input: default@test1
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@test1_view
+POSTHOOK: Lineage: test1_view.address SIMPLE [(test1)test1.FieldSchema(name:address, type:string, comment:null), ]
+POSTHOOK: Lineage: test1_view.id SIMPLE [(test1)test1.FieldSchema(name:id, type:int, comment:null), ]
+POSTHOOK: Lineage: test1_view.name SIMPLE [(test1)test1.FieldSchema(name:name, type:string, comment:null), ]
+PREHOOK: query: select * from test1_view
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test1
+PREHOOK: Input: default@test1_view
+#### A masked pattern was here ####
+POSTHOOK: query: select * from test1_view
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test1
+POSTHOOK: Input: default@test1_view
+#### A masked pattern was here ####
+Young	1	Sydney
+Jin	2	Mel
+PREHOOK: query: create table test2( name String, id int, address String)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@test2
+POSTHOOK: query: create table test2( name String, id int, address String)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@test2
+PREHOOK: query: insert into test2 values("Eun", 3, "Bri"), ("Kim", 4, "Ad")
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@test2
+POSTHOOK: query: insert into test2 values("Eun", 3, "Bri"), ("Kim", 4, "Ad")
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@test2
+POSTHOOK: Lineage: test2.address SCRIPT []
+POSTHOOK: Lineage: test2.id SCRIPT []
+POSTHOOK: Lineage: test2.name SCRIPT []
+PREHOOK: query: create view test2_view as select * from test2
+PREHOOK: type: CREATEVIEW
+PREHOOK: Input: default@test2
+PREHOOK: Output: database:default
+PREHOOK: Output: default@test2_view
+POSTHOOK: query: create view test2_view as select * from test2
+POSTHOOK: type: CREATEVIEW
+POSTHOOK: Input: default@test2
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@test2_view
+POSTHOOK: Lineage: test2_view.address SIMPLE [(test2)test2.FieldSchema(name:address, type:string, comment:null), ]
+POSTHOOK: Lineage: test2_view.id SIMPLE [(test2)test2.FieldSchema(name:id, type:int, comment:null), ]
+POSTHOOK: Lineage: test2_view.name SIMPLE [(test2)test2.FieldSchema(name:name, type:string, comment:null), ]
+PREHOOK: query: select * from test2_view
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test2
+PREHOOK: Input: default@test2_view
+#### A masked pattern was here ####
+POSTHOOK: query: select * from test2_view
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test2
+POSTHOOK: Input: default@test2_view
+#### A masked pattern was here ####
+Eun	3	Bri
+Kim	4	Ad
+PREHOOK: query: select * from test1 union select * from test2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test1
+PREHOOK: Input: default@test2
+#### A masked pattern was here ####
+POSTHOOK: query: select * from test1 union select * from test2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test1
+POSTHOOK: Input: default@test2
+#### A masked pattern was here ####
+Eun	3	Bri
+Jin	2	Mel
+Kim	4	Ad
+Young	1	Sydney
+PREHOOK: query: select * from test1_view union select * from test2_view
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test1
+PREHOOK: Input: default@test1_view
+PREHOOK: Input: default@test2
+PREHOOK: Input: default@test2_view
+#### A masked pattern was here ####
+POSTHOOK: query: select * from test1_view union select * from test2_view
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test1
+POSTHOOK: Input: default@test1_view
+POSTHOOK: Input: default@test2
+POSTHOOK: Input: default@test2_view
+#### A masked pattern was here ####
+Eun	3	Bri
+Jin	2	Mel
+Kim	4	Ad
+Young	1	Sydney
+PREHOOK: query: create view test_view as select * from test1 union select * from test2
+PREHOOK: type: CREATEVIEW
+PREHOOK: Input: default@test1
+PREHOOK: Input: default@test2
+PREHOOK: Output: database:default
+PREHOOK: Output: default@test_view
+POSTHOOK: query: create view test_view as select * from test1 union select * from test2
+POSTHOOK: type: CREATEVIEW
+POSTHOOK: Input: default@test1
+POSTHOOK: Input: default@test2
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@test_view
+POSTHOOK: Lineage: test_view.address EXPRESSION [(test1)test1.FieldSchema(name:address, type:string, comment:null), (test2)test2.FieldSchema(name:address, type:string, comment:null), ]
+POSTHOOK: Lineage: test_view.id EXPRESSION [(test1)test1.FieldSchema(name:id, type:int, comment:null), (test2)test2.FieldSchema(name:id, type:int, comment:null), ]
+POSTHOOK: Lineage: test_view.name EXPRESSION [(test1)test1.FieldSchema(name:name, type:string, comment:null), (test2)test2.FieldSchema(name:name, type:string, comment:null), ]
+PREHOOK: query: select * from test_view
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test1
+PREHOOK: Input: default@test2
+PREHOOK: Input: default@test_view
+#### A masked pattern was here ####
+POSTHOOK: query: select * from test_view
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test1
+POSTHOOK: Input: default@test2
+POSTHOOK: Input: default@test_view
+#### A masked pattern was here ####
+Eun	3	Bri
+Jin	2	Mel
+Kim	4	Ad
+Young	1	Sydney
+PREHOOK: query: create view test_view1 as select * from test1 union all select * from test2
+PREHOOK: type: CREATEVIEW
+PREHOOK: Input: default@test1
+PREHOOK: Input: default@test2
+PREHOOK: Output: database:default
+PREHOOK: Output: default@test_view1
+POSTHOOK: query: create view test_view1 as select * from test1 union all select * from test2
+POSTHOOK: type: CREATEVIEW
+POSTHOOK: Input: default@test1
+POSTHOOK: Input: default@test2
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@test_view1
+POSTHOOK: Lineage: test_view1.address EXPRESSION [(test1)test1.FieldSchema(name:address, type:string, comment:null), (test2)test2.FieldSchema(name:address, type:string, comment:null), ]
+POSTHOOK: Lineage: test_view1.id EXPRESSION [(test1)test1.FieldSchema(name:id, type:int, comment:null), (test2)test2.FieldSchema(name:id, type:int, comment:null), ]
+POSTHOOK: Lineage: test_view1.name EXPRESSION [(test1)test1.FieldSchema(name:name, type:string, comment:null), (test2)test2.FieldSchema(name:name, type:string, comment:null), ]
+PREHOOK: query: select * from test_view1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test1
+PREHOOK: Input: default@test2
+PREHOOK: Input: default@test_view1
+#### A masked pattern was here ####
+POSTHOOK: query: select * from test_view1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test1
+POSTHOOK: Input: default@test2
+POSTHOOK: Input: default@test_view1
+#### A masked pattern was here ####
+Young	1	Sydney
+Jin	2	Mel
+Eun	3	Bri
+Kim	4	Ad
+PREHOOK: query: create view test_view2 as with tmp_1 as ( select * from test1 ), tmp_2 as (select * from test2 ) select * from tmp_1 union select * from tmp_2
+PREHOOK: type: CREATEVIEW
+PREHOOK: Input: default@test1
+PREHOOK: Input: default@test2
+PREHOOK: Output: database:default
+PREHOOK: Output: default@test_view2
+POSTHOOK: query: create view test_view2 as with tmp_1 as ( select * from test1 ), tmp_2 as (select * from test2 ) select * from tmp_1 union select * from tmp_2
+POSTHOOK: type: CREATEVIEW
+POSTHOOK: Input: default@test1
+POSTHOOK: Input: default@test2
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@test_view2
+POSTHOOK: Lineage: test_view2.address EXPRESSION [(test1)test1.FieldSchema(name:address, type:string, comment:null), (test2)test2.FieldSchema(name:address, type:string, comment:null), ]
+POSTHOOK: Lineage: test_view2.id EXPRESSION [(test1)test1.FieldSchema(name:id, type:int, comment:null), (test2)test2.FieldSchema(name:id, type:int, comment:null), ]
+POSTHOOK: Lineage: test_view2.name EXPRESSION [(test1)test1.FieldSchema(name:name, type:string, comment:null), (test2)test2.FieldSchema(name:name, type:string, comment:null), ]
+PREHOOK: query: select * from test_view2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test1
+PREHOOK: Input: default@test2
+PREHOOK: Input: default@test_view2
+#### A masked pattern was here ####
+POSTHOOK: query: select * from test_view2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test1
+POSTHOOK: Input: default@test2
+POSTHOOK: Input: default@test_view2
+#### A masked pattern was here ####
+Eun	3	Bri
+Jin	2	Mel
+Kim	4	Ad
+Young	1	Sydney
+PREHOOK: query: create view test_view3 as with tmp_1 as ( select * from test1 ), tmp_2 as (select * from test2 ) select * from tmp_1 union all select * from tmp_2
+PREHOOK: type: CREATEVIEW
+PREHOOK: Input: default@test1
+PREHOOK: Input: default@test2
+PREHOOK: Output: database:default
+PREHOOK: Output: default@test_view3
+POSTHOOK: query: create view test_view3 as with tmp_1 as ( select * from test1 ), tmp_2 as (select * from test2 ) select * from tmp_1 union all select * from tmp_2
+POSTHOOK: type: CREATEVIEW
+POSTHOOK: Input: default@test1
+POSTHOOK: Input: default@test2
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@test_view3
+POSTHOOK: Lineage: test_view3.address EXPRESSION [(test1)test1.FieldSchema(name:address, type:string, comment:null), (test2)test2.FieldSchema(name:address, type:string, comment:null), ]
+POSTHOOK: Lineage: test_view3.id EXPRESSION [(test1)test1.FieldSchema(name:id, type:int, comment:null), (test2)test2.FieldSchema(name:id, type:int, comment:null), ]
+POSTHOOK: Lineage: test_view3.name EXPRESSION [(test1)test1.FieldSchema(name:name, type:string, comment:null), (test2)test2.FieldSchema(name:name, type:string, comment:null), ]
+PREHOOK: query: select * from test_view3
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test1
+PREHOOK: Input: default@test2
+PREHOOK: Input: default@test_view3
+#### A masked pattern was here ####
+POSTHOOK: query: select * from test_view3
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test1
+POSTHOOK: Input: default@test2
+POSTHOOK: Input: default@test_view3
+#### A masked pattern was here ####
+Young	1	Sydney
+Jin	2	Mel
+Eun	3	Bri
+Kim	4	Ad
+PREHOOK: query: create table test_table1 as with tmp_1 as ( select * from test1 ), tmp_2 as (select * from test2 ) select * from tmp_1 union all select * from tmp_2
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@test1
+PREHOOK: Input: default@test2
+PREHOOK: Output: database:default
+PREHOOK: Output: default@test_table1
+POSTHOOK: query: create table test_table1 as with tmp_1 as ( select * from test1 ), tmp_2 as (select * from test2 ) select * from tmp_1 union all select * from tmp_2
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@test1
+POSTHOOK: Input: default@test2
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@test_table1
+POSTHOOK: Lineage: test_table1.address EXPRESSION [(test1)test1.FieldSchema(name:address, type:string, comment:null), (test2)test2.FieldSchema(name:address, type:string, comment:null), ]
+POSTHOOK: Lineage: test_table1.id EXPRESSION [(test1)test1.FieldSchema(name:id, type:int, comment:null), (test2)test2.FieldSchema(name:id, type:int, comment:null), ]
+POSTHOOK: Lineage: test_table1.name EXPRESSION [(test1)test1.FieldSchema(name:name, type:string, comment:null), (test2)test2.FieldSchema(name:name, type:string, comment:null), ]
+PREHOOK: query: select * from test_table1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_table1
+#### A masked pattern was here ####
+POSTHOOK: query: select * from test_table1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_table1
+#### A masked pattern was here ####
+Young	1	Sydney
+Jin	2	Mel
+Eun	3	Bri
+Kim	4	Ad
