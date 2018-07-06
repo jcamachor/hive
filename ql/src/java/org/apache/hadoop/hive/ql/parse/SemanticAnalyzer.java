@@ -12126,12 +12126,22 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   }
 
   void analyzeInternal(ASTNode ast, PlannerContextFactory pcf) throws SemanticException {
-    // 1. Generate Resolved Parse tree from syntax tree
     LOG.info("Starting Semantic Analysis");
+    // 1. Generate Resolved Parse tree from syntax tree
+    boolean needsTransform = needsTransform();
+    ASTNode astForInitialTraversal;
+    if (needsTransform) {
+      // If we may apply masking/filtering policies, we create a copy of the ast.
+      // The reason is that the first pass may modify the initial ast, but if we need to
+      // parse for a second time, we would like to parse the unmodified ast.
+      astForInitialTraversal = (ASTNode) ParseDriver.adaptor.dupTree(ast);
+    } else {
+      astForInitialTraversal = ast;
+    }
     //change the location of position alias process here
-    processPositionAlias(ast);
+    processPositionAlias(astForInitialTraversal);
     PlannerContext plannerCtx = pcf.create();
-    if (!genResolvedParseTree(ast, plannerCtx)) {
+    if (!genResolvedParseTree(astForInitialTraversal, plannerCtx)) {
       return;
     }
 
@@ -12147,33 +12157,33 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     // Otherwise we have to wait until after the masking/filtering step.
     boolean isCacheEnabled = isResultsCacheEnabled();
     QueryResultsCache.LookupInfo lookupInfo = null;
-    boolean needsTransform = needsTransform();
     if (isCacheEnabled && !needsTransform && queryTypeCanUseCache()) {
-      lookupInfo = createLookupInfoForQuery(ast);
+      lookupInfo = createLookupInfoForQuery(astForInitialTraversal);
       if (checkResultsCache(lookupInfo)) {
         return;
       }
     }
 
     // 2. Gen OP Tree from resolved Parse Tree
-    Operator sinkOp = genOPTree(ast, plannerCtx);
+    Operator sinkOp = genOPTree(astForInitialTraversal, plannerCtx);
 
     if (!unparseTranslator.isEnabled() &&
         (tableMask.isEnabled() && analyzeRewrite == null)) {
       // Here we rewrite the * and also the masking table
-      ASTNode tree = rewriteASTWithMaskAndFilter(tableMask, ast, ctx.getTokenRewriteStream(),
+      ASTNode rewrittenAST = rewriteASTWithMaskAndFilter(tableMask, ast, ctx.getTokenRewriteStream(),
           ctx, db, tabNameToTabObject, ignoredTokens);
-      if (tree != ast) {
+      if (ast != rewrittenAST) {
+        ast = rewrittenAST;
         plannerCtx = pcf.create();
         ctx.setSkipTableMasking(true);
         init(true);
         //change the location of position alias process here
-        processPositionAlias(tree);
-        genResolvedParseTree(tree, plannerCtx);
+        processPositionAlias(ast);
+        genResolvedParseTree(ast, plannerCtx);
         if (this instanceof CalcitePlanner) {
           ((CalcitePlanner) this).resetCalciteConfiguration();
         }
-        sinkOp = genOPTree(tree, plannerCtx);
+        sinkOp = genOPTree(ast, plannerCtx);
       }
     }
 
