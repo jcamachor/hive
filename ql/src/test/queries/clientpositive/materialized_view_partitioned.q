@@ -58,3 +58,5 @@ EXPLAIN
 ALTER MATERIALIZED VIEW partition_mv_3 REBUILD;
 
 ALTER MATERIALIZED VIEW partition_mv_3 REBUILD;
+
+SELECT * FROM partition_mv_3 where key = 238;
