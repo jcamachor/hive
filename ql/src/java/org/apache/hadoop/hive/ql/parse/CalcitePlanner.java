@@ -2154,7 +2154,6 @@ public class CalcitePlanner extends SemanticAnalyzer {
       final RelOptCluster optCluster = basePlan.getCluster();
       final PerfLogger perfLogger = SessionState.getPerfLogger();
 
-      perfLogger.PerfLogBegin(this.getClass().getName(), PerfLogger.OPTIMIZER);
       final RelNode calcitePreMVRewritingPlan = basePlan;
 
       // Add views to planner
@@ -2218,6 +2217,8 @@ public class CalcitePlanner extends SemanticAnalyzer {
         LOG.warn("Exception loading materialized views", e);
       }
       if (!materializations.isEmpty()) {
+        perfLogger.PerfLogBegin(this.getClass().getName(), PerfLogger.OPTIMIZER);
+
         // Use Calcite cost model for view rewriting
         optCluster.invalidateMetadataQuery();
         RelMetadataQuery.THREAD_PROVIDERS.set(JaninoRelMetadataProvider.of(DefaultRelMetadataProvider.INSTANCE));
@@ -2242,7 +2243,9 @@ public class CalcitePlanner extends SemanticAnalyzer {
         // Restore default cost model
         optCluster.invalidateMetadataQuery();
         RelMetadataQuery.THREAD_PROVIDERS.set(JaninoRelMetadataProvider.of(mdProvider));
+
         perfLogger.PerfLogEnd(this.getClass().getName(), PerfLogger.OPTIMIZER, "Calcite: View-based rewriting");
+
         if (calcitePreMVRewritingPlan != basePlan) {
           // A rewriting was produced, we will check whether it was part of an incremental rebuild
           // to try to replace INSERT OVERWRITE by INSERT
