@@ -7,10 +7,10 @@ CREATE TABLE src_txn stored as orc TBLPROPERTIES ('transactional' = 'true')
 AS SELECT * FROM src;
 
 EXPLAIN
-CREATE MATERIALIZED VIEW partition_mv_1 PARTITIONED BY (key) AS
+CREATE MATERIALIZED VIEW partition_mv_1 AS
 SELECT value, key FROM src_txn where key > 200 and key < 250;
 
-CREATE MATERIALIZED VIEW partition_mv_1 PARTITIONED BY (key) AS
+CREATE MATERIALIZED VIEW partition_mv_1 AS
 SELECT value, key FROM src_txn where key > 200 and key < 250;
 
 DESCRIBE FORMATTED partition_mv_1;
@@ -20,7 +20,7 @@ SELECT * FROM partition_mv_1 where key = 238;
 
 SELECT * FROM partition_mv_1 where key = 238;
 
-CREATE MATERIALIZED VIEW partition_mv_2 PARTITIONED BY (value) AS
+CREATE MATERIALIZED VIEW partition_mv_2 AS
 SELECT key, value FROM src_txn where key > 200 and key < 250;
 
 EXPLAIN
@@ -47,7 +47,7 @@ SELECT * FROM partition_mv_2 where key = 238;
 CREATE TABLE src_txn_2 stored as orc TBLPROPERTIES ('transactional' = 'true')
 AS SELECT * FROM src;
 
-CREATE MATERIALIZED VIEW partition_mv_3 PARTITIONED BY (key) AS
+CREATE MATERIALIZED VIEW partition_mv_3 AS
 SELECT src_txn.value, src_txn.key FROM src_txn, src_txn_2
 WHERE src_txn.key = src_txn_2.key
   AND src_txn.key > 200 AND src_txn.key < 250;
