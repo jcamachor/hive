@@ -575,6 +575,7 @@ PREHOOK: Output: default@partition_mv_1
 POSTHOOK: query: ALTER MATERIALIZED VIEW partition_mv_1 REBUILD
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src_txn
+<<<<<<< HEAD
 POSTHOOK: Output: default@partition_mv_1@key=201
 POSTHOOK: Output: default@partition_mv_1@key=202
 POSTHOOK: Output: default@partition_mv_1@key=203
@@ -639,6 +640,10 @@ POSTHOOK: Lineage: partition_mv_1 PARTITION(key=244).value SIMPLE [(src_txn)src_
 POSTHOOK: Lineage: partition_mv_1 PARTITION(key=247).value SIMPLE [(src_txn)src_txn.FieldSchema(name:value, type:string, comment:null), ]
 POSTHOOK: Lineage: partition_mv_1 PARTITION(key=248).value SIMPLE [(src_txn)src_txn.FieldSchema(name:value, type:string, comment:null), ]
 POSTHOOK: Lineage: partition_mv_1 PARTITION(key=249).value SIMPLE [(src_txn)src_txn.FieldSchema(name:value, type:string, comment:null), ]
+=======
+POSTHOOK: Output: default@partition_mv_1@key=238
+POSTHOOK: Lineage: partition_mv_1 PARTITION(key=238).value SIMPLE [(src_txn)src_txn.FieldSchema(name:value, type:string, comment:null), ]
+>>>>>>> 781f58d715... vect mat rebuild
 PREHOOK: query: SELECT * FROM partition_mv_1 where key = 238
 PREHOOK: type: QUERY
 PREHOOK: Input: default@partition_mv_1
