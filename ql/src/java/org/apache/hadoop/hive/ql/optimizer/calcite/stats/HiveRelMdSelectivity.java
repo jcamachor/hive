@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.calcite.plan.volcano.RelSubset;
 import org.apache.calcite.rel.core.Join;
 import org.apache.calcite.rel.core.JoinRelType;
 import org.apache.calcite.rel.core.SemiJoin;
@@ -34,6 +35,7 @@ import org.apache.calcite.rel.metadata.RelMetadataQuery;
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.util.BuiltInMethod;
 import org.apache.calcite.util.Pair;
+import org.apache.calcite.util.Util;
 import org.apache.hadoop.hive.ql.optimizer.calcite.CalciteSemanticException;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil.JoinLeafPredicateInfo;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil.JoinPredicateInfo;
@@ -54,6 +56,10 @@ public class HiveRelMdSelectivity extends RelMdSelectivity {
   private HiveRelMdSelectivity() {}
 
   //~ Methods ----------------------------------------------------------------
+
+  public Double getSelectivity(RelSubset rel, RelMetadataQuery mq, RexNode predicate) {
+    return mq.getSelectivity(Util.first(rel.getBest(), rel.getOriginal()), predicate);
+  }
 
   public Double getSelectivity(HiveTableScan t, RelMetadataQuery mq, RexNode predicate) {
     if (predicate != null) {
@@ -249,12 +255,6 @@ public class HiveRelMdSelectivity extends RelMdSelectivity {
 
   /**
    * Compute Max NDV to determine Join Selectivity.
-   *
-   * @param jlpi
-   * @param colStatMap
-   *          Immutable Map of Projection Index (in Join Schema) to Column Stat
-   * @param rightProjOffSet
-   * @return
    */
   private static Double getMaxNDVForJoinSelectivity(JoinLeafPredicateInfo jlpi,
       ImmutableMap<Integer, Double> colStatMap) {

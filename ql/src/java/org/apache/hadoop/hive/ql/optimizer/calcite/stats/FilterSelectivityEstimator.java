@@ -36,6 +36,7 @@ import org.apache.calcite.sql.SqlKind;
 import org.apache.calcite.sql.SqlOperator;
 import org.apache.calcite.sql.type.SqlTypeUtil;
 import org.apache.calcite.util.ImmutableBitSet;
+import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil;
 import org.apache.hadoop.hive.ql.optimizer.calcite.RelOptHiveTable;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan;
@@ -68,6 +69,14 @@ public class FilterSelectivityEstimator extends RexVisitorImpl<Double> {
      */
     if (isPartitionPredicate(call, this.childRel)) {
       return 1.0;
+    }
+
+    /*
+     * Heuristic for predicates on ROW__ID.writeId till we have statistics (including
+     * distribution) available for it.
+     */
+    if (isWriteIdFilteringPredicate(call, this.childRel)) {
+      return 0.0001;
     }
 
     Double selectivity = null;
@@ -285,6 +294,30 @@ public class FilterSelectivityEstimator extends RexVisitorImpl<Double> {
       RelOptHiveTable table = (RelOptHiveTable) ((HiveTableScan) r).getTable();
       ImmutableBitSet cols = RelOptUtil.InputFinder.bits(expr);
       return table.containsPartitionColumnsOnly(cols);
+    }
+    return false;
+  }
+
+  private boolean isWriteIdFilteringPredicate(RexNode expr, RelNode r) {
+    if (r instanceof Project) {
+      expr = RelOptUtil.pushFilterPastProject(expr, (Project) r);
+      return isWriteIdFilteringPredicate(expr, ((Project) r).getInput());
+    } else if (r instanceof Filter) {
+      return isWriteIdFilteringPredicate(expr, ((Filter) r).getInput());
+    } else if (r instanceof HiveTableScan) {
+      RelOptHiveTable table = (RelOptHiveTable) ((HiveTableScan) r).getTable();
+      ImmutableBitSet cols = RelOptUtil.InputFinder.bits(expr);
+      if (cols.isEmpty()) {
+        return false;
+      }
+      boolean isWriteIdFilteringPredicate = true;
+      for (int pos : cols) {
+        String colName = table.getRowType().getFieldNames().get(pos);
+        if (!colName.equals(VirtualColumn.ROWID.getName())) {
+          isWriteIdFilteringPredicate = false;
+        }
+      }
+      return isWriteIdFilteringPredicate;
     }
     return false;
   }

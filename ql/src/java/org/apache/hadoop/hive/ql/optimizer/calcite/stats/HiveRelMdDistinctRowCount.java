@@ -23,7 +23,6 @@ import org.apache.calcite.plan.RelOptCost;
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.core.Join;
 import org.apache.calcite.rel.core.SemiJoin;
-import org.apache.calcite.rel.metadata.ChainedRelMetadataProvider;
 import org.apache.calcite.rel.metadata.ReflectiveRelMetadataProvider;
 import org.apache.calcite.rel.metadata.RelMdDistinctRowCount;
 import org.apache.calcite.rel.metadata.RelMdUtil;
@@ -38,21 +37,16 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveJoin;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan;
 import org.apache.hadoop.hive.ql.plan.ColStatistics;
 
-import com.google.common.collect.ImmutableList;
 
 public class HiveRelMdDistinctRowCount extends RelMdDistinctRowCount {
 
   private static final HiveRelMdDistinctRowCount INSTANCE =
       new HiveRelMdDistinctRowCount();
 
-  public static final RelMetadataProvider SOURCE = ChainedRelMetadataProvider
-      .of(ImmutableList.of(
-
+  public static final RelMetadataProvider SOURCE =
       ReflectiveRelMetadataProvider.reflectiveSource(
-          BuiltInMethod.DISTINCT_ROW_COUNT.method, INSTANCE),
+          BuiltInMethod.DISTINCT_ROW_COUNT.method, INSTANCE);
 
-      ReflectiveRelMetadataProvider.reflectiveSource(
-          BuiltInMethod.CUMULATIVE_COST.method, INSTANCE)));
 
   private HiveRelMdDistinctRowCount() {
   }

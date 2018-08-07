@@ -19,6 +19,7 @@ package org.apache.hadoop.hive.ql.optimizer.calcite.stats;
 
 import java.util.List;
 
+import org.apache.calcite.plan.volcano.RelSubset;
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.core.SemiJoin;
 import org.apache.calcite.rel.metadata.ReflectiveRelMetadataProvider;
@@ -27,8 +28,10 @@ import org.apache.calcite.rel.metadata.RelMetadataProvider;
 import org.apache.calcite.rel.metadata.RelMetadataQuery;
 import org.apache.calcite.rel.type.RelDataType;
 import org.apache.calcite.rel.type.RelDataTypeField;
+import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.util.BuiltInMethod;
 import org.apache.calcite.util.ImmutableNullableList;
+import org.apache.calcite.util.Util;
 import org.apache.hadoop.hive.ql.optimizer.calcite.RelOptHiveTable;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveJoin;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan;
@@ -50,6 +53,10 @@ public class HiveRelMdSize extends RelMdSize {
   private HiveRelMdSize() {}
 
   //~ Methods ----------------------------------------------------------------
+
+  public List<Double> averageColumnSizes(RelSubset rel, RelMetadataQuery mq) {
+    return mq.getAverageColumnSizes(Util.first(rel.getBest(), rel.getOriginal()));
+  }
 
   public List<Double> averageColumnSizes(HiveTableScan scan, RelMetadataQuery mq) {
     List<Integer> neededcolsLst = scan.getNeededColIndxsFrmReloptHT();
