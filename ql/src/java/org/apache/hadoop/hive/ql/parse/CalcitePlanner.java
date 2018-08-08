@@ -148,6 +148,7 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.CalciteViewSemanticException;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveConfPlannerContext;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveDefaultRelMetadataProvider;
+import org.apache.hadoop.hive.ql.optimizer.calcite.HiveMaterializedViewsRelMetadataProvider;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HivePlannerContext;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelFactories;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelOpMaterializationValidator;
@@ -2224,9 +2225,11 @@ public class CalcitePlanner extends SemanticAnalyzer {
       if (!materializations.isEmpty()) {
         perfLogger.PerfLogBegin(this.getClass().getName(), PerfLogger.OPTIMIZER);
 
-        // Use Calcite cost model for view rewriting
+        // Use materialized views specific cost model
         optCluster.invalidateMetadataQuery();
-        RelMetadataQuery.THREAD_PROVIDERS.set(JaninoRelMetadataProvider.of(DefaultRelMetadataProvider.INSTANCE));
+        RelMetadataQuery.THREAD_PROVIDERS.set(
+            JaninoRelMetadataProvider.of(
+                new HiveMaterializedViewsRelMetadataProvider(conf).getMetadataProvider()));
 
         // Add materializations to planner
         for (RelOptMaterialization materialization : materializations) {

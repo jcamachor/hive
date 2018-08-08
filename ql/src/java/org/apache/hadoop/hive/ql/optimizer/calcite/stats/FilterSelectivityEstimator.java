@@ -36,21 +36,31 @@ import org.apache.calcite.sql.SqlKind;
 import org.apache.calcite.sql.SqlOperator;
 import org.apache.calcite.sql.type.SqlTypeUtil;
 import org.apache.calcite.util.ImmutableBitSet;
+import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil;
 import org.apache.hadoop.hive.ql.optimizer.calcite.RelOptHiveTable;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan;
 import org.apache.hadoop.hive.ql.plan.ColStatistics;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class FilterSelectivityEstimator extends RexVisitorImpl<Double> {
+
+  private static final Logger LOG = LoggerFactory.getLogger(FilterSelectivityEstimator.class);
+
+
   private final RelNode childRel;
-  private final double  childCardinality;
+  private final double childCardinality;
+  private final double rowIdCondSelectivity;
   private final RelMetadataQuery mq;
 
-  protected FilterSelectivityEstimator(RelNode childRel, RelMetadataQuery mq) {
+  protected FilterSelectivityEstimator(RelNode childRel, double rowIdCondSelectivity,
+      RelMetadataQuery mq) {
     super(true);
     this.mq = mq;
     this.childRel = childRel;
     this.childCardinality = mq.getRowCount(childRel);
+    this.rowIdCondSelectivity = rowIdCondSelectivity;
   }
 
   public Double estimateSelectivity(RexNode predicate) {
@@ -68,6 +78,17 @@ public class FilterSelectivityEstimator extends RexVisitorImpl<Double> {
      */
     if (isPartitionPredicate(call, this.childRel)) {
       return 1.0;
+    }
+
+    /*
+     * Heuristic for predicates on ROW__ID till we have statistics (including
+     * distribution) available for it.
+     */
+    if (isRowIdFilteringPredicate(call, this.childRel)) {
+      if (LOG.isDebugEnabled()) {
+        LOG.debug("Predicate on ROW__ID: " + call + " -> Adjusting estimated cost");
+      }
+      return rowIdCondSelectivity;
     }
 
     Double selectivity = null;
@@ -277,14 +298,40 @@ public class FilterSelectivityEstimator extends RexVisitorImpl<Double> {
 
   private boolean isPartitionPredicate(RexNode expr, RelNode r) {
     if (r instanceof Project) {
-      expr = RelOptUtil.pushFilterPastProject(expr, (Project) r);
-      return isPartitionPredicate(expr, ((Project) r).getInput());
+      Project projOp = (Project) r;
+      expr = RelOptUtil.pushPastProject(expr, projOp);
+      return isPartitionPredicate(expr, projOp.getInput());
     } else if (r instanceof Filter) {
       return isPartitionPredicate(expr, ((Filter) r).getInput());
     } else if (r instanceof HiveTableScan) {
-      RelOptHiveTable table = (RelOptHiveTable) ((HiveTableScan) r).getTable();
+      RelOptHiveTable table = (RelOptHiveTable) r.getTable();
       ImmutableBitSet cols = RelOptUtil.InputFinder.bits(expr);
       return table.containsPartitionColumnsOnly(cols);
+    }
+    return false;
+  }
+
+  private boolean isRowIdFilteringPredicate(RexNode expr, RelNode r) {
+    if (r instanceof Project) {
+      Project projOp = (Project) r;
+      expr = RelOptUtil.pushPastProject(expr, projOp);
+      return isRowIdFilteringPredicate(expr, projOp.getInput());
+    } else if (r instanceof Filter) {
+      return isRowIdFilteringPredicate(expr, ((Filter) r).getInput());
+    } else if (r instanceof HiveTableScan) {
+      RelOptHiveTable table = (RelOptHiveTable) r.getTable();
+      ImmutableBitSet cols = RelOptUtil.InputFinder.bits(expr);
+      if (cols.isEmpty()) {
+        return false;
+      }
+      boolean isRowIdFilteringPredicate = true;
+      for (int pos : cols) {
+        String colName = table.getRowType().getFieldNames().get(pos);
+        if (!colName.equals(VirtualColumn.ROWID.getName())) {
+          isRowIdFilteringPredicate = false;
+        }
+      }
+      return isRowIdFilteringPredicate;
     }
     return false;
   }

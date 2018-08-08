@@ -1648,6 +1648,11 @@ public class HiveConf extends Configuration {
         "tries to modify the original materialization contents to reflect the latest changes to the\n" +
         "materialized view source tables, instead of rebuilding the contents fully. Incremental rebuild\n" +
         "is based on the materialized view algebraic incremental rewriting."),
+    HIVE_MATERIALIZED_VIEW_ROW_ID_SELECTIVITY("hive.materializedview.writeid.filter.selectivity", 0.1f,
+        "Incremental rebuild introduces filter conditions on ROW__ID column. This parameter sets\n" +
+        "the selectivity of filter condition on ROW__ID to the given value for the materialized\n" +
+        "view rewriting cost model. Reducing this value can be useful to favour incremental rebuild\n" +
+        "over full rebuild."),
     HIVE_MATERIALIZED_VIEW_FILE_FORMAT("hive.materializedview.fileformat", "ORC",
         new StringSet("none", "TextFile", "SequenceFile", "RCfile", "ORC"),
         "Default file format for CREATE MATERIALIZED VIEW statement"),

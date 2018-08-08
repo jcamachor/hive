@@ -26,6 +26,7 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.cost.HiveDefaultCostModel;
 import org.apache.hadoop.hive.ql.optimizer.calcite.cost.HiveOnTezCostModel;
 import org.apache.hadoop.hive.ql.optimizer.calcite.cost.HiveRelMdCost;
 import org.apache.hadoop.hive.ql.optimizer.calcite.stats.HiveRelMdCollation;
+import org.apache.hadoop.hive.ql.optimizer.calcite.stats.HiveRelMdCumulativeCost;
 import org.apache.hadoop.hive.ql.optimizer.calcite.stats.HiveRelMdDistinctRowCount;
 import org.apache.hadoop.hive.ql.optimizer.calcite.stats.HiveRelMdDistribution;
 import org.apache.hadoop.hive.ql.optimizer.calcite.stats.HiveRelMdMemory;
@@ -63,12 +64,17 @@ public class HiveDefaultRelMetadataProvider {
             this.hiveConf,
             HiveConf.ConfVars.MAPREDMAXSPLITSIZE);
 
+    // Get the heuristic selectivity for selectivity of condition over ROW__ID column
+    final double rowIdCondSelectivity = (double) HiveConf.getFloatVar(
+        this.hiveConf, HiveConf.ConfVars.HIVE_MATERIALIZED_VIEW_ROW_ID_SELECTIVITY);
+
     // Return MD provider
     return ChainedRelMetadataProvider.of(ImmutableList
             .of(
                     HiveRelMdDistinctRowCount.SOURCE,
+                    HiveRelMdCumulativeCost.SOURCE,
                     new HiveRelMdCost(cm).getMetadataProvider(),
-                    HiveRelMdSelectivity.SOURCE,
+                    new HiveRelMdSelectivity(rowIdCondSelectivity).getMetadataProvider(),
                     HiveRelMdRowCount.SOURCE,
                     HiveRelMdUniqueKeys.SOURCE,
                     HiveRelMdSize.SOURCE,

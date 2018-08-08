@@ -26,6 +26,7 @@ import java.util.Set;
 
 import org.apache.calcite.plan.RelOptUtil;
 import org.apache.calcite.plan.hep.HepRelVertex;
+import org.apache.calcite.plan.volcano.RelSubset;
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.core.Filter;
 import org.apache.calcite.rel.core.Project;
@@ -40,6 +41,7 @@ import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.util.BitSets;
 import org.apache.calcite.util.BuiltInMethod;
 import org.apache.calcite.util.ImmutableBitSet;
+import org.apache.calcite.util.Util;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan;
 import org.apache.hadoop.hive.ql.plan.ColStatistics;
 
@@ -52,6 +54,10 @@ public class HiveRelMdUniqueKeys implements MetadataHandler<BuiltInMetadata.Uniq
   @Override
   public MetadataDef<BuiltInMetadata.UniqueKeys> getDef() {
     return BuiltInMetadata.UniqueKeys.DEF;
+  }
+
+  public Set<ImmutableBitSet> getUniqueKeys(RelSubset rel, RelMetadataQuery mq, boolean ignoreNulls) {
+    return mq.getUniqueKeys(Util.first(rel.getBest(), rel.getOriginal()), ignoreNulls);
   }
 
   /*
