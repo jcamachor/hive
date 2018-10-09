@@ -292,4 +292,14 @@
   <value>99</value>
 </property>
 
+<property>
+  <name>hive.merge.nway.joins</name>
+  <value>false</value>
+</property>
+
+<property>
+  <name>hive.stats.fetch.column.stats</name>
+  <value>true</value>
+</property>
+
 </configuration>
