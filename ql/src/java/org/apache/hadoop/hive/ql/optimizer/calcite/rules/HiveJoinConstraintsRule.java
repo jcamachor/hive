@@ -323,23 +323,23 @@ public class HiveJoinConstraintsRule extends RelOptRule {
                 tRef.getTable().getRowType().getFieldList().get(foreignKeyPos).getType();
             RexTableInputRef foreignKeyColumnRef =
                 RexTableInputRef.of(tRef, foreignKeyPos, foreignKeyColumnType);
-            if (foreignKeyColumnType.isNullable()) {
-              if (joinType == JoinRelType.INNER) {
-                // If it is nullable and it is an INNER, we just need a IS NOT NULL filter
-                RexNode originalCondOp = refToRex.get(foreignKeyColumnRef);
-                assert originalCondOp != null;
-                nullableNodes.add(originalCondOp);
-              } else {
-                // If it is nullable and this is not an INNER, we cannot execute any transformation
-                allContained = false;
-                break;
-              }
-            }
             int uniqueKeyPos = constraint.getColumnPairs().get(pos).target;
             RexTableInputRef uniqueKeyColumnRef = RexTableInputRef.of(nonFkTable, uniqueKeyPos,
                 nonFkTable.getTable().getRowType().getFieldList().get(uniqueKeyPos).getType());
             if (ecT.getEquivalenceClassesMap().containsKey(uniqueKeyColumnRef) &&
                 ecT.getEquivalenceClassesMap().get(uniqueKeyColumnRef).contains(foreignKeyColumnRef)) {
+              if (foreignKeyColumnType.isNullable()) {
+                if (joinType == JoinRelType.INNER) {
+                  // If it is nullable and it is an INNER, we just need a IS NOT NULL filter
+                  RexNode originalCondOp = refToRex.get(foreignKeyColumnRef);
+                  assert originalCondOp != null;
+                  nullableNodes.add(originalCondOp);
+                } else {
+                  // If it is nullable and this is not an INNER, we cannot execute any transformation
+                  allContained = false;
+                  break;
+                }
+              }
               // Remove this condition from eq classes as we have checked that it is present
               // in the join condition
               ecT.getEquivalenceClassesMap().get(uniqueKeyColumnRef).remove(foreignKeyColumnRef);

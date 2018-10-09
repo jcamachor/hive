@@ -277,7 +277,7 @@ public class CliConfigs {
   }
 
   public static class TezPerfCliConfig extends AbstractCliConfig {
-    public TezPerfCliConfig() {
+    public TezPerfCliConfig(boolean useConstraints) {
       super(CorePerfCliDriver.class);
       try {
         setQueryDir("ql/src/test/queries/clientpositive/perf");
@@ -287,10 +287,15 @@ public class CliConfigs {
         excludesFrom(testConfigProps, "encrypted.query.files");
         excludesFrom(testConfigProps, "erasurecoding.only.query.files");
 
-        setResultsDir("ql/src/test/results/clientpositive/perf/tez");
         setLogDir("itests/qtest/target/qfile-results/clientpositive/tez");
 
-        setInitScript("q_perf_test_init.sql");
+        if (useConstraints) {
+          setInitScript("q_perf_test_init_constraints.sql");
+          setResultsDir("ql/src/test/results/clientpositive/perf/tez/constraints");
+        } else {
+          setInitScript("q_perf_test_init.sql");
+          setResultsDir("ql/src/test/results/clientpositive/perf/tez");
+        }
         setCleanupScript("q_perf_test_cleanup.sql");
 
         setHiveConfDir("data/conf/perf-reg/tez");
