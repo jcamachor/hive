@@ -220,7 +220,7 @@ public class HiveJoinConstraintsRule extends RelOptRule {
     }
 
     // 2) Check whether this join can be rewritten or removed
-    Pair<Boolean, List<RexNode>> r = HiveRelOptUtil.isRewritablePKFKJoin(call.builder(),
+    Pair<Boolean, List<RexNode>> r = HiveRelOptUtil.isRewritablePKFKJoin(
         join, leftInput == fkInput, call.getMetadataQuery());
 
     // 3) If it is the only condition, we can trigger the rewriting
