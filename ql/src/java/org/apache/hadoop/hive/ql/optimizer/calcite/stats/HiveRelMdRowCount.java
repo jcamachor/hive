@@ -67,7 +67,7 @@ public class HiveRelMdRowCount extends RelMdRowCount {
 
   public Double getRowCount(Join join, RelMetadataQuery mq) {
     // Try to infer from constraints first
-    Pair<PKFKRelationInfo, RexNode> constraintBasedResult =
+    final Pair<PKFKRelationInfo, RexNode> constraintBasedResult =
         constraintsBasedAnalyzeJoinForPKFK(join, mq);
     if (constraintBasedResult != null) {
       // We succeeded, we calculate the selectivity based on the inferred information
@@ -77,24 +77,30 @@ public class HiveRelMdRowCount extends RelMdRowCount {
       double residualSelectivity = RelMdUtil.guessSelectivity(constraintBasedResult.right);
       double rowCount = constraintBasedResult.left.fkInfo.rowCount * joinSelectivity * residualSelectivity;
       if (LOG.isDebugEnabled()) {
-        LOG.debug("Identified Primary - Foreign Key relation from constraints:\n {} {} Row count for join: {}\n",
-            RelOptUtil.toString(join), constraintBasedResult.left, rowCount);
+        LOG.debug("Identified Primary - Foreign Key relation from constraints:\n {} {} Row count for join: {}\n" +
+            " Join selectivity: {}\n Residual selectivity: {}\n", RelOptUtil.toString(join), constraintBasedResult.left,
+            rowCount, joinSelectivity, residualSelectivity);
       }
       return rowCount;
     }
     // Otherwise, try to infer from stats
-    PKFKRelationInfo pkfk = analyzeJoinForPKFK(join, mq);
+    final PKFKRelationInfo pkfk = analyzeJoinForPKFK(join, mq);
     if (pkfk != null) {
       double selectivity = pkfk.pkInfo.selectivity * pkfk.ndvScalingFactor;
       selectivity = Math.min(1.0, selectivity);
       if (LOG.isDebugEnabled()) {
-        LOG.debug("Identified Primary - Foreign Key relation: {} {}",RelOptUtil.toString(join), pkfk);
+        LOG.debug("Identified Primary - Foreign Key relation: {} {}", RelOptUtil.toString(join), pkfk);
       }
       return pkfk.fkInfo.rowCount * selectivity;
     }
     // If we cannot infer anything, then we just go to join.estimateRowCount(mq).
     // Do not call mq.getRowCount(join), will trigger CyclicMetadataException
-    return join.estimateRowCount(mq);
+    final Double rowCount = join.estimateRowCount(mq);
+    if (LOG.isDebugEnabled()) {
+      LOG.debug("No Primary - Foreign Key relation: \n{} Row count for join: {}\n",
+          RelOptUtil.toString(join), rowCount);
+    }
+    return rowCount;
   }
 
   @Override

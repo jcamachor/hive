@@ -570,10 +570,6 @@ public class HiveRelOptUtil extends RelOptUtil {
         Sets.difference(mq.getTableReferences(join), mq.getTableReferences(join.getLeft()));
     final Set<RelTableRef> fkTables = join.getLeft() == fkInput ? leftTables : rightTables;
     final Set<RelTableRef> nonFkTables = join.getLeft() == fkInput ? rightTables : leftTables;
-    if (nonFkTables.size() != 1) {
-      // More than one table in PK side, we bail out
-      return cannotExtract;
-    }
 
     // 2) Check whether there is a FK relationship
     Set<RexCall> candidatePredicates = new HashSet<>();
@@ -650,65 +646,66 @@ public class HiveRelOptUtil extends RelOptUtil {
 
     // 4) For each table, check whether there is a matching on the non-FK side.
     // If there is and it is the only condition, we are ready to transform
-    final RelTableRef nonFkTable = nonFkTables.iterator().next();
-    final List<String> nonFkTableQName = nonFkTable.getQualifiedName();
-    for (RelTableRef tRef : fkTables) {
-      List<RelReferentialConstraint> constraints = tRef.getTable().getReferentialConstraints();
-      for (RelReferentialConstraint constraint : constraints) {
-        if (constraint.getTargetQualifiedName().equals(nonFkTableQName)) {
-          EquivalenceClasses ecT = EquivalenceClasses.copy(ec);
-          Set<RexNode> removedOriginalPredicates = new HashSet<>();
-          ImmutableBitSet.Builder lBitSet = ImmutableBitSet.builder();
-          ImmutableBitSet.Builder rBitSet = ImmutableBitSet.builder();
-          boolean allContained = true;
-          for (int pos = 0; pos < constraint.getNumColumns(); pos++) {
-            int foreignKeyPos = constraint.getColumnPairs().get(pos).source;
-            RelDataType foreignKeyColumnType =
-                tRef.getTable().getRowType().getFieldList().get(foreignKeyPos).getType();
-            RexTableInputRef foreignKeyColumnRef =
-                RexTableInputRef.of(tRef, foreignKeyPos, foreignKeyColumnType);
-            int uniqueKeyPos = constraint.getColumnPairs().get(pos).target;
-            RexTableInputRef uniqueKeyColumnRef = RexTableInputRef.of(nonFkTable, uniqueKeyPos,
-                nonFkTable.getTable().getRowType().getFieldList().get(uniqueKeyPos).getType());
-            if (ecT.getEquivalenceClassesMap().containsKey(uniqueKeyColumnRef) &&
-                ecT.getEquivalenceClassesMap().get(uniqueKeyColumnRef).contains(foreignKeyColumnRef)) {
-              // Remove this condition from eq classes as we have checked that it is present
-              // in the join condition. In turn, populate the columns that are referenced
-              // from the join inputs
-              for (RexCall originalPred : ecT.removeEquivalence(uniqueKeyColumnRef, foreignKeyColumnRef)) {
-                ImmutableBitSet leftCols = RelOptUtil.InputFinder.bits(originalPred.getOperands().get(0));
-                ImmutableBitSet rightCols = RelOptUtil.InputFinder.bits(originalPred.getOperands().get(1));
-                // Get length and flip column references if join condition specified in
-                // reverse order to join sources
-                int nFieldsLeft = join.getLeft().getRowType().getFieldList().size();
-                int nFieldsRight = join.getRight().getRowType().getFieldList().size();
-                int nSysFields = join.getSystemFieldList().size();
-                ImmutableBitSet rightFieldsBitSet = ImmutableBitSet.range(nSysFields + nFieldsLeft,
-                    nSysFields + nFieldsLeft + nFieldsRight);
-                if (rightFieldsBitSet.contains(leftCols)) {
-                  ImmutableBitSet t = leftCols;
-                  leftCols = rightCols;
-                  rightCols = t;
+    for (final RelTableRef nonFkTable : nonFkTables) {
+      final List<String> nonFkTableQName = nonFkTable.getQualifiedName();
+      for (RelTableRef tRef : fkTables) {
+        List<RelReferentialConstraint> constraints = tRef.getTable().getReferentialConstraints();
+        for (RelReferentialConstraint constraint : constraints) {
+          if (constraint.getTargetQualifiedName().equals(nonFkTableQName)) {
+            EquivalenceClasses ecT = EquivalenceClasses.copy(ec);
+            Set<RexNode> removedOriginalPredicates = new HashSet<>();
+            ImmutableBitSet.Builder lBitSet = ImmutableBitSet.builder();
+            ImmutableBitSet.Builder rBitSet = ImmutableBitSet.builder();
+            boolean allContained = true;
+            for (int pos = 0; pos < constraint.getNumColumns(); pos++) {
+              int foreignKeyPos = constraint.getColumnPairs().get(pos).source;
+              RelDataType foreignKeyColumnType =
+                  tRef.getTable().getRowType().getFieldList().get(foreignKeyPos).getType();
+              RexTableInputRef foreignKeyColumnRef =
+                  RexTableInputRef.of(tRef, foreignKeyPos, foreignKeyColumnType);
+              int uniqueKeyPos = constraint.getColumnPairs().get(pos).target;
+              RexTableInputRef uniqueKeyColumnRef = RexTableInputRef.of(nonFkTable, uniqueKeyPos,
+                  nonFkTable.getTable().getRowType().getFieldList().get(uniqueKeyPos).getType());
+              if (ecT.getEquivalenceClassesMap().containsKey(uniqueKeyColumnRef) &&
+                  ecT.getEquivalenceClassesMap().get(uniqueKeyColumnRef).contains(foreignKeyColumnRef)) {
+                // Remove this condition from eq classes as we have checked that it is present
+                // in the join condition. In turn, populate the columns that are referenced
+                // from the join inputs
+                for (RexCall originalPred : ecT.removeEquivalence(uniqueKeyColumnRef, foreignKeyColumnRef)) {
+                  ImmutableBitSet leftCols = RelOptUtil.InputFinder.bits(originalPred.getOperands().get(0));
+                  ImmutableBitSet rightCols = RelOptUtil.InputFinder.bits(originalPred.getOperands().get(1));
+                  // Get length and flip column references if join condition specified in
+                  // reverse order to join sources
+                  int nFieldsLeft = join.getLeft().getRowType().getFieldList().size();
+                  int nFieldsRight = join.getRight().getRowType().getFieldList().size();
+                  int nSysFields = join.getSystemFieldList().size();
+                  ImmutableBitSet rightFieldsBitSet = ImmutableBitSet.range(nSysFields + nFieldsLeft,
+                      nSysFields + nFieldsLeft + nFieldsRight);
+                  if (rightFieldsBitSet.contains(leftCols)) {
+                    ImmutableBitSet t = leftCols;
+                    leftCols = rightCols;
+                    rightCols = t;
+                  }
+                  lBitSet.set(leftCols.nextSetBit(0) - nSysFields);
+                  rBitSet.set(rightCols.nextSetBit(0) - (nSysFields + nFieldsLeft));
+                  removedOriginalPredicates.add(originalPred);
                 }
-                lBitSet.set(leftCols.nextSetBit(0) - nSysFields);
-                rBitSet.set(rightCols.nextSetBit(0) - (nSysFields + nFieldsLeft));
-                removedOriginalPredicates.add(originalPred);
+              } else {
+                // No relationship, we cannot do anything
+                allContained = false;
+                break;
               }
-            } else {
-              // No relationship, we cannot do anything
-              allContained = false;
-              break;
             }
-          }
-          if (allContained) {
-            // This is a PK-FK, reassign equivalence classes and remove conditions
-            // TODO: Support inference of multiple PK-FK relationships
+            if (allContained) {
+              // This is a PK-FK, reassign equivalence classes and remove conditions
+              // TODO: Support inference of multiple PK-FK relationships
 
-            // 4.1) Add to residual whatever is remaining
-            candidatePredicates.removeAll(removedOriginalPredicates);
-            residualPreds.addAll(candidatePredicates);
-            // 4.2) Return result
-            return PKFKJoinInfo.of(true, Pair.of(lBitSet.build(), rBitSet.build()), residualPreds);
+              // 4.1) Add to residual whatever is remaining
+              candidatePredicates.removeAll(removedOriginalPredicates);
+              residualPreds.addAll(candidatePredicates);
+              // 4.2) Return result
+              return PKFKJoinInfo.of(true, Pair.of(lBitSet.build(), rBitSet.build()), residualPreds);
+            }
           }
         }
       }
