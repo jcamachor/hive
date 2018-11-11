@@ -75,7 +75,12 @@ public class HiveRelMdRowCount extends RelMdRowCount {
       double joinSelectivity = Math.min(1.0,
           constraintBasedResult.left.pkInfo.selectivity * constraintBasedResult.left.ndvScalingFactor);
       double residualSelectivity = RelMdUtil.guessSelectivity(constraintBasedResult.right);
-      double rowCount = constraintBasedResult.left.fkInfo.rowCount * joinSelectivity * residualSelectivity;
+      double rowCount;
+      if (constraintBasedResult.left.isPKSideSimple) {
+        rowCount = Double.MAX_VALUE;
+      } else {
+        rowCount = constraintBasedResult.left.fkInfo.rowCount * joinSelectivity * residualSelectivity;
+      }
       if (LOG.isDebugEnabled()) {
         LOG.debug("Identified Primary - Foreign Key relation from constraints:\n {} {} Row count for join: {}\n" +
             " Join selectivity: {}\n Residual selectivity: {}\n", RelOptUtil.toString(join), constraintBasedResult.left,
