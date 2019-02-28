@@ -24,6 +24,7 @@ import java.util.Map;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
+import java.util.concurrent.atomic.AtomicInteger;
 import org.apache.calcite.linq4j.Ord;
 import org.apache.calcite.plan.RelOptCost;
 import org.apache.calcite.plan.RelOptRuleCall;
@@ -55,6 +56,8 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveJoin;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Planner rule that pushes an
@@ -63,20 +66,16 @@ import com.google.common.collect.Lists;
  */
 public class HiveAggregateJoinTransposeRule extends AggregateJoinTransposeRule {
 
-  /** Extended instance of the rule that can push down aggregate functions. */
-  public static final HiveAggregateJoinTransposeRule INSTANCE =
-      new HiveAggregateJoinTransposeRule(HiveAggregate.class, HiveJoin.class,
-          HiveRelFactories.HIVE_BUILDER, true);
+  private static final Logger LOG = LoggerFactory.getLogger(HiveAggregateJoinTransposeRule.class);
 
   private final boolean allowFunctions;
+  private final AtomicInteger noColsMissingStats;
 
   /** Creates an AggregateJoinTransposeRule that may push down functions. */
-  private HiveAggregateJoinTransposeRule(Class<? extends Aggregate> aggregateClass,
-      Class<? extends Join> joinClass,
-      RelBuilderFactory relBuilderFactory,
-      boolean allowFunctions) {
-    super(aggregateClass, joinClass, relBuilderFactory, true);
-    this.allowFunctions = allowFunctions;
+  public HiveAggregateJoinTransposeRule(AtomicInteger noColsMissingStats) {
+    super(HiveAggregate.class, HiveJoin.class, HiveRelFactories.HIVE_BUILDER, true);
+    this.allowFunctions = true;
+    this.noColsMissingStats = noColsMissingStats;
   }
 
   @Override
@@ -288,11 +287,21 @@ public class HiveAggregateJoinTransposeRule extends AggregateJoinTransposeRule {
     }
 
     // Make a cost based decision to pick cheaper plan
-    RelNode r = relBuilder.build();
-    RelOptCost afterCost = mq.getCumulativeCost(r);
-    RelOptCost beforeCost = mq.getCumulativeCost(aggregate);
-    if (afterCost.isLt(beforeCost)) {
-      call.transformTo(r);
+    try {
+      RelNode r = relBuilder.build();
+      RelOptCost afterCost = mq.getCumulativeCost(r);
+      RelOptCost beforeCost = mq.getCumulativeCost(aggregate);
+      if (afterCost.isLt(beforeCost)) {
+        call.transformTo(r);
+      }
+    } catch (Exception e) {
+      boolean isMissingStats = noColsMissingStats.get() > 0;
+      if (isMissingStats) {
+        LOG.warn("Missing column stats (see previous messages), skipping aggregate-join transpose in CBO");
+        noColsMissingStats.set(0);
+      } else {
+        throw e;
+      }
     }
   }
 

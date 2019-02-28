@@ -30,6 +30,7 @@ import org.apache.calcite.adapter.druid.DruidQuery;
 import org.apache.calcite.linq4j.Ord;
 import org.apache.calcite.plan.RelOptTable;
 import org.apache.calcite.plan.RelOptUtil;
+import org.apache.calcite.plan.hep.HepRelVertex;
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.core.Aggregate;
 import org.apache.calcite.rel.core.AggregateCall;
@@ -230,6 +231,16 @@ public class HiveRelFieldTrimmer extends RelFieldTrimmer {
             newJoinFilters);
 
     return new TrimResult(newJoin, mapping);
+  }
+
+  /**
+   * Variant of {@link #trimFields(RelNode, ImmutableBitSet, Set)} for {@link HepRelVertex}.
+   */
+  public TrimResult trimFields(
+      HepRelVertex node,
+      ImmutableBitSet fieldsUsed,
+      Set<RelDataTypeField> extraFields) {
+    return dispatchTrimFields(node.getCurrentRel(), fieldsUsed, extraFields);
   }
 
   /**
