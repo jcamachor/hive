@@ -208,6 +208,14 @@ module PartitionFilterMode
   VALID_VALUES = Set.new([BY_NAMES, BY_VALUES, BY_EXPR]).freeze
 end
 
+module Engine
+  HIVE = 1
+  IMPALA = 2
+  SPARK = 3
+  VALUE_MAP = {1 => "HIVE", 2 => "IMPALA", 3 => "SPARK"}
+  VALID_VALUES = Set.new([HIVE, IMPALA, SPARK]).freeze
+end
+
 class Version
   include ::Thrift::Struct, ::Thrift::Struct_Union
   VERSION = 1
@@ -1622,11 +1630,13 @@ class ColumnStatistics
   STATSDESC = 1
   STATSOBJ = 2
   ISSTATSCOMPLIANT = 3
+  ENGINE = 4
 
   FIELDS = {
     STATSDESC => {:type => ::Thrift::Types::STRUCT, :name => 'statsDesc', :class => ::ColumnStatisticsDesc},
     STATSOBJ => {:type => ::Thrift::Types::LIST, :name => 'statsObj', :element => {:type => ::Thrift::Types::STRUCT, :class => ::ColumnStatisticsObj}},
-    ISSTATSCOMPLIANT => {:type => ::Thrift::Types::BOOL, :name => 'isStatsCompliant', :optional => true}
+    ISSTATSCOMPLIANT => {:type => ::Thrift::Types::BOOL, :name => 'isStatsCompliant', :optional => true},
+    ENGINE => {:type => ::Thrift::Types::I32, :name => 'engine', :enum_class => ::Engine}
   }
 
   def struct_fields; FIELDS; end
@@ -1634,6 +1644,7 @@ class ColumnStatistics
   def validate
     raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field statsDesc is unset!') unless @statsDesc
     raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field statsObj is unset!') unless @statsObj
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field engine is unset!') unless @engine
   end
 
   ::Thrift::Struct.generate_accessors self
@@ -1713,18 +1724,21 @@ class SetPartitionsStatsRequest
   NEEDMERGE = 2
   WRITEID = 3
   VALIDWRITEIDLIST = 4
+  ENGINE = 5
 
   FIELDS = {
     COLSTATS => {:type => ::Thrift::Types::LIST, :name => 'colStats', :element => {:type => ::Thrift::Types::STRUCT, :class => ::ColumnStatistics}},
     NEEDMERGE => {:type => ::Thrift::Types::BOOL, :name => 'needMerge', :optional => true},
     WRITEID => {:type => ::Thrift::Types::I64, :name => 'writeId', :default => -1, :optional => true},
-    VALIDWRITEIDLIST => {:type => ::Thrift::Types::STRING, :name => 'validWriteIdList', :optional => true}
+    VALIDWRITEIDLIST => {:type => ::Thrift::Types::STRING, :name => 'validWriteIdList', :optional => true},
+    ENGINE => {:type => ::Thrift::Types::I32, :name => 'engine', :enum_class => ::Engine}
   }
 
   def struct_fields; FIELDS; end
 
   def validate
     raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field colStats is unset!') unless @colStats
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field engine is unset!') unless @engine
   end
 
   ::Thrift::Struct.generate_accessors self
@@ -2242,13 +2256,15 @@ class TableStatsRequest
   COLNAMES = 3
   CATNAME = 4
   VALIDWRITEIDLIST = 5
+  ENGINE = 6
 
   FIELDS = {
     DBNAME => {:type => ::Thrift::Types::STRING, :name => 'dbName'},
     TBLNAME => {:type => ::Thrift::Types::STRING, :name => 'tblName'},
     COLNAMES => {:type => ::Thrift::Types::LIST, :name => 'colNames', :element => {:type => ::Thrift::Types::STRING}},
     CATNAME => {:type => ::Thrift::Types::STRING, :name => 'catName', :optional => true},
-    VALIDWRITEIDLIST => {:type => ::Thrift::Types::STRING, :name => 'validWriteIdList', :optional => true}
+    VALIDWRITEIDLIST => {:type => ::Thrift::Types::STRING, :name => 'validWriteIdList', :optional => true},
+    ENGINE => {:type => ::Thrift::Types::I32, :name => 'engine', :enum_class => ::Engine}
   }
 
   def struct_fields; FIELDS; end
@@ -2257,6 +2273,7 @@ class TableStatsRequest
     raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field dbName is unset!') unless @dbName
     raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field tblName is unset!') unless @tblName
     raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field colNames is unset!') unless @colNames
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field engine is unset!') unless @engine
   end
 
   ::Thrift::Struct.generate_accessors self
@@ -2270,6 +2287,7 @@ class PartitionsStatsRequest
   PARTNAMES = 4
   CATNAME = 5
   VALIDWRITEIDLIST = 6
+  ENGINE = 7
 
   FIELDS = {
     DBNAME => {:type => ::Thrift::Types::STRING, :name => 'dbName'},
@@ -2277,7 +2295,8 @@ class PartitionsStatsRequest
     COLNAMES => {:type => ::Thrift::Types::LIST, :name => 'colNames', :element => {:type => ::Thrift::Types::STRING}},
     PARTNAMES => {:type => ::Thrift::Types::LIST, :name => 'partNames', :element => {:type => ::Thrift::Types::STRING}},
     CATNAME => {:type => ::Thrift::Types::STRING, :name => 'catName', :optional => true},
-    VALIDWRITEIDLIST => {:type => ::Thrift::Types::STRING, :name => 'validWriteIdList', :optional => true}
+    VALIDWRITEIDLIST => {:type => ::Thrift::Types::STRING, :name => 'validWriteIdList', :optional => true},
+    ENGINE => {:type => ::Thrift::Types::I32, :name => 'engine', :enum_class => ::Engine}
   }
 
   def struct_fields; FIELDS; end
@@ -2287,6 +2306,7 @@ class PartitionsStatsRequest
     raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field tblName is unset!') unless @tblName
     raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field colNames is unset!') unless @colNames
     raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field partNames is unset!') unless @partNames
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field engine is unset!') unless @engine
   end
 
   ::Thrift::Struct.generate_accessors self
@@ -2518,6 +2538,7 @@ class GetPartitionsByNamesRequest
   GET_COL_STATS = 4
   PROCESSORCAPABILITIES = 5
   PROCESSORIDENTIFIER = 6
+  ENGINE = 7
 
   FIELDS = {
     DB_NAME => {:type => ::Thrift::Types::STRING, :name => 'db_name'},
@@ -2525,7 +2546,8 @@ class GetPartitionsByNamesRequest
     NAMES => {:type => ::Thrift::Types::LIST, :name => 'names', :element => {:type => ::Thrift::Types::STRING}, :optional => true},
     GET_COL_STATS => {:type => ::Thrift::Types::BOOL, :name => 'get_col_stats', :optional => true},
     PROCESSORCAPABILITIES => {:type => ::Thrift::Types::LIST, :name => 'processorCapabilities', :element => {:type => ::Thrift::Types::STRING}, :optional => true},
-    PROCESSORIDENTIFIER => {:type => ::Thrift::Types::STRING, :name => 'processorIdentifier', :optional => true}
+    PROCESSORIDENTIFIER => {:type => ::Thrift::Types::STRING, :name => 'processorIdentifier', :optional => true},
+    ENGINE => {:type => ::Thrift::Types::I32, :name => 'engine', :optional => true, :enum_class => ::Engine}
   }
 
   def struct_fields; FIELDS; end
@@ -4117,6 +4139,7 @@ class GetTableRequest
   GETCOLUMNSTATS = 7
   PROCESSORCAPABILITIES = 8
   PROCESSORIDENTIFIER = 9
+  ENGINE = 10
 
   FIELDS = {
     DBNAME => {:type => ::Thrift::Types::STRING, :name => 'dbName'},
@@ -4126,7 +4149,8 @@ class GetTableRequest
     VALIDWRITEIDLIST => {:type => ::Thrift::Types::STRING, :name => 'validWriteIdList', :optional => true},
     GETCOLUMNSTATS => {:type => ::Thrift::Types::BOOL, :name => 'getColumnStats', :optional => true},
     PROCESSORCAPABILITIES => {:type => ::Thrift::Types::LIST, :name => 'processorCapabilities', :element => {:type => ::Thrift::Types::STRING}, :optional => true},
-    PROCESSORIDENTIFIER => {:type => ::Thrift::Types::STRING, :name => 'processorIdentifier', :optional => true}
+    PROCESSORIDENTIFIER => {:type => ::Thrift::Types::STRING, :name => 'processorIdentifier', :optional => true},
+    ENGINE => {:type => ::Thrift::Types::I32, :name => 'engine', :optional => true, :enum_class => ::Engine}
   }
 
   def struct_fields; FIELDS; end

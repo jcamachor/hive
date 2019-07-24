@@ -19,6 +19,7 @@
 package org.apache.hive.hcatalog.listener;
 
 import org.apache.hadoop.hive.common.TableName;
+import org.apache.hadoop.hive.metastore.api.Engine;
 import org.apache.hadoop.hive.metastore.api.GetPartitionsFilterSpec;
 import org.apache.hadoop.hive.metastore.api.GetPartitionsProjectionSpec;
 import org.apache.hadoop.hive.metastore.api.ISchemaName;
@@ -721,33 +722,39 @@ public class DummyRawStoreFailEvent implements RawStore, Configurable {
   }
 
   @Override
-  public ColumnStatistics getTableColumnStatistics(String catName, String dbName, String tableName,
+  public List<ColumnStatistics> getTableColumnStatistics(String catName, String dbName, String tableName,
                                                    List<String> colNames) throws MetaException, NoSuchObjectException {
     return objectStore.getTableColumnStatistics(catName, dbName, tableName, colNames);
   }
 
   @Override
   public ColumnStatistics getTableColumnStatistics(String catName, String dbName, String tableName,
-                                                   List<String> colNames,
+                                                   List<String> colNames, Engine engine) throws MetaException, NoSuchObjectException {
+    return objectStore.getTableColumnStatistics(catName, dbName, tableName, colNames, engine);
+  }
+
+  @Override
+  public ColumnStatistics getTableColumnStatistics(String catName, String dbName, String tableName,
+                                                   List<String> colNames, Engine engine,
                                                    String writeIdList)
       throws MetaException, NoSuchObjectException {
-    return objectStore.getTableColumnStatistics(catName, dbName, tableName, colNames, writeIdList);
+    return objectStore.getTableColumnStatistics(catName, dbName, tableName, colNames, engine, writeIdList);
   }
 
   @Override
   public boolean deleteTableColumnStatistics(String catName, String dbName, String tableName,
-                                             String colName)
+                                             String colName, Engine engine)
       throws NoSuchObjectException, MetaException, InvalidObjectException, InvalidInputException {
-    return objectStore.deleteTableColumnStatistics(catName, dbName, tableName, colName);
+    return objectStore.deleteTableColumnStatistics(catName, dbName, tableName, colName, engine);
   }
 
   @Override
   public boolean deletePartitionColumnStatistics(String catName, String dbName, String tableName,
-                                                 String partName, List<String> partVals, String colName)
+                                                 String partName, List<String> partVals, String colName, Engine engine)
       throws NoSuchObjectException, MetaException, InvalidObjectException,
       InvalidInputException {
     return objectStore.deletePartitionColumnStatistics(catName, dbName, tableName, partName,
-        partVals, colName);
+        partVals, colName, engine);
   }
 
   @Override
@@ -818,7 +825,7 @@ public class DummyRawStoreFailEvent implements RawStore, Configurable {
   }
 
   @Override
-  public List<ColumnStatistics> getPartitionColumnStatistics(String catName, String dbName,
+  public List<List<ColumnStatistics>> getPartitionColumnStatistics(String catName, String dbName,
                                                              String tblName, List<String> colNames,
                                                              List<String> partNames)
       throws MetaException, NoSuchObjectException {
@@ -828,11 +835,19 @@ public class DummyRawStoreFailEvent implements RawStore, Configurable {
   @Override
   public List<ColumnStatistics> getPartitionColumnStatistics(String catName, String dbName,
                                                              String tblName, List<String> colNames,
-                                                             List<String> partNames,
+                                                             List<String> partNames, Engine engine)
+      throws MetaException, NoSuchObjectException {
+    return objectStore.getPartitionColumnStatistics(catName, dbName, tblName  , colNames, partNames, engine);
+  }
+
+  @Override
+  public List<ColumnStatistics> getPartitionColumnStatistics(String catName, String dbName,
+                                                             String tblName, List<String> colNames,
+                                                             List<String> partNames, Engine engine,
                                                              String writeIdList)
       throws MetaException, NoSuchObjectException {
     return objectStore.getPartitionColumnStatistics(
-        catName, dbName, tblName  , colNames, partNames, writeIdList);
+        catName, dbName, tblName  , colNames, partNames, engine, writeIdList);
   }
 
   @Override
@@ -907,7 +922,8 @@ public class DummyRawStoreFailEvent implements RawStore, Configurable {
 
   @Override
   public AggrStats get_aggr_stats_for(String catName, String dbName,
-                                      String tblName, List<String> partNames, List<String> colNames)
+                                      String tblName, List<String> partNames, List<String> colNames,
+                                      Engine engine)
       throws MetaException {
     return null;
   }
@@ -915,7 +931,7 @@ public class DummyRawStoreFailEvent implements RawStore, Configurable {
   @Override
   public AggrStats get_aggr_stats_for(String catName, String dbName,
                                       String tblName, List<String> partNames, List<String> colNames,
-                                      String writeIdList)
+                                      Engine engine, String writeIdList)
       throws MetaException {
     return null;
   }

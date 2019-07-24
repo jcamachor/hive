@@ -32,6 +32,7 @@ import org.apache.hadoop.hive.metastore.api.ColumnStatisticsData;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsDesc;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
 import org.apache.hadoop.hive.metastore.api.Database;
+import org.apache.hadoop.hive.metastore.api.Engine;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.FileMetadataExprType;
 import org.apache.hadoop.hive.metastore.api.InvalidInputException;
@@ -175,6 +176,7 @@ public class TestOldSchema {
       data.setLongStats(dcsd);
       obj.setStatsData(data);
       cs.addToStatsObj(obj);
+      cs.setEngine(Engine.HIVE);
       store.updatePartitionColumnStatistics(cs, partVal, null, -1);
 
     }
@@ -199,7 +201,7 @@ public class TestOldSchema {
       partNames.add("ds=" + i);
     }
     AggrStats aggrStats = store.get_aggr_stats_for(DEFAULT_CATALOG_NAME, dbName, tableName, partNames,
-        Arrays.asList("col1"));
+        Arrays.asList("col1"), Engine.HIVE);
     statChecker.checkStats(aggrStats);
 
   }

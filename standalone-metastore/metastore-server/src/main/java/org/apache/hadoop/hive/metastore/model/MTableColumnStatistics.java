@@ -38,6 +38,7 @@ public class MTableColumnStatistics {
   private String tableName;
   private String colName;
   private String colType;
+  private int engine;
 
   private Long longLowValue;
   private Long longHighValue;
@@ -268,5 +269,13 @@ public class MTableColumnStatistics {
 
   public void setBitVector(byte[] bitVector) {
     this.bitVector = bitVector;
+  }
+
+  public int getEngine() {
+    return engine;
+  }
+
+  public void setEngine(int engine) {
+    this.engine = engine;
   }
 }

@@ -22,6 +22,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
+import org.apache.hadoop.hive.metastore.api.Engine;
 import org.apache.hadoop.hive.metastore.api.ShowCompactRequest;
 import org.apache.hadoop.hive.metastore.api.ShowCompactResponse;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
@@ -784,7 +785,7 @@ ekoifman:apache-hive-3.0.0-SNAPSHOT-bin ekoifman$ tree /Users/ekoifman/dev/hiver
     List<String> colNames = new ArrayList<>();
     colNames.add("a");
     Map<String, List<ColumnStatisticsObj>> map = hms.getPartitionColumnStatistics("default",
-      "T", partNames, colNames);
+      "T", partNames, colNames, Engine.HIVE);
     Assert.assertEquals(4, map.get(partNames.get(0)).get(0).getStatsData().getLongStats().getHighValue());
 
 
@@ -831,7 +832,7 @@ ekoifman:apache-hive-3.0.0-SNAPSHOT-bin ekoifman$ tree /Users/ekoifman/dev/hiver
     Assert.assertTrue(resp.getCompacts().get(0).getHadoopJobId().startsWith("job_local"));
 
     //now check that stats were updated
-    map = hms.getPartitionColumnStatistics("default","T", partNames, colNames);
+    map = hms.getPartitionColumnStatistics("default","T", partNames, colNames, Engine.HIVE);
     Assert.assertEquals("", 5, map.get(partNames.get(0)).get(0).getStatsData().getLongStats().getHighValue());
   }
   @Test

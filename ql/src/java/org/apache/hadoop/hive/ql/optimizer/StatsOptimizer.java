@@ -24,6 +24,7 @@ import org.apache.hadoop.hive.metastore.api.ColumnStatisticsData;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
 import org.apache.hadoop.hive.metastore.api.DateColumnStatsData;
 import org.apache.hadoop.hive.metastore.api.DoubleColumnStatsData;
+import org.apache.hadoop.hive.metastore.api.Engine;
 import org.apache.hadoop.hive.metastore.api.LongColumnStatsData;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
@@ -471,7 +472,7 @@ public class StatsOptimizer extends Transform {
                     hive.getMSC().getTableColumnStatistics(
                       tbl.getDbName(), tbl.getTableName(),
                       Lists.newArrayList(colName),
-                      tableSnapshot != null ? tableSnapshot.getValidWriteIdList() : null);
+                      Engine.HIVE, tableSnapshot != null ? tableSnapshot.getValidWriteIdList() : null);
                 if (stats.isEmpty()) {
                   Logger.debug("No stats for " + tbl.getTableName() + " column " + colName);
                   return null;
@@ -532,7 +533,7 @@ public class StatsOptimizer extends Transform {
                   hive.getMSC().getTableColumnStatistics(
                     tbl.getDbName(), tbl.getTableName(),
                     Lists.newArrayList(colName),
-                      tableSnapshot != null ? tableSnapshot.getValidWriteIdList() : null);
+                    Engine.HIVE, tableSnapshot != null ? tableSnapshot.getValidWriteIdList() : null);
               if (stats.isEmpty()) {
                 Logger.debug("No stats for " + tbl.getTableName() + " column " + colName);
                 return null;
@@ -675,7 +676,7 @@ public class StatsOptimizer extends Transform {
               ColumnStatisticsData statData =
                   hive.getMSC().getTableColumnStatistics(
                     tbl.getDbName(), tbl.getTableName(), Lists.newArrayList(colName),
-                      tableSnapshot != null ? tableSnapshot.getValidWriteIdList() : null)
+                    Engine.HIVE, tableSnapshot != null ? tableSnapshot.getValidWriteIdList() : null)
                     .get(0).getStatsData();
               String name = colDesc.getTypeString().toUpperCase();
               switch (type) {
@@ -912,7 +913,7 @@ public class StatsOptimizer extends Transform {
 
       Map<String, List<ColumnStatisticsObj>> result = hive.getMSC().getPartitionColumnStatistics(
           tbl.getDbName(), tbl.getTableName(), partNames, Lists.newArrayList(colName),
-          tableSnapshot != null ? tableSnapshot.getValidWriteIdList() : null);
+          Engine.HIVE, tableSnapshot != null ? tableSnapshot.getValidWriteIdList() : null);
       if (result.size() != parts.size()) {
         Logger.debug("Received " + result.size() + " stats for " + parts.size() + " partitions");
         return null;

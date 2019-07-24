@@ -59,6 +59,7 @@ import org.apache.hadoop.hive.metastore.api.Catalog;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsDesc;
 import org.apache.hadoop.hive.metastore.api.Database;
+import org.apache.hadoop.hive.metastore.api.Engine;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Partition;
@@ -699,7 +700,7 @@ public class SharedCache {
             colStatObjs.add(colStatObj);
           }
         }
-        return CachedStore.adjustColStatForGet(getTable().getParameters(), new ColumnStatistics(csd, colStatObjs),
+        return CachedStore.adjustColStatForGet(getTable().getParameters(), new ColumnStatistics(csd, colStatObjs, Engine.HIVE),
             getTable().getWriteId(), validWriteIds, areTxnStatsSupported);
       } finally {
         tableLock.readLock().unlock();
@@ -784,7 +785,7 @@ public class SharedCache {
               return null;
             }
           }
-          ColumnStatistics columnStatistics = new ColumnStatistics(csd, statObject);
+          ColumnStatistics columnStatistics = new ColumnStatistics(csd, statObject, Engine.HIVE);
           if (writeIdList != null && TxnUtils.isTransactionalTable(getParameters())) {
             columnStatistics.setIsStatsCompliant(true);
             if (!txnStatSupported) {

@@ -29,6 +29,7 @@ import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsDesc;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
+import org.apache.hadoop.hive.metastore.api.Engine;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.SetPartitionsStatsRequest;
@@ -145,6 +146,7 @@ public class ColStatsProcessor implements IStatsProcessor {
         ColumnStatistics colStats = new ColumnStatistics();
         colStats.setStatsDesc(statsDesc);
         colStats.setStatsObj(statsObjs);
+        colStats.setEngine(Engine.HIVE);
         stats.add(colStats);
       }
     }
@@ -177,7 +179,7 @@ public class ColStatsProcessor implements IStatsProcessor {
     if (colStats.isEmpty()) {
       return 0;
     }
-    SetPartitionsStatsRequest request = new SetPartitionsStatsRequest(colStats);
+    SetPartitionsStatsRequest request = new SetPartitionsStatsRequest(colStats, Engine.HIVE);
     request.setNeedMerge(colStatDesc.isNeedMerge());
     HiveTxnManager txnMgr = AcidUtils.isTransactionalTable(tbl)
         ? SessionState.get().getTxnMgr() : null;

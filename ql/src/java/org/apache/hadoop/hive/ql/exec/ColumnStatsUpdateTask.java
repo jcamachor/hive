@@ -36,6 +36,7 @@ import org.apache.hadoop.hive.metastore.api.ColumnStatisticsData;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsDesc;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
 import org.apache.hadoop.hive.metastore.api.Date;
+import org.apache.hadoop.hive.metastore.api.Engine;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.SetPartitionsStatsRequest;
 import org.apache.hadoop.hive.metastore.api.utils.DecimalUtils;
@@ -282,6 +283,7 @@ public class ColumnStatsUpdateTask extends Task<ColumnStatsUpdateWork> {
     ColumnStatistics colStat = new ColumnStatistics();
     colStat.setStatsDesc(statsDesc);
     colStat.addToStatsObj(statsObj);
+    colStat.setEngine(Engine.HIVE);
     return colStat;
   }
 
@@ -302,7 +304,7 @@ public class ColumnStatsUpdateTask extends Task<ColumnStatsUpdateWork> {
   private int persistColumnStats(Hive db) throws HiveException, MetaException, IOException {
     ColumnStatistics colStats = constructColumnStatsFromInput();
     SetPartitionsStatsRequest request =
-            new SetPartitionsStatsRequest(Collections.singletonList(colStats));
+            new SetPartitionsStatsRequest(Collections.singletonList(colStats), Engine.HIVE);
 
     // Set writeId and validWriteId list for replicated statistics. getColStats() will return
     // non-null value only during replication.

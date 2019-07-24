@@ -46,6 +46,7 @@ import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.Date;
 import org.apache.hadoop.hive.metastore.api.Decimal;
+import org.apache.hadoop.hive.metastore.api.Engine;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
@@ -970,6 +971,7 @@ import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
 
     stats.setStatsDesc(statsDesc);
     stats.setStatsObj(colStatObjs);
+    stats.setEngine(Engine.HIVE);
 
     cachedStore.updatePartitionColumnStatistics(stats.deepCopy(), partVals1, null, -1);
     cachedStore.updatePartitionColumnStatistics(stats.deepCopy(), partVals2, null, -1);
@@ -979,15 +981,15 @@ import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
     List<String> aggrPartVals = new ArrayList<>();
     aggrPartVals.add("1");
     aggrPartVals.add("2");
-    AggrStats aggrStats = cachedStore.get_aggr_stats_for(DEFAULT_CATALOG_NAME, dbName, tblName, aggrPartVals, colNames);
+    AggrStats aggrStats = cachedStore.get_aggr_stats_for(DEFAULT_CATALOG_NAME, dbName, tblName, aggrPartVals, colNames, Engine.HIVE);
     Assert.assertEquals(aggrStats.getColStats().get(0).getStatsData().getLongStats().getNumNulls(), 100);
-    aggrStats = cachedStore.get_aggr_stats_for(DEFAULT_CATALOG_NAME, dbName, tblName, aggrPartVals, colNames);
+    aggrStats = cachedStore.get_aggr_stats_for(DEFAULT_CATALOG_NAME, dbName, tblName, aggrPartVals, colNames, Engine.HIVE);
     Assert.assertEquals(aggrStats.getColStats().get(0).getStatsData().getLongStats().getNumNulls(), 100);
 
     objectStore.deletePartitionColumnStatistics(DEFAULT_CATALOG_NAME, db.getName(), tbl.getTableName(),
-        Warehouse.makePartName(tbl.getPartitionKeys(), partVals1), partVals1, colName);
+        Warehouse.makePartName(tbl.getPartitionKeys(), partVals1), partVals1, colName, Engine.HIVE);
     objectStore.deletePartitionColumnStatistics(DEFAULT_CATALOG_NAME, db.getName(), tbl.getTableName(),
-        Warehouse.makePartName(tbl.getPartitionKeys(), partVals2), partVals2, colName);
+        Warehouse.makePartName(tbl.getPartitionKeys(), partVals2), partVals2, colName, Engine.HIVE);
     objectStore.dropPartition(DEFAULT_CATALOG_NAME, db.getName(), tbl.getTableName(), partVals1);
     objectStore.dropPartition(DEFAULT_CATALOG_NAME, db.getName(), tbl.getTableName(), partVals2);
     objectStore.dropTable(DEFAULT_CATALOG_NAME, db.getName(), tbl.getTableName());
@@ -1053,6 +1055,7 @@ import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
 
     stats.setStatsDesc(statsDesc);
     stats.setStatsObj(colStatObjs);
+    stats.setEngine(Engine.HIVE);
 
     cachedStore.updatePartitionColumnStatistics(stats.deepCopy(), partVals1, null, -1);
 
@@ -1064,10 +1067,10 @@ import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
     List<String> aggrPartVals = new ArrayList<>();
     aggrPartVals.add("1");
     aggrPartVals.add("2");
-    AggrStats aggrStats = cachedStore.get_aggr_stats_for(DEFAULT_CATALOG_NAME, dbName, tblName, aggrPartVals, colNames);
+    AggrStats aggrStats = cachedStore.get_aggr_stats_for(DEFAULT_CATALOG_NAME, dbName, tblName, aggrPartVals, colNames, Engine.HIVE);
     Assert.assertEquals(aggrStats.getColStats().get(0).getStatsData().getLongStats().getNumNulls(), 100);
     Assert.assertEquals(aggrStats.getColStats().get(0).getStatsData().getLongStats().getNumDVs(), 40);
-    aggrStats = cachedStore.get_aggr_stats_for(DEFAULT_CATALOG_NAME, dbName, tblName, aggrPartVals, colNames);
+    aggrStats = cachedStore.get_aggr_stats_for(DEFAULT_CATALOG_NAME, dbName, tblName, aggrPartVals, colNames, Engine.HIVE);
     Assert.assertEquals(aggrStats.getColStats().get(0).getStatsData().getLongStats().getNumNulls(), 100);
     Assert.assertEquals(aggrStats.getColStats().get(0).getStatsData().getLongStats().getNumDVs(), 40);
     cachedStore.shutdown();
@@ -1139,6 +1142,7 @@ import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
 
     stats.setStatsDesc(statsDesc);
     stats.setStatsObj(colStatObjs);
+    stats.setEngine(Engine.HIVE);
 
     cachedStore.updatePartitionColumnStatistics(stats.deepCopy(), partVals1, null, -1);
 
@@ -1157,10 +1161,10 @@ import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
     List<String> aggrPartVals = new ArrayList<>();
     aggrPartVals.add("1");
     aggrPartVals.add("2");
-    AggrStats aggrStats = cachedStore.get_aggr_stats_for(DEFAULT_CATALOG_NAME, dbName, tblName, aggrPartVals, colNames);
+    AggrStats aggrStats = cachedStore.get_aggr_stats_for(DEFAULT_CATALOG_NAME, dbName, tblName, aggrPartVals, colNames, Engine.HIVE);
     Assert.assertEquals(aggrStats.getColStats().get(0).getStatsData().getLongStats().getNumNulls(), 100);
     Assert.assertEquals(aggrStats.getColStats().get(0).getStatsData().getLongStats().getNumDVs(), 5);
-    aggrStats = cachedStore.get_aggr_stats_for(DEFAULT_CATALOG_NAME, dbName, tblName, aggrPartVals, colNames);
+    aggrStats = cachedStore.get_aggr_stats_for(DEFAULT_CATALOG_NAME, dbName, tblName, aggrPartVals, colNames, Engine.HIVE);
     Assert.assertEquals(aggrStats.getColStats().get(0).getStatsData().getLongStats().getNumNulls(), 100);
     Assert.assertEquals(aggrStats.getColStats().get(0).getStatsData().getLongStats().getNumDVs(), 5);
     cachedStore.shutdown();
@@ -1702,6 +1706,7 @@ import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
 
     stats.setStatsDesc(statsDesc);
     stats.setStatsObj(colStatObjList);
+    stats.setEngine(Engine.HIVE);
 
     return new TableAndColStats(tbl, stats);
   }

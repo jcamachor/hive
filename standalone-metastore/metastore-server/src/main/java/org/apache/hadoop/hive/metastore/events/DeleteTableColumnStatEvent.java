@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.metastore.events;
 import org.apache.hadoop.classification.InterfaceAudience;
 import org.apache.hadoop.classification.InterfaceStability;
 import org.apache.hadoop.hive.metastore.IHMSHandler;
+import org.apache.hadoop.hive.metastore.api.Engine;
 
 /**
  * DeleteTableColumnStatEvent
@@ -30,20 +31,23 @@ import org.apache.hadoop.hive.metastore.IHMSHandler;
 @InterfaceStability.Stable
 public class DeleteTableColumnStatEvent extends ListenerEvent {
   private String catName, dbName, tableName, colName;
+  private Engine engine;
 
   /**
    * @param catName catalog name
    * @param dbName database name
    * @param tableName table name
    * @param colName column name
+   * @param engine engine
    * @param handler handler that is firing the event
    */
-  public DeleteTableColumnStatEvent(String catName, String dbName, String tableName, String colName, IHMSHandler handler) {
+  public DeleteTableColumnStatEvent(String catName, String dbName, String tableName, String colName, Engine engine, IHMSHandler handler) {
     super(true, handler);
     this.catName = catName;
     this.dbName = dbName;
     this.tableName = tableName;
     this.colName = colName;
+    this.engine = engine;
   }
 
   public String getCatName() {
@@ -60,5 +64,9 @@ public class DeleteTableColumnStatEvent extends ListenerEvent {
 
   public String getColName() {
     return colName;
+  }
+
+  public Engine getEngine() {
+    return engine;
   }
 }

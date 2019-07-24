@@ -43,6 +43,7 @@ import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.MetastoreTaskThread;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
+import org.apache.hadoop.hive.metastore.api.Engine;
 import org.apache.hadoop.hive.metastore.api.GetOpenTxnsInfoResponse;
 import org.apache.hadoop.hive.metastore.api.LockState;
 import org.apache.hadoop.hive.metastore.api.LockType;
@@ -481,7 +482,7 @@ public class TestTxnCommands extends TxnCommandsBaseForTests {
     List<ColumnStatisticsObj> stats;
     validWriteIds = msClient.getValidWriteIds("default." + tableName).toString();
     stats = msClient.getTableColumnStatistics(
-        "default", tableName, Lists.newArrayList("a"), validWriteIds);
+        "default", tableName, Lists.newArrayList("a"), Engine.HIVE, validWriteIds);
     return stats;
   }
 

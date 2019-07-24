@@ -42,6 +42,7 @@ import org.apache.hadoop.hive.metastore.RawStoreProxy;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
+import org.apache.hadoop.hive.metastore.api.Engine;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.GetValidWriteIdsRequest;
 import org.apache.hadoop.hive.metastore.api.MetaException;
@@ -444,7 +445,7 @@ public class StatsUpdaterThread extends Thread implements MetaStoreThread {
     try {
       // Note: this should NOT do txn verification - we want to get outdated stats, to
       //       see if we need to update anything.
-      existingStats = rs.getTableColumnStatistics(cat, db, tbl, allCols);
+      existingStats = rs.getTableColumnStatistics(cat, db, tbl, allCols, Engine.HIVE);
     } catch (NoSuchObjectException e) {
       LOG.error("Cannot retrieve existing stats, skipping " + fullTableName, e);
       return null;

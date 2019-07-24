@@ -23,6 +23,7 @@ import org.apache.hadoop.classification.InterfaceStability;
 import org.apache.hadoop.hive.metastore.IHMSHandler;
 
 import java.util.List;
+import org.apache.hadoop.hive.metastore.api.Engine;
 
 /**
  * DeletePartitionColumnStatEvent
@@ -32,6 +33,7 @@ import java.util.List;
 @InterfaceStability.Stable
 public class DeletePartitionColumnStatEvent extends ListenerEvent {
   private String catName, dbName, tableName, colName, partName;
+  private Engine engine;
 
   private List<String> partVals;
 
@@ -42,10 +44,11 @@ public class DeletePartitionColumnStatEvent extends ListenerEvent {
    * @param partName partition column name
    * @param partVals partition value
    * @param colName column name
+   * @param engine engine
    * @param handler handler that is firing the event
    */
   public DeletePartitionColumnStatEvent(String catName, String dbName, String tableName, String partName,
-                                        List<String> partVals, String colName, IHMSHandler handler) {
+      List<String> partVals, String colName, Engine engine, IHMSHandler handler) {
     super(true, handler);
     this.catName = catName;
     this.dbName = dbName;
@@ -53,6 +56,7 @@ public class DeletePartitionColumnStatEvent extends ListenerEvent {
     this.colName = colName;
     this.partName = partName;
     this.partVals = partVals;
+    this.engine = engine;
   }
 
   public String getCatName() {
@@ -77,5 +81,9 @@ public class DeletePartitionColumnStatEvent extends ListenerEvent {
 
   public List<String> getPartVals() {
     return partVals;
+  }
+
+  public Engine getEngine() {
+    return engine;
   }
 }

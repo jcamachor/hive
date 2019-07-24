@@ -33,6 +33,7 @@ import org.apache.hadoop.hive.metastore.MetaStoreTestUtils;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
 import org.apache.hadoop.hive.metastore.api.Database;
+import org.apache.hadoop.hive.metastore.api.Engine;
 import org.apache.hadoop.hive.metastore.api.ForeignKeysRequest;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.api.NotNullConstraintsRequest;
@@ -474,7 +475,7 @@ public class WarehouseInstance implements Closeable {
    * @return - list of ColumnStatisticsObj objects in the order of the specified columns
    */
   public List<ColumnStatisticsObj> getTableColumnStatistics(String dbName, String tableName) throws Exception {
-    return client.getTableColumnStatistics(dbName, tableName, getTableColNames(dbName, tableName));
+    return client.getTableColumnStatistics(dbName, tableName, getTableColNames(dbName, tableName), Engine.HIVE);
   }
 
   /**
@@ -500,7 +501,7 @@ public class WarehouseInstance implements Closeable {
     List<String> colNames = new ArrayList();
     client.getFields(dbName, tableName).forEach(fs -> colNames.add(fs.getName()));
     return client.getPartitionColumnStatistics(dbName, tableName,
-            client.listPartitionNames(dbName, tableName, (short) -1), colNames);
+            client.listPartitionNames(dbName, tableName, (short) -1), colNames, Engine.HIVE);
   }
 
   /**
@@ -516,7 +517,7 @@ public class WarehouseInstance implements Closeable {
                                                          String partName, List<String> colNames)
           throws Exception {
     return client.getPartitionColumnStatistics(dbName, tableName,
-                                              Collections.singletonList(partName), colNames).get(0);
+                                              Collections.singletonList(partName), colNames, Engine.HIVE).get(0);
   }
 
   public List<Partition> getAllPartitions(String dbName, String tableName) throws Exception {

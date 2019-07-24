@@ -31,6 +31,7 @@ import org.apache.hadoop.hive.metastore.api.ColumnStatisticsDesc;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
 import org.apache.hadoop.hive.metastore.api.CurrentNotificationEventId;
 import org.apache.hadoop.hive.metastore.api.Database;
+import org.apache.hadoop.hive.metastore.api.Engine;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Function;
 import org.apache.hadoop.hive.metastore.api.HiveObjectPrivilege;
@@ -645,6 +646,7 @@ public class TestObjectStore {
 
         List<ColumnStatisticsObj> statsObjList = new ArrayList<>(1);
         stats.setStatsObj(statsObjList);
+        stats.setEngine(Engine.HIVE);
 
         ColumnStatisticsData data = new ColumnStatisticsData();
         BooleanColumnStatsData boolStats = new BooleanColumnStatsData();
