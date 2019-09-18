@@ -32,6 +32,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.Stack;
 
+import org.apache.hadoop.hive.common.type.Timestamp;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.Context;
@@ -108,6 +109,7 @@ import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPOr;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFStruct;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.io.DateWritable;
+import org.apache.hadoop.hive.serde2.io.TimestampWritableV2;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.typeinfo.StructTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
@@ -625,6 +627,13 @@ public class StatsRulesProcFactory {
             int minValue = range.minValue.intValue();
             return RangeResult.of(value < minValue, value < maxValue, value == minValue, value == maxValue);
           }
+          case serdeConstants.TIMESTAMP_TYPE_NAME: {
+            TimestampWritableV2 timestampWritable = new TimestampWritableV2(Timestamp.valueOf(boundValue));
+            long value = timestampWritable.getTimestamp().toEpochSecond();
+            long maxValue = range.maxValue.longValue();
+            long minValue = range.minValue.longValue();
+            return RangeResult.of(value < minValue, value < maxValue, value == minValue, value == maxValue);
+          }
           case serdeConstants.BIGINT_TYPE_NAME: {
             long value = Long.parseLong(boundValue);
             long maxValue = range.maxValue.longValue();
@@ -997,7 +1006,7 @@ public class StatsRulesProcFactory {
           } else if (colTypeLowerCase.equals(serdeConstants.INT_TYPE_NAME) ||
               colTypeLowerCase.equals(serdeConstants.DATE_TYPE_NAME)) {
             int value;
-            if (colTypeLowerCase == serdeConstants.DATE_TYPE_NAME) {
+            if (colTypeLowerCase.equals(serdeConstants.DATE_TYPE_NAME)) {
               DateWritable writableVal = new DateWritable(java.sql.Date.valueOf(boundValue));
               value = writableVal.getDays();
             } else {
@@ -1021,8 +1030,15 @@ public class StatsRulesProcFactory {
                 return 0;
               }
             }
-          } else if (colTypeLowerCase.equals(serdeConstants.BIGINT_TYPE_NAME)) {
-            long value = Long.parseLong(boundValue);
+          } else if (colTypeLowerCase.equals(serdeConstants.BIGINT_TYPE_NAME) ||
+              colTypeLowerCase.equals(serdeConstants.TIMESTAMP_TYPE_NAME)) {
+            long value;
+            if (colTypeLowerCase.equals(serdeConstants.TIMESTAMP_TYPE_NAME)) {
+              TimestampWritableV2 timestampWritable = new TimestampWritableV2(Timestamp.valueOf(boundValue));
+              value = timestampWritable.getTimestamp().toEpochSecond();
+            } else {
+              value = Long.parseLong(boundValue);
+            }
             long maxValue = cs.getRange().maxValue.longValue();
             long minValue = cs.getRange().minValue.longValue();
             if (upperBound) {
@@ -1032,6 +1048,9 @@ public class StatsRulesProcFactory {
               if (minValue > value) {
                 return 0;
               }
+              // Assuming uniform distribution, we can use the range to calculate
+              // new estimate for the number of rows
+              return Math.round(((double) (value - minValue) / (maxValue - minValue)) * numRows);
             } else {
               if (minValue >= value) {
                 return numRows;
@@ -1039,6 +1058,9 @@ public class StatsRulesProcFactory {
               if (maxValue < value) {
                 return 0;
               }
+              // Assuming uniform distribution, we can use the range to calculate
+              // new estimate for the number of rows
+              return Math.round(((double) (maxValue - value) / (maxValue - minValue)) * numRows);
             }
           } else if (colTypeLowerCase.equals(serdeConstants.FLOAT_TYPE_NAME)) {
             float value = Float.parseFloat(boundValue);
@@ -1564,6 +1586,7 @@ public class StatsRulesProcFactory {
             case serdeConstants.DATE_TYPE_NAME:
             case serdeConstants.INT_TYPE_NAME:
             case serdeConstants.BIGINT_TYPE_NAME:
+            case serdeConstants.TIMESTAMP_TYPE_NAME:
               long maxValueLong = range.maxValue.longValue();
               long minValueLong = range.minValue.longValue();
               // If min value is less or equal to max value (legal)
