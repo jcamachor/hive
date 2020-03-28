@@ -30,14 +30,18 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorConverters.C
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils.ObjectInspectorCopyOption;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils;
+import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.io.IntWritable;
 
 public abstract class GenericUDFLeadLag extends GenericUDF {
   transient ExprNodeEvaluator exprEvaluator;
   transient PTFPartitionIterator<Object> pItr;
   transient ObjectInspector firstArgOI;
+  transient PrimitiveObjectInspector amtOI;
   transient Converter defaultValueConverter;
-  int amt;
 
   @Override
   public Object evaluate(DeferredObject[] arguments) throws HiveException {
@@ -52,6 +56,10 @@ public abstract class GenericUDFLeadLag extends GenericUDF {
     int end = pItr.getPartition().size();
     try {
       Object ret = null;
+      int amt = 1;
+      if (arguments.length > 1) {
+        amt = PrimitiveObjectInspectorUtils.getInt(arguments[1].get(), amtOI);
+      }
       int newIdx = getIndex(amt);
 
       if (newIdx >= end || newIdx < start) {
@@ -79,19 +87,12 @@ public abstract class GenericUDFLeadLag extends GenericUDF {
               + _getFnName() + ": _FUNC_(expr, amt, default)");
     }
 
-    amt = 1;
     if (arguments.length > 1) {
-      ObjectInspector amtOI = arguments[1];
-      if (!ObjectInspectorUtils.isConstantObjectInspector(amtOI)
-              || (amtOI.getCategory() != ObjectInspector.Category.PRIMITIVE)
-              || ((PrimitiveObjectInspector) amtOI).getPrimitiveCategory() != PrimitiveObjectInspector.PrimitiveCategory.INT) {
+      amtOI = (PrimitiveObjectInspector) arguments[1];
+      if (amtOI.getCategory() != ObjectInspector.Category.PRIMITIVE
+              || amtOI.getPrimitiveCategory() != PrimitiveObjectInspector.PrimitiveCategory.INT) {
         throw new UDFArgumentTypeException(1, _getFnName() + " amount must be a integer value "
                 + amtOI.getTypeName() + " was passed as parameter 1.");
-      }
-      Object o = ((ConstantObjectInspector) amtOI).getWritableConstantValue();
-      amt = ((IntWritable) o).get();
-      if (amt < 0) {
-        throw new UDFArgumentTypeException(1,  " amount can not be nagative. Specified: " + amt);
       }
     }
 
@@ -134,14 +135,6 @@ public abstract class GenericUDFLeadLag extends GenericUDF {
 
   public void setDefaultValueConverter(Converter defaultValueConverter) {
     this.defaultValueConverter = defaultValueConverter;
-  }
-
-  public int getAmt() {
-    return amt;
-  }
-
-  public void setAmt(int amt) {
-    this.amt = amt;
   }
 
   @Override

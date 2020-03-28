@@ -140,7 +140,7 @@ public class TypeConverter {
   }
 
   public static RelDataType convert(TypeInfo type, RelDataTypeFactory dtFactory)
-    throws CalciteSemanticException{
+      throws CalciteSemanticException {
     RelDataType convertedType = null;
 
     switch (type.getCategory()) {

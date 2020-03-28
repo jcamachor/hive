@@ -47,7 +47,7 @@ extended = "a is the grouping id, p1...pn are the indices we want to extract")
 public class GenericUDFGrouping extends GenericUDF {
 
   private transient PrimitiveObjectInspector groupingIdOI;
-  private int[] indices;
+  private PrimitiveObjectInspector[] indices;
   private LongWritable longWritable = new LongWritable();
 
   @Override
@@ -69,14 +69,14 @@ public class GenericUDFGrouping extends GenericUDF {
     }
     groupingIdOI =  arg1OI;
 
-    indices = new int[arguments.length - 1];
+    indices = new PrimitiveObjectInspector[arguments.length - 1];
     for (int i = 1; i < arguments.length; i++) {
       PrimitiveObjectInspector arg2OI = (PrimitiveObjectInspector) arguments[i];
-      if (!(arg2OI instanceof ConstantObjectInspector)) {
-        throw new UDFArgumentTypeException(i, "Must be a constant. Got: " + arg2OI.getClass().getSimpleName());
+      if (!(arg2OI.getPrimitiveCategory() == PrimitiveCategory.INT ||
+          arg2OI.getPrimitiveCategory() == PrimitiveCategory.LONG)) {
+        throw new UDFArgumentTypeException(i, "Must be an int/long. Got: " + arg2OI.getPrimitiveCategory());
       }
-      indices[i - 1] = PrimitiveObjectInspectorUtils
-        .getInt(((ConstantObjectInspector) arguments[i]).getWritableConstantValue(), arg2OI);
+      indices[i - 1] = arg2OI;
     }
 
     return PrimitiveObjectInspectorFactory.writableLongObjectInspector;
@@ -92,7 +92,8 @@ public class GenericUDFGrouping extends GenericUDF {
     // 4 * grouping(c1) + 2 * grouping(c2) + grouping(c3)
     for (int a = 1; a < arguments.length; a++) {
       result += LongMath.pow(2, indices.length - a) *
-              ((PrimitiveObjectInspectorUtils.getLong(arguments[0].get(), groupingIdOI) >> indices[a - 1]) & 1);
+          ((PrimitiveObjectInspectorUtils.getLong(arguments[0].get(), groupingIdOI) >>
+              PrimitiveObjectInspectorUtils.getLong(arguments[a].get(), indices[a - 1])) & 1);
     }
     longWritable.set(result);
     return longWritable;

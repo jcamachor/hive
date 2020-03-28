@@ -18,8 +18,11 @@
 
 package org.apache.hadoop.hive.ql.parse.type;
 
+import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.ListMultimap;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -54,8 +57,6 @@ import org.apache.hadoop.hive.ql.parse.ParseUtils;
 import org.apache.hadoop.hive.ql.parse.RowResolver;
 import org.apache.hadoop.hive.ql.parse.SemanticAnalyzer;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
-import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
-import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
 import org.apache.hadoop.hive.ql.plan.SubqueryType;
 import org.apache.hadoop.hive.ql.udf.SettableUDF;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
@@ -610,8 +611,11 @@ public class TypeCheckProcFactory<T> {
 
       boolean isTableAlias = input.hasTableAlias(tableOrCol);
       ColumnInfo colInfo = null;
+      RowResolver usedRR = null;
+      int offset = 0;
       try {
         colInfo = input.get(null, tableOrCol);
+        usedRR = input;
       } catch (SemanticException semanticException) {
         if (!isTableAlias || parent == null || parent.getType() != HiveParser.DOT) {
           throw semanticException;
@@ -622,6 +626,8 @@ public class TypeCheckProcFactory<T> {
         RowResolver outerRR = ctx.getOuterRR();
         isTableAlias = outerRR.hasTableAlias(tableOrCol);
         colInfo = outerRR.get(null, tableOrCol);
+        usedRR = outerRR;
+        offset = input.getColumnInfos().size();
       }
 
       if (isTableAlias) {
@@ -631,7 +637,7 @@ public class TypeCheckProcFactory<T> {
             return null;
           }
           // It's a column.
-          return exprFactory.toExpr(colInfo);
+          return exprFactory.toExpr(colInfo, usedRR, offset);
         } else {
           // It's a table alias.
           // We will process that later in DOT.
@@ -665,7 +671,7 @@ public class TypeCheckProcFactory<T> {
           }
         } else {
           // It's a column.
-          return exprFactory.toExpr(colInfo);
+          return exprFactory.toExpr(colInfo, usedRR, offset);
         }
       }
     }
@@ -714,7 +720,7 @@ public class TypeCheckProcFactory<T> {
      * @throws UDFArgumentException
      */
     public T getFuncExprNodeDescWithUdfData(String udfName, TypeInfo typeInfo,
-        T... children) throws UDFArgumentException {
+        T... children) throws SemanticException {
 
       FunctionInfo fi;
       try {
@@ -742,10 +748,10 @@ public class TypeCheckProcFactory<T> {
       List<T> childrenList = new ArrayList<>(children.length);
 
       childrenList.addAll(Arrays.asList(children));
-      return exprFactory.createFuncCallExpr(genericUDF, null, childrenList);
+      return exprFactory.createFuncCallExpr(genericUDF, udfName, childrenList);
     }
 
-    public T getFuncExprNodeDesc(String udfName, T... children) throws UDFArgumentException {
+    public T getFuncExprNodeDesc(String udfName, T... children) throws SemanticException {
       return getFuncExprNodeDescWithUdfData(udfName, null, children);
     }
 
@@ -821,7 +827,7 @@ public class TypeCheckProcFactory<T> {
         T object = children.get(0);
 
         // Calculate result TypeInfo
-        String fieldNameString = exprFactory.getConstantValue(children.get(1)).toString();
+        String fieldNameString = exprFactory.getConstantValueAsString(children.get(1));
         TypeInfo objectTypeInfo = exprFactory.getTypeInfo(object);
 
         // Allow accessing a field of list element structs directly from a list
@@ -947,19 +953,18 @@ public class TypeCheckProcFactory<T> {
         // nodes, one of them is column and the other is numeric const
         if (genericUDF instanceof GenericUDFBaseCompare
             && children.size() == 2
-            && ((children.get(0) instanceof ExprNodeConstantDesc
-            && children.get(1) instanceof ExprNodeColumnDesc)
-            || (children.get(0) instanceof ExprNodeColumnDesc
-            && children.get(1) instanceof ExprNodeConstantDesc))) {
+            && ((exprFactory.isConstantExpr(children.get(0))
+            && exprFactory.isColumnRefExpr(children.get(1)))
+            || (exprFactory.isColumnRefExpr(children.get(0))
+            && exprFactory.isConstantExpr(children.get(1))))) {
 
-          int constIdx = children.get(0) instanceof ExprNodeConstantDesc ? 0 : 1;
+          int constIdx = exprFactory.isConstantExpr(children.get(0)) ? 0 : 1;
 
           T constChild = children.get(constIdx);
           T columnChild = children.get(1 - constIdx);
 
-          final PrimitiveTypeInfo colTypeInfo =
-              TypeInfoFactory.getPrimitiveTypeInfo(exprFactory.getTypeInfo(columnChild).getTypeName().toLowerCase());
-          T newChild = interpretNodeAs(colTypeInfo, constChild);
+          final PrimitiveTypeInfo colTypeInfo = (PrimitiveTypeInfo) exprFactory.getTypeInfo(columnChild);
+          T newChild = interpretNodeAsConstant(colTypeInfo, constChild);
           if (newChild == null) {
             // non-interpretable as target type...
             // TODO: all comparisons with null should result in null
@@ -972,55 +977,76 @@ public class TypeCheckProcFactory<T> {
           }
         }
         if (genericUDF instanceof GenericUDFIn) {
-
-          T columnDesc = children.get(0);
-          List<T> outputOpList = children.subList(1, children.size());
-          List<T> inOperands = new ArrayList<>(outputOpList);
-          outputOpList.clear();
-
-          boolean hasNullValue = false;
-          for (T oldChild : inOperands) {
-            if (oldChild == null) {
-              hasNullValue = true;
+          ListMultimap<TypeInfo, T> expressions = ArrayListMultimap.create();
+          for (int i = 1; i < children.size(); i++) {
+            if (children.get(i) == null) {
+              TypeInfo targetType = exprFactory.getTypeInfo(children.get(0));
+              T nullConst = exprFactory.createConstantExpr(targetType, null);
+              if (!expressions.containsKey(targetType)) {
+                expressions.put(targetType, children.get(0));
+              }
+              expressions.put(targetType, nullConst);
               continue;
             }
-            T newChild = interpretNodeAsStruct(columnDesc, oldChild);
+            TypeInfo targetType = FunctionRegistry.getCommonClassForComparison(
+                exprFactory.getTypeInfo(children.get(0)), exprFactory.getTypeInfo(children.get(i)));
+            T columnDesc = interpretNodeAsStruct(children.get(0), targetType);
+            if (columnDesc == null) {
+              columnDesc = children.get(0);
+            }
+            if (!expressions.containsKey(targetType)) {
+              expressions.put(targetType, columnDesc);
+            }
+            T newChild = interpretNodeAsConstantStruct(columnDesc, children.get(i));
             if (newChild == null) {
-              hasNullValue = true;
-              continue;
+              T nullConst = exprFactory.createConstantExpr(targetType, null);
+              expressions.put(targetType, nullConst);
+            } else {
+              expressions.put(targetType, newChild);
             }
-            outputOpList.add(newChild);
           }
 
-          if (hasNullValue) {
-            T nullConst = exprFactory.createConstantExpr(exprFactory.getTypeInfo(columnDesc), null);
-            if (outputOpList.size() == 0) {
-              // we have found only null values...remove the IN ; it will be null all the time.
-              return nullConst;
-            }
-            outputOpList.add(nullConst);
+          HiveConf conf;
+          try {
+            conf = ctx.isCBOExecuted() ? null : Hive.get().getConf();
+          } catch (HiveException e) {
+            throw new SemanticException(e);
           }
-
-          if (!ctx.isCBOExecuted()) {
-
-            HiveConf conf;
-            try {
-              conf = Hive.get().getConf();
-            } catch (HiveException e) {
-              throw new SemanticException(e);
-            }
-            if (children.size() <= HiveConf.getIntVar(conf, HiveConf.ConfVars.HIVEOPT_TRANSFORM_IN_MAXNODES)) {
-              List<T> orOperands = exprFactory.rewriteINIntoORFuncCallExpr(children);
+          children.clear();
+          List<T> newExprs = new ArrayList<>();
+          List<T> newOperands = null;
+          String newExprFuncText = null;
+          GenericUDF newExprGenericUDF = null;
+          for (Collection<T> c : expressions.asMap().values()) {
+            if (conf != null && c.size() <= HiveConf.getIntVar(conf, HiveConf.ConfVars.HIVEOPT_TRANSFORM_IN_MAXNODES)) {
+              List<T> orOperands = exprFactory.rewriteINIntoORFuncCallExpr((List<T>) c);
               if (orOperands != null) {
                 if (orOperands.size() == 1) {
                   orOperands.add(exprFactory.createBooleanConstantExpr(Boolean.FALSE.toString()));
                 }
-                funcText = "or";
-                genericUDF = new GenericUDFOPOr();
-                children.clear();
-                children.addAll(orOperands);
+                newOperands = orOperands;
+                newExprFuncText = "or";
+                newExprGenericUDF = new GenericUDFOPOr();
               }
             }
+            if (newOperands == null) {
+              newOperands = (List<T>) c;
+              newExprFuncText = "in";
+              newExprGenericUDF = new GenericUDFIn();
+            }
+            newExprs.add(
+                exprFactory.createFuncCallExpr(
+                    newExprGenericUDF, newExprFuncText, newOperands));
+          }
+          int numEntries = expressions.keySet().size();
+          if (numEntries == 1) {
+            children.addAll(newOperands);
+            funcText = newExprFuncText;
+            genericUDF = newExprGenericUDF;
+          } else {
+            children.addAll(newExprs);
+            funcText = "or";
+            genericUDF = new GenericUDFOPOr();
           }
         }
         if (genericUDF instanceof GenericUDFOPOr) {
@@ -1053,10 +1079,10 @@ public class TypeCheckProcFactory<T> {
           desc = exprFactory.createFuncCallExpr(genericUDF, funcText, childrenList);
         } else if (ctx.isFoldExpr() && exprFactory.canConvertCASEIntoCOALESCEFuncCallExpr(genericUDF, children)) {
           // Rewrite CASE into COALESCE
-          desc = exprFactory.createFuncCallExpr(new GenericUDFCoalesce(), null,
+          desc = exprFactory.createFuncCallExpr(new GenericUDFCoalesce(), "coalesce",
               Lists.newArrayList(children.get(0), exprFactory.createBooleanConstantExpr(Boolean.FALSE.toString())));
           if (Boolean.FALSE.equals(exprFactory.getConstantValue(children.get(1)))) {
-            desc = exprFactory.createFuncCallExpr(new GenericUDFOPNot(), null, Lists.newArrayList(desc));
+            desc = exprFactory.createFuncCallExpr(new GenericUDFOPNot(), "not", Lists.newArrayList(desc));
           }
         } else {
           desc = exprFactory.createFuncCallExpr(genericUDF, funcText, children);
@@ -1086,26 +1112,55 @@ public class TypeCheckProcFactory<T> {
     }
 
     /**
-     * Interprets the given value as columnDesc if possible
+     * Interprets the given value as struct
      */
-    private T interpretNodeAsStruct(T columnDesc, T valueDesc)
+    private T interpretNodeAsStruct(T columnDesc, TypeInfo typeInfo)
         throws SemanticException {
       if (exprFactory.isColumnRefExpr(columnDesc)) {
-        final PrimitiveTypeInfo typeInfo =
-            TypeInfoFactory.getPrimitiveTypeInfo(exprFactory.getTypeInfo(columnDesc).getTypeName().toLowerCase());
-        return interpretNodeAs(typeInfo, valueDesc);
+        if (!exprFactory.getTypeInfo(columnDesc).equals(typeInfo)) {
+          return createConversionCast(columnDesc, (PrimitiveTypeInfo) typeInfo);
+        }
+      }
+      if (exprFactory.isSTRUCTFuncCallExpr(columnDesc)) {
+        List<T> columnChilds = exprFactory.getExprChildren(columnDesc);
+        StructTypeInfo structTypeInfo = (StructTypeInfo) typeInfo;
+        List<T> newColumnChilds = new ArrayList<>();
+        for (int i = 0; i < columnChilds.size(); i++) {
+          PrimitiveTypeInfo targetType = (PrimitiveTypeInfo) structTypeInfo.getAllStructFieldTypeInfos().get(i);
+          T newColumnChild = columnChilds.get(i);
+          if (!exprFactory.getTypeInfo(newColumnChild).equals(targetType)) {
+            newColumnChild = createConversionCast(newColumnChild, targetType);
+          }
+          newColumnChilds.add(newColumnChild);
+        }
+        return exprFactory.createStructExpr(structTypeInfo, newColumnChilds);
+      }
+      return columnDesc;
+    }
+
+    /**
+     * Interprets the given value as columnDesc if possible
+     */
+    private T interpretNodeAsConstantStruct(T columnDesc, T valueDesc)
+        throws SemanticException {
+      if (exprFactory.isColumnRefExpr(columnDesc)) {
+        final PrimitiveTypeInfo typeInfo = (PrimitiveTypeInfo) exprFactory.getTypeInfo(columnDesc);
+        T newExpr = interpretNodeAsConstant(typeInfo, valueDesc);
+        if (!exprFactory.getTypeInfo(newExpr).equals(typeInfo)) {
+          newExpr = createConversionCast(newExpr, typeInfo);
+        }
+        return newExpr;
       }
       if (exprFactory.isSTRUCTFuncCallExpr(columnDesc) && exprFactory.isConstantStruct(valueDesc)) {
         List<T> columnChilds = exprFactory.getExprChildren(columnDesc);
-        ExprNodeConstantDesc valueConstDesc = (ExprNodeConstantDesc) valueDesc;
-        StructTypeInfo structTypeInfo = (StructTypeInfo) valueConstDesc.getTypeInfo();
-        ArrayList<TypeInfo> structFieldInfos = structTypeInfo.getAllStructFieldTypeInfos();
-        ArrayList<TypeInfo> newStructFieldInfos = new ArrayList<>();
+        List<TypeInfo> structFieldInfos = exprFactory.getStructTypeInfoList(valueDesc);
+        List<String> structFieldNames = exprFactory.getStructNameList(valueDesc);
+        List<TypeInfo> newStructFieldInfos = new ArrayList<>();
 
         if (columnChilds.size() != structFieldInfos.size()) {
           throw new SemanticException(ErrorMsg.INCOMPATIBLE_STRUCT.getMsg(columnChilds + " and " + structFieldInfos));
         }
-        List<Object> oldValues = (List<Object>) valueConstDesc.getValue();
+        List<Object> oldValues = (List<Object>) exprFactory.getConstantValue(valueDesc);
         List<Object> newValues = new ArrayList<>();
         for (int i = 0; i < columnChilds.size(); i++) {
           newStructFieldInfos.add(exprFactory.getTypeInfo(columnChilds.get(i)));
@@ -1116,10 +1171,9 @@ public class TypeCheckProcFactory<T> {
           newValues.add(newValue);
         }
         StructTypeInfo sti = new StructTypeInfo();
-        sti.setAllStructFieldTypeInfos(newStructFieldInfos);
-        sti.setAllStructFieldNames(structTypeInfo.getAllStructFieldNames());
+        sti.setAllStructFieldTypeInfos(new ArrayList<>(newStructFieldInfos));
+        sti.setAllStructFieldNames(new ArrayList<>(structFieldNames));
         return exprFactory.createConstantExpr(sti, newValues);
-
       }
       if (exprFactory.isSTRUCTFuncCallExpr(columnDesc) && exprFactory.isSTRUCTFuncCallExpr(valueDesc)) {
         List<T> columnChilds = exprFactory.getExprChildren(columnDesc);
@@ -1130,7 +1184,7 @@ public class TypeCheckProcFactory<T> {
         List<T> oldValueChilds = new ArrayList<>(valueChilds);
         valueChilds.clear();
         for (int i = 0; i < oldValueChilds.size(); i++) {
-          T newValue = interpretNodeAsStruct(columnChilds.get(i), oldValueChilds.get(i));
+          T newValue = interpretNodeAsConstantStruct(columnChilds.get(i), oldValueChilds.get(i));
           valueChilds.add(newValue);
         }
       }
@@ -1138,23 +1192,25 @@ public class TypeCheckProcFactory<T> {
     }
 
     @VisibleForTesting
-    protected T interpretNodeAs(PrimitiveTypeInfo colTypeInfo, T constChild) {
+    protected T interpretNodeAsConstant(PrimitiveTypeInfo targetType, T constChild) throws SemanticException {
       if (exprFactory.isConstantExpr(constChild)) {
         // Try to narrow type of constant
         Object constVal = exprFactory.getConstantValue(constChild);
         if (constVal == null) {
           // adjust type of null
-          return exprFactory.createConstantExpr(colTypeInfo, null);
+          return exprFactory.createConstantExpr(targetType, null);
         }
+        PrimitiveTypeInfo sourceType =
+            (PrimitiveTypeInfo) exprFactory.getTypeInfo(constChild);
         Object newConst = exprFactory.interpretConstantAsPrimitive(
-            colTypeInfo, constVal, (PrimitiveTypeInfo) exprFactory.getTypeInfo(constChild));
+            targetType, constVal, sourceType);
         if (newConst == null) {
           return null;
         }
         if (newConst == constVal) {
           return constChild;
         } else {
-          return exprFactory.createConstantExpr(exprFactory.adjustConstantType(colTypeInfo, newConst), newConst);
+          return exprFactory.createConstantExpr(exprFactory.adjustConstantType(targetType, newConst), newConst);
         }
       }
       return constChild;
@@ -1179,7 +1235,7 @@ public class TypeCheckProcFactory<T> {
     }
 
     protected T processQualifiedColRef(TypeCheckCtx ctx, ASTNode expr,
-                                                  Object... nodeOutputs) throws SemanticException {
+        Object... nodeOutputs) throws SemanticException {
       RowResolver input = ctx.getInputRR();
       String tableAlias = BaseSemanticAnalyzer.unescapeIdentifier(expr.getChild(0).getChild(0)
           .getText());
@@ -1188,18 +1244,23 @@ public class TypeCheckProcFactory<T> {
       T desc = (T) nodeOutputs[1];
       String colName;
       if (exprFactory.isConstantExpr(desc)) {
-        colName = exprFactory.getConstantValue(desc).toString();
+        colName = exprFactory.getConstantValueAsString(desc);
       } else if (exprFactory.isColumnRefExpr(desc)) {
-        colName = exprFactory.getColumnName(desc);
+        colName = exprFactory.getColumnName(desc, input);
       } else {
         throw new SemanticException("Unexpected ExprNode : " + nodeOutputs[1]);
       }
+
       ColumnInfo colInfo = input.get(tableAlias, colName);
+      RowResolver usedRR = input;
+      int offset = 0;
 
       // Try outer Row resolver
       if (colInfo == null && ctx.getOuterRR() != null) {
         RowResolver outerRR = ctx.getOuterRR();
         colInfo = outerRR.get(tableAlias, colName);
+        usedRR = outerRR;
+        offset = input.getColumnInfos().size();
       }
 
       if (colInfo == null) {
@@ -1207,7 +1268,7 @@ public class TypeCheckProcFactory<T> {
             ErrorMsg.INVALID_COLUMN.getMsg(), expr.getChild(1)), expr);
         return null;
       }
-      return exprFactory.toExpr(colInfo);
+      return exprFactory.toExpr(colInfo, usedRR, offset);
     }
 
     @Override
@@ -1300,14 +1361,14 @@ public class TypeCheckProcFactory<T> {
           for (Map.Entry<String, ColumnInfo> colMap : columns.entrySet()) {
             ColumnInfo colInfo = colMap.getValue();
             if (!colInfo.getIsVirtualCol()) {
-              columnList = exprFactory.addExprToExprsList(columnList, exprFactory.toExpr(colInfo));
+              columnList = exprFactory.addExprToExprsList(columnList, exprFactory.toExpr(colInfo, input, 0));
             }
           }
         } else {
           // all columns (select *, for example)
           for (ColumnInfo colInfo : input.getColumnInfos()) {
             if (!colInfo.getIsVirtualCol()) {
-              columnList = exprFactory.addExprToExprsList(columnList, exprFactory.toExpr(colInfo));
+              columnList = exprFactory.addExprToExprsList(columnList, exprFactory.toExpr(colInfo, input, 0));
             }
           }
         }
@@ -1361,7 +1422,7 @@ public class TypeCheckProcFactory<T> {
         RowResolver input = ctx.getInputRR();
         for (ColumnInfo colInfo : input.getColumnInfos()) {
           if (!colInfo.getIsVirtualCol()) {
-            children.add(exprFactory.toExpr(colInfo));
+            children.add(exprFactory.toExpr(colInfo, input, 0));
           }
         }
       }
@@ -1520,14 +1581,18 @@ public class TypeCheckProcFactory<T> {
 
     // If the current subExpression is pre-calculated, as in Group-By etc.
     ColumnInfo colInfo = input.getExpression(expr);
+    RowResolver usedRR = input;
+    int offset = 0;
 
     // try outer row resolver
     RowResolver outerRR = ctx.getOuterRR();
     if (colInfo == null && outerRR != null) {
       colInfo = outerRR.getExpression(expr);
+      usedRR = outerRR;
+      offset = input.getColumnInfos().size();
     }
     if (colInfo != null) {
-      desc = exprFactory.createColumnRefExpr(colInfo);
+      desc = exprFactory.createColumnRefExpr(colInfo, usedRR, offset);
       ASTNode source = input.getExpressionSource(expr);
       if (source != null && ctx.getUnparseTranslator() != null) {
         ctx.getUnparseTranslator().addCopyTranslation(expr, source);
