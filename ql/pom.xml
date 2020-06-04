@@ -345,6 +345,13 @@
       <artifactId>zookeeper</artifactId>
     </dependency>
     <dependency>
+      <groupId>jdk.tools</groupId>
+      <artifactId>jdk.tools</artifactId>
+      <version>1.8.0_201</version>
+      <scope>system</scope>
+      <systemPath>${JAVA_HOME}/lib/tools.jar</systemPath>
+    </dependency>
+    <dependency>
       <groupId>org.apache.curator</groupId>
       <artifactId>curator-framework</artifactId>
     </dependency>
@@ -395,6 +402,18 @@
     <dependency>
       <groupId>org.datanucleus</groupId>
       <artifactId>datanucleus-core</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.jcabi</groupId>
+      <artifactId>jcabi-aspects</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.aspectj</groupId>
+      <artifactId>aspectjrt</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.aspectj</groupId>
+      <artifactId>aspectjweaver</artifactId>
     </dependency>
     <dependency>
       <groupId>org.apache.calcite</groupId>
@@ -1168,6 +1187,34 @@
             </configuration>
           </execution>
         </executions>
+      </plugin>
+      <plugin>
+        <groupId>com.jcabi</groupId>
+        <artifactId>jcabi-maven-plugin</artifactId>
+        <version>0.14.1</version>
+        <configuration>
+          <source>1.8</source>
+          <target>1.8</target>
+        </configuration>
+        <executions>
+          <execution>
+            <goals>
+              <goal>ajc</goal>
+            </goals>
+          </execution>
+        </executions>
+         <dependencies>
+            <dependency>
+               <groupId>org.aspectj</groupId>
+               <artifactId>aspectjrt</artifactId>
+               <version>1.9.5</version>
+            </dependency>
+            <dependency>
+               <groupId>org.aspectj</groupId>
+               <artifactId>aspectjtools</artifactId>
+               <version>1.9.5</version>
+            </dependency>
+         </dependencies>
       </plugin>
     </plugins>
   </build>

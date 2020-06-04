@@ -34,6 +34,7 @@ import static org.apache.hadoop.hive.ql.io.AcidUtils.getFullTableName;
 import static org.apache.hadoop.hive.serde.serdeConstants.SERIALIZATION_FORMAT;
 import static org.apache.hadoop.hive.serde.serdeConstants.STRING_TYPE_NAME;
 
+import com.jcabi.aspects.Loggable;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintStream;
@@ -272,6 +273,7 @@ public class Hive {
   private final static int REG_FUNCS_NO = 0, REG_FUNCS_DONE = 2, REG_FUNCS_PENDING = 1;
 
   // register all permanent functions. need improvement
+  @Loggable
   private void registerAllFunctionsOnce() throws HiveException {
     boolean breakLoop = false;
     while (!breakLoop) {
@@ -317,7 +319,7 @@ public class Hive {
     }
   }
 
-
+  @Loggable
   public void reloadFunctions() throws HiveException {
     HashSet<String> registryFunctions = new HashSet<String>(
         FunctionRegistry.getFunctionNames(".+\\..+"));
@@ -345,6 +347,7 @@ public class Hive {
     }
   }
 
+  @Loggable
   public static Hive get(Configuration c, Class<?> clazz) throws HiveException {
     return get(c instanceof HiveConf ? (HiveConf)c : new HiveConf(c, clazz));
   }
@@ -360,6 +363,7 @@ public class Hive {
    * @throws HiveException
    *
    */
+  @Loggable
   public static Hive get(HiveConf c) throws HiveException {
     return getInternal(c, false, false, true);
   }
@@ -368,6 +372,7 @@ public class Hive {
    * Same as {@link #get(HiveConf)}, except that it checks only the object identity of existing
    * MS client, assuming the relevant settings would be unchanged within the same conf object.
    */
+  @Loggable
   public static Hive getWithFastCheck(HiveConf c) throws HiveException {
     return getWithFastCheck(c, true);
   }
@@ -376,10 +381,12 @@ public class Hive {
    * Same as {@link #get(HiveConf)}, except that it checks only the object identity of existing
    * MS client, assuming the relevant settings would be unchanged within the same conf object.
    */
+  @Loggable
   public static Hive getWithFastCheck(HiveConf c, boolean doRegisterAllFns) throws HiveException {
     return getInternal(c, false, true, doRegisterAllFns);
   }
 
+  @Loggable
   private static Hive getInternal(HiveConf c, boolean needsRefresh, boolean isFastCheck,
       boolean doRegisterAllFns) throws HiveException {
     Hive db = hiveDB.get();
@@ -398,6 +405,7 @@ public class Hive {
     return db;
   }
 
+  @Loggable
   private static Hive create(HiveConf c, boolean doRegisterAllFns) throws HiveException {
     if (c == null) {
       c = createHiveConf();
@@ -420,27 +428,33 @@ public class Hive {
     return newdb;
   }
 
+  @Loggable
   private static HiveConf createHiveConf() {
     SessionState session = SessionState.get();
     return (session == null) ? new HiveConf(Hive.class) : session.getConf();
   }
 
+  @Loggable
   public void setHMSClientCapabilities(String[] capabilities) {
     HiveMetaStoreClient.setProcessorCapabilities(capabilities);
   }
 
+  @Loggable
   public void setHMSClientIdentifier(final String id) {
     HiveMetaStoreClient.setProcessorIdentifier(id);
   }
 
+  @Loggable
   public String[] getHMSClientCapabilities() {
     return HiveMetaStoreClient.getProcessorCapabilities();
   }
 
+  @Loggable
   public String getHMSClientIdentifier() {
     return HiveMetaStoreClient.getProcessorIdentifier();
   }
 
+  @Loggable
   private static boolean isCompatible(Hive db, HiveConf c, boolean isFastCheck) {
     if (isFastCheck) {
       return (db.metaStoreClient == null || db.metaStoreClient.isSameConfObj(c))
@@ -451,6 +465,7 @@ public class Hive {
     }
   }
 
+  @Loggable
   private boolean isCurrentUserOwner() throws HiveException {
     try {
       return owner == null || owner.equals(UserGroupInformation.getCurrentUser());
@@ -459,14 +474,17 @@ public class Hive {
     }
   }
 
+  @Loggable
   public static Hive getThreadLocal() {
     return hiveDB.get();
   }
 
+  @Loggable
   public static Hive get() throws HiveException {
     return get(true);
   }
 
+  @Loggable
   public static Hive get(boolean doRegisterAllFns) throws HiveException {
     return getInternal(null, false, false, doRegisterAllFns);
   }
@@ -481,14 +499,17 @@ public class Hive {
    * @return The connection to the metastore
    * @throws HiveException
    */
+  @Loggable
   public static Hive get(HiveConf c, boolean needsRefresh) throws HiveException {
     return getInternal(c, needsRefresh, false, true);
   }
 
+  @Loggable
   public static void set(Hive hive) {
     hiveDB.set(hive);
   }
 
+  @Loggable
   public static void closeCurrent() {
     hiveDB.remove();
   }
@@ -511,6 +532,7 @@ public class Hive {
    * No one references this Hive anymore, so HMS connection from this Hive object can be closed.
    * @throws Throwable
    */
+  @Loggable
   @Override
   protected void finalize() throws Throwable {
     close(true);
@@ -521,6 +543,7 @@ public class Hive {
    * Marks if the given Hive object is allowed to close metastore connections.
    * @param allowClose
    */
+  @Loggable
   public void setAllowClose(boolean allowClose) {
     isAllowClose = allowClose;
   }
@@ -529,6 +552,7 @@ public class Hive {
    * Gets the allowClose flag which determines if it is allowed to close metastore connections.
    * @return allowClose flag
    */
+  @Loggable
   public boolean allowClose() {
     return isAllowClose;
   }
@@ -537,6 +561,7 @@ public class Hive {
    * Closes the connection to metastore for the calling thread if allow to close.
    * @param forceClose - Override the isAllowClose flag to forcefully close the MS connections.
    */
+  @Loggable
   public void close(boolean forceClose) {
     if (allowClose() || forceClose) {
       LOG.debug("Closing current thread's connection to Hive Metastore.");
@@ -559,6 +584,7 @@ public class Hive {
    * @throws AlreadyExistsException
    * @throws HiveException
    */
+  @Loggable
   public void createDatabase(Database db, boolean ifNotExist)
       throws AlreadyExistsException, HiveException {
     try {
@@ -578,6 +604,7 @@ public class Hive {
    * @throws AlreadyExistsException
    * @throws HiveException
    */
+  @Loggable
   public void createDatabase(Database db) throws AlreadyExistsException, HiveException {
     createDatabase(db, false);
   }
@@ -589,6 +616,7 @@ public class Hive {
    * @throws HiveException
    * @see org.apache.hadoop.hive.metastore.HiveMetaStoreClient#dropDatabase(java.lang.String)
    */
+  @Loggable
   public void dropDatabase(String name) throws HiveException, NoSuchObjectException {
     dropDatabase(name, true, false, false);
   }
@@ -601,6 +629,7 @@ public class Hive {
    * @throws HiveException
    * @throws NoSuchObjectException
    */
+  @Loggable
   public void dropDatabase(String name, boolean deleteData, boolean ignoreUnknownDb)
       throws HiveException, NoSuchObjectException {
     dropDatabase(name, deleteData, ignoreUnknownDb, false);
@@ -616,6 +645,7 @@ public class Hive {
    * @throws HiveException
    * @throws NoSuchObjectException
    */
+  @Loggable
   public void dropDatabase(String name, boolean deleteData, boolean ignoreUnknownDb, boolean cascade)
       throws HiveException, NoSuchObjectException {
     try {
@@ -645,6 +675,7 @@ public class Hive {
    *           thrown if the args are invalid or if the metadata or the data
    *           directory couldn't be created
    */
+  @Loggable
   public void createTable(String tableName, List<String> columns,
       List<String> partCols, Class<? extends InputFormat> fileInputFormat,
       Class<?> fileOutputFormat) throws HiveException {
@@ -672,6 +703,7 @@ public class Hive {
    *           thrown if the args are invalid or if the metadata or the data
    *           directory couldn't be created
    */
+  @Loggable
   public void createTable(String tableName, List<String> columns,
       List<String> partCols, Class<? extends InputFormat> fileInputFormat,
       Class<?> fileOutputFormat, int bucketCount, List<String> bucketCols)
@@ -693,6 +725,7 @@ public class Hive {
    * @param parameters Parameters for the table
    * @throws HiveException
    */
+  @Loggable
   public void createTable(String tableName, List<String> columns, List<String> partCols,
                           Class<? extends InputFormat> fileInputFormat,
                           Class<?> fileOutputFormat, int bucketCount, List<String> bucketCols,
@@ -728,6 +761,7 @@ public class Hive {
   }
 
 
+  @Loggable
   public void alterTable(Table newTbl, boolean cascade, EnvironmentContext environmentContext,
       boolean transactional) throws HiveException {
     alterTable(newTbl.getCatName(), newTbl.getDbName(),
@@ -745,6 +779,7 @@ public class Hive {
    *          Need to generate and save a table snapshot into the metastore?
    * @throws HiveException
    */
+  @Loggable
   public void alterTable(String fullyQlfdTblName, Table newTbl, EnvironmentContext environmentContext,
                          boolean transactional)
       throws HiveException {
@@ -752,6 +787,7 @@ public class Hive {
     alterTable(null, names[0], names[1], newTbl, false, environmentContext, transactional);
   }
 
+  @Loggable
   public void alterTable(String fullyQlfdTblName, Table newTbl, boolean cascade,
       EnvironmentContext environmentContext, boolean transactional)
       throws HiveException {
@@ -759,6 +795,7 @@ public class Hive {
     alterTable(null, names[0], names[1], newTbl, cascade, environmentContext, transactional);
   }
 
+  @Loggable
   public void alterTable(String fullyQlfdTblName, Table newTbl, boolean cascade,
                          EnvironmentContext environmentContext, boolean transactional, long writeId)
           throws HiveException {
@@ -767,11 +804,13 @@ public class Hive {
                 writeId);
   }
 
+  @Loggable
   public void alterTable(String catName, String dbName, String tblName, Table newTbl, boolean cascade,
                          EnvironmentContext environmentContext, boolean transactional) throws HiveException {
     alterTable(catName, dbName, tblName, newTbl, cascade, environmentContext, transactional, 0);
   }
 
+  @Loggable
   public void alterTable(String catName, String dbName, String tblName, Table newTbl, boolean cascade,
       EnvironmentContext environmentContext, boolean transactional, long replWriteId)
       throws HiveException {
@@ -827,6 +866,7 @@ public class Hive {
     }
   }
 
+  @Loggable
   public void updateCreationMetadata(String dbName, String tableName, CreationMetadata cm)
       throws HiveException {
     try {
@@ -847,6 +887,7 @@ public class Hive {
    *           if the changes in metadata is not acceptable
    * @throws HiveException
    */
+  @Loggable
   @Deprecated
   public void alterPartition(String tblName, Partition newPart,
       EnvironmentContext environmentContext, boolean transactional)
@@ -872,6 +913,7 @@ public class Hive {
    *           if the changes in metadata is not acceptable
    * @throws HiveException
    */
+  @Loggable
   public void alterPartition(String catName, String dbName, String tblName, Partition newPart,
                              EnvironmentContext environmentContext, boolean transactional)
       throws InvalidOperationException, HiveException {
@@ -908,6 +950,7 @@ public class Hive {
     }
   }
 
+  @Loggable
   private void validatePartition(Partition newPart) throws HiveException {
     // Remove the DDL time so that it gets refreshed
     if (newPart.getParameters() != null) {
@@ -929,6 +972,7 @@ public class Hive {
    *           if the changes in metadata is not acceptable
    * @throws HiveException
    */
+  @Loggable
   public void alterPartitions(String tblName, List<Partition> newParts,
                               EnvironmentContext environmentContext, boolean transactional)
       throws InvalidOperationException, HiveException {
@@ -972,6 +1016,7 @@ public class Hive {
    *          new partition
    * @throws HiveException
    */
+  @Loggable
   public void renamePartition(Table tbl, Map<String, String> oldPartSpec, Partition newPart,
                               long replWriteId)
       throws HiveException {
@@ -1032,6 +1077,7 @@ public class Hive {
   }
 
   // TODO: this whole path won't work with catalogs
+  @Loggable
   public void alterDatabase(String dbName, Database db)
       throws HiveException {
     try {
@@ -1051,6 +1097,7 @@ public class Hive {
    *          a table object
    * @throws HiveException
    */
+  @Loggable
   public void createTable(Table tbl) throws HiveException {
     createTable(tbl, false);
   }
@@ -1079,6 +1126,7 @@ public class Hive {
    *          CHECK constraints associated with the table
    * @throws HiveException
    */
+  @Loggable
   public void createTable(Table tbl, boolean ifNotExists,
     List<SQLPrimaryKey> primaryKeys,
     List<SQLForeignKey> foreignKeys,
@@ -1139,11 +1187,13 @@ public class Hive {
     }
   }
 
+  @Loggable
   public void createTable(Table tbl, boolean ifNotExists) throws HiveException {
    createTable(tbl, ifNotExists, null, null, null, null,
                null, null);
  }
 
+  @Loggable
   public static List<FieldSchema> getFieldsFromDeserializerForMsStorage(
       Table tbl, Deserializer deserializer) throws SerDeException, MetaException {
     List<FieldSchema> schema = HiveMetaStoreUtils.getFieldsFromDeserializer(
@@ -1166,6 +1216,7 @@ public class Hive {
    * @throws HiveException
    *           thrown if the drop fails
    */
+  @Loggable
   public void dropTable(String tableName, boolean ifPurge) throws HiveException {
     String[] names = Utilities.getDbTableName(tableName);
     dropTable(names[0], names[1], true, true, ifPurge);
@@ -1180,6 +1231,7 @@ public class Hive {
    * @throws HiveException
    *           thrown if the drop fails
    */
+  @Loggable
   public void dropTable(String tableName) throws HiveException {
     dropTable(tableName, false);
   }
@@ -1195,6 +1247,7 @@ public class Hive {
    * @throws HiveException
    *           thrown if the drop fails
    */
+  @Loggable
   public void dropTable(String dbName, String tableName) throws HiveException {
     dropTable(dbName, tableName, true, true, false);
   }
@@ -1210,6 +1263,7 @@ public class Hive {
    *          an exception is thrown if this is false and the table doesn't exist
    * @throws HiveException
    */
+  @Loggable
   public void dropTable(String dbName, String tableName, boolean deleteData,
       boolean ignoreUnknownTab) throws HiveException {
     dropTable(dbName, tableName, deleteData, ignoreUnknownTab, false);
@@ -1228,6 +1282,7 @@ public class Hive {
    *          completely purge the table skipping trash while removing data from warehouse
    * @throws HiveException
    */
+  @Loggable
   public void dropTable(String dbName, String tableName, boolean deleteData,
       boolean ignoreUnknownTab, boolean ifPurge) throws HiveException {
     try {
@@ -1250,6 +1305,7 @@ public class Hive {
    *          name of the table
    * @throws HiveException
    */
+  @Loggable
   public void truncateTable(String dbDotTableName, Map<String, String> partSpec, Long writeId) throws HiveException {
     try {
       Table table = getTable(dbDotTableName, true);
@@ -1278,6 +1334,7 @@ public class Hive {
     }
   }
 
+  @Loggable
   public HiveConf getConf() {
     return (conf);
   }
@@ -1395,6 +1452,7 @@ public class Hive {
    * @return the table or if throwException is false a null value.
    * @throws HiveException
    */
+  @Loggable
   public Table getTable(final String dbName, final String tableName, boolean throwException,
                         boolean checkTransactional, boolean getColumnStats) throws HiveException {
 
@@ -1519,6 +1577,7 @@ public class Hive {
     return getTableObjects(dbName, pattern, TableType.MATERIALIZED_VIEW);
   }
 
+  @Loggable
   public List<Table> getTableObjects(String dbName, String pattern, TableType tableType) throws HiveException {
     try {
       return Lists.transform(getMSC().getTableObjectsByName(dbName, getTablesByType(dbName, pattern, tableType)),
@@ -1585,6 +1644,7 @@ public class Hive {
    * @return list of table names that match the pattern.
    * @throws HiveException
    */
+  @Loggable
   public List<String> getTablesByType(String dbName, String pattern, TableType type)
       throws HiveException {
     if (dbName == null) {
@@ -1619,6 +1679,7 @@ public class Hive {
    * @return the list of materialized views available for rewriting from the registry
    * @throws HiveException
    */
+  @Loggable
   public List<RelOptMaterialization> getPreprocessedMaterializedViewsFromRegistry(
       List<String> tablesUsed, HiveTxnManager txnMgr) throws HiveException {
     // From cache
@@ -1631,6 +1692,7 @@ public class Hive {
     return filterAugmentMaterializedViews(materializedViews, tablesUsed, txnMgr);
   }
 
+  @Loggable
   private List<RelOptMaterialization> filterAugmentMaterializedViews(List<RelOptMaterialization> materializedViews,
         List<String> tablesUsed, HiveTxnManager txnMgr) throws HiveException {
     final String validTxnsList = conf.get(ValidTxnList.VALID_TXNS_KEY);
@@ -1691,6 +1753,7 @@ public class Hive {
    * @return true if they are up-to-date, otherwise false
    * @throws HiveException
    */
+  @Loggable
   public boolean validateMaterializedViewsFromRegistry(List<Table> cachedMaterializedViewTables,
       List<String> tablesUsed, HiveTxnManager txnMgr) throws HiveException {
     final long defaultTimeWindow =
@@ -1764,6 +1827,7 @@ public class Hive {
    * @return the list of materialized views available for rewriting
    * @throws HiveException
    */
+  @Loggable
   public List<RelOptMaterialization> getPreprocessedMaterializedViews(
       List<String> tablesUsed, HiveTxnManager txnMgr)
       throws HiveException {
@@ -1785,6 +1849,7 @@ public class Hive {
    * @return the materialized view for rebuild
    * @throws HiveException
    */
+  @Loggable
   public RelOptMaterialization getMaterializedViewForRebuild(String dbName, String materializedViewName,
       List<String> tablesUsed, HiveTxnManager txnMgr) throws HiveException {
     List<RelOptMaterialization> validMaterializedViews = getValidMaterializedViews(
@@ -1796,6 +1861,7 @@ public class Hive {
     return validMaterializedViews.get(0);
   }
 
+  @Loggable
   private List<RelOptMaterialization> getValidMaterializedViews(List<Table> materializedViewTables,
       List<String> tablesUsed, boolean forceMVContentsUpToDate, HiveTxnManager txnMgr)
       throws HiveException {
@@ -1900,6 +1966,7 @@ public class Hive {
    * (false), or it cannot be determined (null). The latest case may happen e.g. when the
    * materialized view definition uses external tables.
    */
+  @Loggable
   public static Boolean isOutdatedMaterializedView(Table materializedViewTable, final ValidTxnWriteIdList currentTxnWriteIds,
       long defaultTimeWindow, List<String> tablesUsed, boolean forceMVContentsUpToDate) {
     // Check if materialization defined its own invalidation time window
@@ -1975,6 +2042,7 @@ public class Hive {
    * Method to enrich the materialization query contained in the input with
    * its invalidation.
    */
+  @Loggable
   private static RelOptMaterialization augmentMaterializationWithTimeInformation(
       RelOptMaterialization materialization, String validTxnsList,
       ValidTxnWriteIdList materializationTxnList) throws LockException {
@@ -2005,6 +2073,7 @@ public class Hive {
         null, materialization.qualifiedTableName);
   }
 
+  @Loggable
   public List<Table> getAllMaterializedViewObjectsForRewriting() throws HiveException {
     try {
       return Lists.transform(getMSC().getAllMaterializedViewObjectsForRewriting(),
@@ -2026,6 +2095,7 @@ public class Hive {
    * @return List of database names.
    * @throws HiveException
    */
+  @Loggable
   public List<String> getAllDatabases() throws HiveException {
     try {
       return getMSC().getAllDatabases();
@@ -2043,6 +2113,7 @@ public class Hive {
    * @return list of database names
    * @throws HiveException
    */
+  @Loggable
   public List<String> getDatabasesByPattern(String databasePattern) throws HiveException {
     try {
       return getMSC().getDatabases(databasePattern);
@@ -2051,6 +2122,7 @@ public class Hive {
     }
   }
 
+  @Loggable
   public boolean grantPrivileges(PrivilegeBag privileges)
       throws HiveException {
     try {
@@ -2066,6 +2138,7 @@ public class Hive {
    * @return true on success
    * @throws HiveException
    */
+  @Loggable
   public boolean revokePrivileges(PrivilegeBag privileges, boolean grantOption)
       throws HiveException {
     try {
@@ -2075,6 +2148,7 @@ public class Hive {
     }
   }
 
+  @Loggable
   public void validateDatabaseExists(String databaseName) throws SemanticException {
     boolean exists;
     try {
@@ -2096,6 +2170,7 @@ public class Hive {
    *         does not exist.
    * @throws HiveException
    */
+  @Loggable
   public boolean databaseExists(String dbName) throws HiveException {
     return getDatabase(dbName) != null;
   }
@@ -2106,6 +2181,7 @@ public class Hive {
    * @return a Database object if this database exists, null otherwise.
    * @throws HiveException
    */
+  @Loggable
   public Database getDatabase(String dbName) throws HiveException {
     try {
       return getMSC().getDatabase(dbName);
@@ -2123,6 +2199,7 @@ public class Hive {
    * @return a Database object if this database exists, null otherwise.
    * @throws HiveException
    */
+  @Loggable
   public Database getDatabase(String catName, String dbName) throws HiveException {
     try {
       return getMSC().getDatabase(catName, dbName);
@@ -2138,11 +2215,13 @@ public class Hive {
    * @return a Database object if this database exists, null otherwise.
    * @throws HiveException
    */
+  @Loggable
   public Database getDatabaseCurrent() throws HiveException {
     String currentDb = SessionState.get().getCurrentDatabase();
     return getDatabase(currentDb);
   }
 
+  @Loggable
   private TableSnapshot getTableSnapshot(Table tbl, Long writeId) throws LockException {
     TableSnapshot tableSnapshot = null;
     if ((writeId != null) && (writeId > 0)) {
@@ -2185,6 +2264,7 @@ public class Hive {
    * @param isInsertOverwrite
    * @return Partition object being loaded with data
    */
+  @Loggable
   public Partition loadPartition(Path loadPath, Table tbl, Map<String, String> partSpec,
                                  LoadFileType loadFileType, boolean inheritTableSpecs,
                                  boolean inheritLocation,
@@ -2274,6 +2354,7 @@ public class Hive {
    * @return Partition object being loaded with data
    * @throws HiveException
    */
+  @Loggable
   private Partition loadPartitionInternal(Path loadPath, Table tbl, Map<String, String> partSpec,
                         Partition oldPart, LoadFileType loadFileType, boolean inheritTableSpecs,
                         boolean inheritLocation, boolean isSkewedStoreAsSubdir,
@@ -2445,6 +2526,7 @@ public class Hive {
     }
   }
 
+  @Loggable
   private void addPartitionToMetastore(Partition newTPart, boolean resetStatistics,
                                        Table tbl, TableSnapshot tableSnapshot) throws HiveException{
     try {
@@ -2483,6 +2565,7 @@ public class Hive {
     }
   }
 
+  @Loggable
   private void addPartitionsToMetastore(List<Partition> partitions,
                                         boolean resetStatistics, Table tbl,
                                         List<AcidUtils.TableSnapshot> tableSnapshots)
@@ -2533,6 +2616,7 @@ public class Hive {
   }
 
 
+  @Loggable
   private static Path genPartPathFromTable(Table tbl, Map<String, String> partSpec,
       Path tblDataLocationPath) throws MetaException {
     Path partPath = new Path(tbl.getDataLocation(), Warehouse.makePartPath(partSpec));
@@ -2548,6 +2632,7 @@ public class Hive {
    * @param stmtId - see {@link DbTxnManager#getStmtIdAndIncrement()}
    * @return appropriately modified path
    */
+  @Loggable
   private Path fixFullAcidPathForLoadData(LoadFileType loadFileType, Path destPath, long writeId, int stmtId, Table tbl) throws HiveException {
     switch (loadFileType) {
       case REPLACE_ALL:
@@ -2572,6 +2657,7 @@ public class Hive {
     return destPath;
   }
 
+  @Loggable
   public static void listFilesInsideAcidDirectory(Path acidDir, FileSystem srcFs, List<Path> newFiles)
           throws IOException {
     // list out all the files/directory in the path
@@ -2592,6 +2678,7 @@ public class Hive {
     }
   }
 
+  @Loggable
   private void listFilesCreatedByQuery(Path loadPath, long writeId, int stmtId,
                                              boolean isInsertOverwrite, List<Path> newFiles) throws HiveException {
     Path acidDir = new Path(loadPath, AcidUtils.baseOrDeltaSubdir(isInsertOverwrite, writeId, writeId, stmtId));
@@ -2606,6 +2693,7 @@ public class Hive {
     }
   }
 
+  @Loggable
   private void setStatsPropAndAlterPartition(boolean resetStatistics, Table tbl,
                                              Partition newTPart, TableSnapshot tableSnapshot) throws TException {
     EnvironmentContext ec = new EnvironmentContext();
@@ -2618,6 +2706,7 @@ public class Hive {
         tableSnapshot == null ? null : tableSnapshot.getValidWriteIdList());
   }
 
+  @Loggable
   private void setStatsPropAndAlterPartitions(boolean resetStatistics, Table tbl,
                                              List<Partition> partitions,
                                               AcidUtils.TableSnapshot tableSnapshot)
@@ -2656,7 +2745,8 @@ public class Hive {
  * @param skewedInfo
  * @throws IOException
  */
-private void walkDirTree(FileStatus fSta, FileSystem fSys,
+  @Loggable
+  private void walkDirTree(FileStatus fSta, FileSystem fSys,
     Map<List<String>, String> skewedColValueLocationMaps, Path newPartPath, SkewedInfo skewedInfo)
     throws IOException {
   /* Base Case. It's leaf. */
@@ -2688,6 +2778,7 @@ private void walkDirTree(FileStatus fSta, FileSystem fSys,
  * @param newPartPath
  * @param skewedInfo
  */
+@Loggable
 private void constructOneLBLocationMap(FileStatus fSta,
     Map<List<String>, String> skewedColValueLocationMaps,
     Path newPartPath, SkewedInfo skewedInfo) {
@@ -2742,6 +2833,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
    * @throws IOException
    * @throws FileNotFoundException
    */
+  @Loggable
   private Map<List<String>, String> constructListBucketingLocationMap(Path newPartPath,
       SkewedInfo skewedInfo) throws IOException, FileNotFoundException {
     Map<List<String>, String> skewedColValueLocationMaps = new HashMap<List<String>, String>();
@@ -2758,6 +2850,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
    * @return Set of valid partitions
    * @throws HiveException
    */
+  @Loggable
   private Set<Path> getValidPartitionsInPath(
       int numDP, int numLB, Path loadPath, Long writeId, int stmtId,
       boolean isMmTable, boolean isInsertOverwrite, boolean isDirectInsert) throws HiveException {
@@ -2826,6 +2919,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
    * @return partition map details (PartitionSpec and Partition)
    * @throws HiveException
    */
+  @Loggable
   public Map<Map<String, String>, Partition> loadDynamicPartitions(final Path loadPath,
       final String tableName, final Map<String, String> partSpec, final LoadFileType loadFileType,
       final int numDP, final int numLB, final boolean isAcid, final long writeId, final int stmtId,
@@ -3061,6 +3155,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
    * @param writeId write ID allocated for the current load operation
    * @param stmtId statement ID of the current load statement
    */
+  @Loggable
   public void loadTable(Path loadPath, String tableName, LoadFileType loadFileType, boolean isSrcLocal,
       boolean isSkewedStoreAsSubdir, boolean isAcidIUDoperation, boolean resetStatistics,
       Long writeId, int stmtId, boolean isInsertOverwrite, boolean isDirectInsert) throws HiveException {
@@ -3190,6 +3285,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
    * @throws HiveException
    *           if table doesn't exist or partition already exists
    */
+  @Loggable
   @VisibleForTesting
   public Partition createPartition(Table tbl, Map<String, String> partSpec) throws HiveException {
     try {
@@ -3204,6 +3300,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
     }
   }
 
+  @Loggable
   public List<org.apache.hadoop.hive.metastore.api.Partition> addPartitions(
       List<org.apache.hadoop.hive.metastore.api.Partition> partitions, boolean ifNotExists, boolean needResults)
           throws HiveException {
@@ -3215,6 +3312,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
     }
   }
 
+  @Loggable
   public org.apache.hadoop.hive.metastore.api.Partition getPartition(String dbName, String tableName,
       List<String> params) throws HiveException {
     try {
@@ -3225,6 +3323,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
     }
   }
 
+  @Loggable
   public void alterPartitions(String dbName, String tableName,
       List<org.apache.hadoop.hive.metastore.api.Partition> partitions, EnvironmentContext ec, String validWriteIdList,
       long writeId) throws HiveException {
@@ -3236,6 +3335,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
     }
   }
 
+  @Loggable
   public List<org.apache.hadoop.hive.metastore.api.Partition> getPartitionsByNames(String dbName, String tableName,
       List<String> partitionNames) throws HiveException {
     try {
@@ -3246,6 +3346,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
     }
   }
 
+  @Loggable
   public Partition getPartition(Table tbl, Map<String, String> partSpec,
       boolean forceCreate) throws HiveException {
     return getPartition(tbl, partSpec, forceCreate, null, true);
@@ -3266,6 +3367,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
    * @return result partition object or null if there is no partition
    * @throws HiveException
    */
+  @Loggable
   public Partition getPartition(Table tbl, Map<String, String> partSpec,
       boolean forceCreate, String partPath, boolean inheritTableSpecs) throws HiveException {
     tbl.validatePartColumnNames(partSpec, true);
@@ -3340,6 +3442,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
     return new Partition(tbl, tpart);
   }
 
+  @Loggable
   private void alterPartitionSpec(Table tbl,
                                   Map<String, String> partSpec,
                                   org.apache.hadoop.hive.metastore.api.Partition tpart,
@@ -3351,6 +3454,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
         new Partition(tbl, tpart), null, true);
   }
 
+  @Loggable
   private void alterPartitionSpecInMemory(Table tbl,
       Map<String, String> partSpec,
       org.apache.hadoop.hive.metastore.api.Partition tpart,
@@ -3374,6 +3478,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
     tpart.getSd().setLocation(partPath);
   }
 
+  @Loggable
   public void addWriteNotificationLog(Table tbl, Map<String, String> partitionSpec,
                                        List<Path> newFiles, Long writeId) throws HiveException {
     if (!conf.getBoolVar(ConfVars.FIRE_EVENTS_FOR_DML)) {
@@ -3410,6 +3515,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
     }
   }
 
+  @Loggable
   public static void addWriteNotificationLog(HiveConf conf, Table tbl, List<String> partitionVals,
                                              Long txnId, Long writeId, List<Path> newFiles)
           throws IOException, HiveException, TException {
@@ -3425,6 +3531,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
     get(conf).getSynchronizedMSC().addWriteNotificationLog(rqst);
   }
 
+  @Loggable
   private void fireInsertEvent(Table tbl, Map<String, String> partitionSpec, boolean replace, List<Path> newFiles)
       throws HiveException {
     if (conf.getBoolVar(ConfVars.FIRE_EVENTS_FOR_DML)) {
@@ -3462,6 +3569,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
   }
 
 
+  @Loggable
   private static void addInsertFileInformation(List<Path> newFiles, FileSystem fileSystem,
       InsertEventRequestData insertData) throws IOException {
     LinkedList<Path> directories = null;
@@ -3497,6 +3605,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
   }
 
 
+  @Loggable
   private static void addInsertNonDirectoryInformation(Path p, FileSystem fileSystem,
       InsertEventRequestData insertData) throws IOException {
     insertData.addToFilesAdded(p.toString());
@@ -3518,11 +3627,13 @@ private void constructOneLBLocationMap(FileStatus fSta,
     }
   }
 
+  @Loggable
   public boolean dropPartition(String dbName, String tableName, List<String> partitionValues, boolean deleteData)
       throws HiveException {
     return dropPartition(dbName, tableName, partitionValues, PartitionDropOptions.instance().deleteData(deleteData));
   }
 
+  @Loggable
   public boolean dropPartition(String dbName, String tableName, List<String> partitionValues,
       PartitionDropOptions options) throws HiveException {
     try {
@@ -3534,6 +3645,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
     }
   }
 
+  @Loggable
   public List<Partition> dropPartitions(String dbName, String tableName,
       List<Pair<Integer, byte[]>> partitionExpressions,
       PartitionDropOptions dropOptions) throws HiveException {
@@ -3549,11 +3661,13 @@ private void constructOneLBLocationMap(FileStatus fSta,
     }
   }
 
+  @Loggable
   public List<String> getPartitionNames(String tblName, short max) throws HiveException {
     String[] names = Utilities.getDbTableName(tblName);
     return getPartitionNames(names[0], names[1], max);
   }
 
+  @Loggable
   public List<String> getPartitionNames(String dbName, String tblName, short max)
       throws HiveException {
     List<String> names = null;
@@ -3571,6 +3685,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
     return names;
   }
 
+  @Loggable
   public List<String> getPartitionNames(String dbName, String tblName,
       Map<String, String> partSpec, short max) throws HiveException {
     List<String> names = null;
@@ -3620,6 +3735,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
    *          object for which partition is needed
    * @return list of partition objects
    */
+  @Loggable
   public List<Partition> getPartitions(Table tbl) throws HiveException {
     if (tbl.isPartitioned()) {
       List<org.apache.hadoop.hive.metastore.api.Partition> tParts;
@@ -3648,6 +3764,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
    * @param tbl table for which partitions are needed
    * @return list of partition objects
    */
+  @Loggable
   public Set<Partition> getAllPartitionsOf(Table tbl) throws HiveException {
     if (!tbl.isPartitioned()) {
       return Sets.newHashSet(new Partition(tbl));
@@ -3678,6 +3795,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
    * @return list of partition objects
    * @throws HiveException
    */
+  @Loggable
   public List<Partition> getPartitions(Table tbl, Map<String, String> partialPartSpec,
       short limit)
   throws HiveException {
@@ -3713,6 +3831,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
    * @return list of partition objects
    * @throws HiveException
    */
+  @Loggable
   public List<Partition> getPartitions(Table tbl, Map<String, String> partialPartSpec)
   throws HiveException {
     return getPartitions(tbl, partialPartSpec, (short)-1);
@@ -3730,6 +3849,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
    * @return list of partition objects
    * @throws HiveException
    */
+  @Loggable
   public List<Partition> getPartitionsByNames(Table tbl,
       Map<String, String> partialPartSpec)
       throws HiveException {
@@ -3755,6 +3875,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
    * @return list of partition objects
    * @throws HiveException
    */
+  @Loggable
   public List<Partition> getPartitionsByNames(Table tbl, List<String> partNames)
       throws HiveException {
     return getPartitionsByNames(tbl, partNames, false);
@@ -3772,6 +3893,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
    * @return list of partition objects
    * @throws HiveException
    */
+  @Loggable
   public List<Partition> getPartitionsByNames(Table tbl, List<String> partNames, boolean getColStats)
       throws HiveException {
 
@@ -3823,6 +3945,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
    * @throws NoSuchObjectException
    * @throws TException
    */
+  @Loggable
   public List<Partition> getPartitionsByFilter(Table tbl, String filter)
       throws HiveException, MetaException, NoSuchObjectException, TException {
 
@@ -3835,6 +3958,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
     return convertFromMetastore(tbl, tParts);
   }
 
+  @Loggable
   private static List<Partition> convertFromMetastore(Table tbl,
       List<org.apache.hadoop.hive.metastore.api.Partition> partitions) throws HiveException {
     if (partitions == null) {
@@ -3913,6 +4037,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
    * @param result the resulting list of partitions
    * @return whether the resulting list contains partitions which may or may not match the expr
    */
+  @Loggable
   public boolean getPartitionsByExpr(Table tbl, ExprNodeGenericFuncDesc expr, HiveConf conf,
       List<Partition> result) throws HiveException, TException {
     assert result != null;
@@ -3936,6 +4061,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
    * @throws NoSuchObjectException
    * @throws TException
    */
+  @Loggable
   public int getNumPartitionsByFilter(Table tbl, String filter)
     throws HiveException, MetaException, NoSuchObjectException, TException {
 
@@ -3950,6 +4076,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
     return numParts;
   }
 
+  @Loggable
   public void validatePartitionNameCharacters(List<String> partVals) throws HiveException {
     try {
       getMSC().validatePartitionNameCharacters(partVals);
@@ -3959,6 +4086,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
     }
   }
 
+  @Loggable
   public void createRole(String roleName, String ownerName)
       throws HiveException {
     try {
@@ -3968,6 +4096,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
     }
   }
 
+  @Loggable
   public void dropRole(String roleName) throws HiveException {
     try {
       getMSC().drop_role(roleName);
@@ -3982,6 +4111,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
    * @return List of role names.
    * @throws HiveException
    */
+  @Loggable
   public List<String> getAllRoleNames() throws HiveException {
     try {
       return getMSC().listRoleNames();
@@ -3990,6 +4120,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
     }
   }
 
+  @Loggable
   public  List<RolePrincipalGrant> getRoleGrantInfoForPrincipal(String principalName, PrincipalType principalType) throws HiveException {
     try {
       GetRoleGrantsForPrincipalRequest req = new GetRoleGrantsForPrincipalRequest(principalName, principalType);
@@ -4001,6 +4132,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
   }
 
 
+  @Loggable
   public boolean grantRole(String roleName, String userName,
       PrincipalType principalType, String grantor, PrincipalType grantorType,
       boolean grantOption) throws HiveException {
@@ -4012,6 +4144,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
     }
   }
 
+  @Loggable
   public boolean revokeRole(String roleName, String userName,
       PrincipalType principalType, boolean grantOption)  throws HiveException {
     try {
@@ -4021,6 +4154,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
     }
   }
 
+  @Loggable
   public List<Role> listRoles(String userName,  PrincipalType principalType)
       throws HiveException {
     try {
@@ -4048,6 +4182,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
    * @return the privilege set
    * @throws HiveException
    */
+  @Loggable
   public PrincipalPrivilegeSet get_privilege_set(HiveObjectType objectType,
       String db_name, String table_name, List<String> part_values,
       String column_name, String user_name, List<String> group_names)
@@ -4073,6 +4208,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
    * @return list of privileges
    * @throws HiveException
    */
+  @Loggable
   public List<HiveObjectPrivilege> showPrivilegeGrant(
       HiveObjectType objectType, String principalName,
       PrincipalType principalType, String dbName, String tableName,
@@ -4086,6 +4222,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
     }
   }
 
+  @Loggable
   private static void copyFiles(final HiveConf conf, final FileSystem destFs,
             FileStatus[] srcs, final FileSystem srcFs, final Path destf,
             final boolean isSrcLocal, boolean isOverwrite,
@@ -4189,6 +4326,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
     }
   }
 
+  @Loggable
   private static boolean isSubDir(Path srcf, Path destf, FileSystem srcFs, FileSystem destFs, boolean isSrcLocal) {
     if (srcf == null) {
       LOG.debug("The source path is null for isSubDir method.");
@@ -4226,12 +4364,14 @@ private void constructOneLBLocationMap(FileStatus fSta,
     return fullF1.startsWith(fullF2);
   }
 
+  @Loggable
   private static Path getQualifiedPathWithoutSchemeAndAuthority(Path srcf, FileSystem fs) {
     Path currentWorkingDir = fs.getWorkingDirectory();
     Path path = srcf.makeQualified(srcf.toUri(), currentWorkingDir);
     return ShimLoader.getHadoopShims().getPathWithoutSchemeAndAuthority(path);
   }
 
+  @Loggable
   private static String getPathName(int taskId) {
     return Utilities.replaceTaskId("000000", taskId) + "_0";
   }
@@ -4262,6 +4402,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
    *
    * @throws IOException if there was an issue moving the file
    */
+  @Loggable
   private static Path mvFile(HiveConf conf, FileSystem sourceFs, Path sourcePath, FileSystem destFs, Path destDirPath,
                              boolean isSrcLocal, boolean isOverwrite, boolean isRenameAllowed,
                              int taskId) throws IOException {
@@ -4324,6 +4465,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
   }
 
   // Clears the dest dir when src is sub-dir of dest.
+  @Loggable
   public static void clearDestForSubDirSrc(final HiveConf conf, Path dest,
       Path src, boolean isSrcLocal) throws IOException {
     FileSystem destFS = dest.getFileSystem(conf);
@@ -4349,6 +4491,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
   }
 
   // List the new files in destination path which gets copied from source.
+  @Loggable
   public static void listNewFilesRecursively(final FileSystem destFs, Path dest,
                                              List<Path> newFiles) throws HiveException {
     try {
@@ -4373,6 +4516,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
    * @param isPurge
    *          When set to true files which needs to be recycled are not moved to Trash
    */
+  @Loggable
   public void recycleDirToCmPath(Path dataPath, boolean isPurge) throws HiveException {
     try {
       CmRecycleRequest request = new CmRecycleRequest(dataPath.toString(), isPurge);
@@ -4382,6 +4526,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
     }
   }
 
+  @Loggable
   private static void deleteAndRename(FileSystem destFs, Path destFile, FileStatus srcStatus, Path destPath)
           throws IOException {
     try {
@@ -4401,6 +4546,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
   //method is called. when the replace value is true, this method works a little different
   //from mv command if the destf is a directory, it replaces the destf instead of moving under
   //the destf. in this case, the replaced destf still preserves the original destf's permission
+  @Loggable
   public static boolean moveFile(final HiveConf conf, Path srcf, final Path destf, boolean replace,
                                  boolean isSrcLocal, boolean isManaged) throws HiveException {
     final FileSystem srcFs, destFs;
@@ -4519,10 +4665,12 @@ private void constructOneLBLocationMap(FileStatus fSta,
     }
   }
 
+  @Loggable
   static private HiveException getHiveException(Exception e, String msg) {
     return getHiveException(e, msg, null);
   }
 
+  @Loggable
   static private HiveException handlePoolException(ExecutorService pool, Exception e) {
     HiveException he = null;
 
@@ -4543,6 +4691,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
     return he;
   }
 
+  @Loggable
   static private HiveException getHiveException(Exception e, String msg, String logMsg) {
     // The message from remote exception includes the entire stack.  The error thrown from
     // hive based on the remote exception needs only the first line.
@@ -4574,6 +4723,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
    * TODO- consider if need to do this for different file authority.
    * @throws HiveException
    */
+  @Loggable
   static private boolean needToCopy(final HiveConf conf, Path srcf, Path destf, FileSystem srcFs,
                                       FileSystem destFs, String configuredOwner, boolean isManaged) throws HiveException {
     //Check if different FileSystems
@@ -4647,6 +4797,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
    * @param isManaged if table is managed.
    * @throws HiveException
    */
+  @Loggable
   static protected void copyFiles(HiveConf conf, Path srcf, Path destf, FileSystem fs,
                                   boolean isSrcLocal, boolean isAcidIUD,
                                   boolean isOverwrite, List<Path> newFiles, boolean isBucketed,
@@ -4690,6 +4841,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
     }
   }
 
+  @Loggable
   public static void moveAcidFiles(FileSystem fs, FileStatus[] stats, Path dst,
                                     List<Path> newFiles) throws HiveException {
     // The layout for ACID files is table|partname/base|delta|delete_delta/bucket
@@ -4761,6 +4913,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
     }
   }
 
+  @Loggable
   private static void moveAcidFiles(String deltaFileType, PathFilter pathFilter, FileSystem fs,
                                     Path dst, Path origBucketPath, Set<Path> createdDeltaDirs,
                                     List<Path> newFiles) throws HiveException {
@@ -4845,6 +4998,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
    * @param isManaged
    *          If the table is managed.
    */
+  @Loggable
   private void replaceFiles(Path tablePath, Path srcf, Path destf, Path oldPath, HiveConf conf,
           boolean isSrcLocal, boolean purge, List<Path> newFiles, PathFilter deletePathFilter,
       boolean isNeedRecycle, boolean isManaged, boolean isInsertOverwrite) throws HiveException {
@@ -4949,6 +5103,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
     }
   }
 
+  @Loggable
   private void deleteOldPathForReplace(Path destPath, Path oldPath, HiveConf conf, boolean purge,
       PathFilter pathFilter, boolean isNeedRecycle) throws HiveException {
     Utilities.FILE_OP_LOGGER.debug("Deleting old paths for replace in " + destPath
@@ -4978,6 +5133,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
   }
 
 
+  @Loggable
   public void cleanUpOneDirectoryForReplace(Path path, FileSystem fs,
       PathFilter pathFilter, HiveConf conf, boolean purge, boolean isNeedRecycle) throws IOException, HiveException {
     if (isNeedRecycle && conf.getBoolVar(HiveConf.ConfVars.REPLCMENABLED)) {
@@ -5009,6 +5165,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
    * @return true if deletion successful
    * @throws IOException
    */
+  @Loggable
   public static boolean trashFiles(final FileSystem fs, final FileStatus[] statuses,
       final Configuration conf, final boolean purge)
       throws IOException {
@@ -5050,10 +5207,12 @@ private void constructOneLBLocationMap(FileStatus fSta,
     return result;
   }
 
+  @Loggable
   public static boolean isHadoop1() {
     return ShimLoader.getMajorVersion().startsWith("0.20");
   }
 
+  @Loggable
   public List<Partition> exchangeTablePartitions(Map<String, String> partitionSpecs,
       String sourceDb, String sourceTable, String destDb,
       String destinationTableName) throws HiveException {
@@ -5077,6 +5236,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
    * @throws HiveMetaException
    *           if a working client can't be created
    */
+  @Loggable
   private IMetaStoreClient createMetaStoreClient(boolean allowEmbedded) throws MetaException {
 
     HiveMetaHookLoader hookLoader = new HiveMetaHookLoader() {
@@ -5097,6 +5257,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
     }
   }
 
+  @Loggable
   @Nullable
   private HiveStorageHandler createStorageHandler(org.apache.hadoop.hive.metastore.api.Table tbl) throws MetaException {
     try {
@@ -5124,6 +5285,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
    * @return synchronized metastore client
    * @throws MetaException
    */
+  @Loggable
   @LimitedPrivate(value = {"Hive"})
   @Unstable
   public synchronized SynchronizedMetaStoreClient getSynchronizedMSC() throws MetaException {
@@ -5137,6 +5299,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
    * @return the metastore client for the current thread
    * @throws MetaException
    */
+  @Loggable
   @LimitedPrivate(value = {"Hive"})
   @Unstable
   public synchronized IMetaStoreClient getMSC() throws MetaException {
@@ -5147,6 +5310,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
    * @return the metastore client for the current thread
    * @throws MetaException
    */
+  @Loggable
   @LimitedPrivate(value = {"Hive"})
   @Unstable
   public synchronized IMetaStoreClient getMSC(
@@ -5186,10 +5350,12 @@ private void constructOneLBLocationMap(FileStatus fSta,
     return metaStoreClient;
   }
 
+  @Loggable
   private static String getUserName() {
     return SessionState.getUserFromAuthenticator();
   }
 
+  @Loggable
   private List<String> getGroupNames() {
     SessionState ss = SessionState.get();
     if (ss != null && ss.getAuthenticator() != null) {
@@ -5198,6 +5364,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
     return null;
   }
 
+  @Loggable
   public static List<FieldSchema> getFieldsFromDeserializer(String name,
       Deserializer serde) throws HiveException {
     try {
@@ -5211,6 +5378,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
     }
   }
 
+  @Loggable
   public boolean setPartitionColumnStatistics(
       SetPartitionsStatsRequest request) throws HiveException {
     try {
@@ -5233,6 +5401,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
     }
   }
 
+  @Loggable
   public List<ColumnStatisticsObj> getTableColumnStatistics(
       String dbName, String tableName, List<String> colNames, boolean checkTransactional)
       throws HiveException {
@@ -5254,6 +5423,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
     }
   }
 
+  @Loggable
   public Map<String, List<ColumnStatisticsObj>> getPartitionColumnStatistics(
       String dbName, String tableName, List<String> partNames, List<String> colNames,
       boolean checkTransactional)
@@ -5274,6 +5444,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
     }
   }
 
+  @Loggable
   public AggrStats getAggrColStatsFor(String dbName, String tblName,
      List<String> colNames, List<String> partName, boolean checkTransactional) {
     String writeIdList = null;
@@ -5290,6 +5461,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
     }
   }
 
+  @Loggable
   public boolean deleteTableColumnStatistics(String dbName, String tableName, String colName)
     throws HiveException {
     try {
@@ -5300,6 +5472,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
     }
   }
 
+  @Loggable
   public boolean deletePartitionColumnStatistics(String dbName, String tableName, String partName,
     String colName) throws HiveException {
       try {
@@ -5310,11 +5483,13 @@ private void constructOneLBLocationMap(FileStatus fSta,
       }
     }
 
+  @Loggable
   public Table newTable(String tableName) throws HiveException {
     String[] names = Utilities.getDbTableName(tableName);
     return new Table(names[0], names[1]);
   }
 
+  @Loggable
   public String getDelegationToken(String owner, String renewer)
     throws HiveException{
     try {
@@ -5325,6 +5500,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
     }
   }
 
+  @Loggable
   public void cancelDelegationToken(String tokenStrForm)
     throws HiveException {
     try {
@@ -5338,6 +5514,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
   /**
    * @deprecated use {@link #compact2(String, String, String, String, Map)}
    */
+  @Loggable
   @Deprecated
   public void compact(String dbname, String tableName, String partName, String compactType,
                       Map<String, String> tblproperties) throws HiveException {
@@ -5355,6 +5532,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
    * @return id of new request or id already existing request for specified resource
    * @throws HiveException
    */
+  @Loggable
   public CompactionResponse compact2(String dbname, String tableName, String partName, String compactType,
                                      Map<String, String> tblproperties)
       throws HiveException {
@@ -5373,6 +5551,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
       throw new HiveException(e);
     }
   }
+  @Loggable
   public ShowCompactResponse showCompactions() throws HiveException {
     try {
       return getMSC().showCompactions();
@@ -5382,6 +5561,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
     }
   }
 
+  @Loggable
   public GetOpenTxnsInfoResponse showTransactions() throws HiveException {
     try {
       return getMSC().showTxns();
@@ -5391,6 +5571,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
     }
   }
 
+  @Loggable
   public void abortTransactions(List<Long> txnids) throws HiveException {
     try {
       getMSC().abortTxns(txnids);
@@ -5400,6 +5581,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
     }
   }
 
+  @Loggable
   public void createFunction(Function func) throws HiveException {
     try {
       getMSC().createFunction(func);
@@ -5408,6 +5590,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
     }
   }
 
+  @Loggable
   public void alterFunction(String dbName, String funcName, Function newFunction)
       throws HiveException {
     try {
@@ -5417,6 +5600,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
     }
   }
 
+  @Loggable
   public void dropFunction(String dbName, String funcName)
       throws HiveException {
     try {
@@ -5426,6 +5610,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
     }
   }
 
+  @Loggable
   public Function getFunction(String dbName, String funcName) throws HiveException {
     try {
       return getMSC().getFunction(dbName, funcName);
@@ -5434,6 +5619,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
     }
   }
 
+  @Loggable
   public List<Function> getAllFunctions() throws HiveException {
     try {
       List<Function> functions = getMSC().getAllFunctions().getFunctions();
@@ -5443,6 +5629,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
     }
   }
 
+  @Loggable
   public List<String> getFunctions(String dbName, String pattern) throws HiveException {
     try {
       return getMSC().getFunctions(dbName, pattern);
@@ -5451,6 +5638,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
     }
   }
 
+  @Loggable
   public void setMetaConf(String propName, String propValue) throws HiveException {
     try {
       getMSC().setMetaConf(propName, propValue);
@@ -5459,6 +5647,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
     }
   }
 
+  @Loggable
   public String getMetaConf(String propName) throws HiveException {
     try {
       return getMSC().getMetaConf(propName);
@@ -5467,10 +5656,12 @@ private void constructOneLBLocationMap(FileStatus fSta,
     }
   }
 
+  @Loggable
   public void clearMetaCallTiming() {
     metaCallTimeMap.clear();
   }
 
+  @Loggable
   public static ImmutableMap<String, Long> dumpMetaCallTimingWithoutEx(String phase) {
     try {
       return get().dumpAndClearMetaCallTiming(phase);
@@ -5480,6 +5671,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
     return null;
   }
 
+  @Loggable
   public ImmutableMap<String, Long> dumpAndClearMetaCallTiming(String phase) {
     boolean phaseInfoLogged = false;
     if (LOG.isDebugEnabled()) {
@@ -5506,11 +5698,13 @@ private void constructOneLBLocationMap(FileStatus fSta,
     return result;
   }
 
+  @Loggable
   private boolean logDumpPhase(String phase) {
     LOG.info("Dumping metastore api call timing information for : " + phase + " phase");
     return true;
   }
 
+  @Loggable
   public Iterable<Map.Entry<Long, ByteBuffer>> getFileMetadata(
       List<Long> fileIds) throws HiveException {
     try {
@@ -5520,6 +5714,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
     }
   }
 
+  @Loggable
   public Iterable<Map.Entry<Long, MetadataPpdResult>> getFileMetadataByExpr(
       List<Long> fileIds, ByteBuffer sarg, boolean doGetFooters) throws HiveException {
     try {
@@ -5529,6 +5724,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
     }
   }
 
+  @Loggable
   public void clearFileMetadata(List<Long> fileIds) throws HiveException {
     try {
       getMSC().clearFileMetadata(fileIds);
@@ -5537,6 +5733,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
     }
   }
 
+  @Loggable
   public void putFileMetadata(List<Long> fileIds, List<ByteBuffer> metadata) throws HiveException {
     try {
       getMSC().putFileMetadata(fileIds, metadata);
@@ -5545,6 +5742,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
     }
   }
 
+  @Loggable
   public void cacheFileMetadata(
       String dbName, String tableName, String partName, boolean allParts) throws HiveException {
     try {
@@ -5558,6 +5756,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
     }
   }
 
+  @Loggable
   public void dropConstraint(String dbName, String tableName, String constraintName)
     throws HiveException, NoSuchObjectException {
     try {
@@ -5569,6 +5768,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
     }
   }
 
+  @Loggable
   public List<SQLPrimaryKey> getPrimaryKeyList(String dbName, String tblName) throws HiveException, NoSuchObjectException {
     try {
       return getMSC().getPrimaryKeys(new PrimaryKeysRequest(dbName, tblName));
@@ -5579,6 +5779,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
     }
   }
 
+  @Loggable
   public List<SQLForeignKey> getForeignKeyList(String dbName, String tblName) throws HiveException, NoSuchObjectException {
     try {
       return getMSC().getForeignKeys(new ForeignKeysRequest(null, null, dbName, tblName));
@@ -5589,6 +5790,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
     }
   }
 
+  @Loggable
   public List<SQLUniqueConstraint> getUniqueConstraintList(String dbName, String tblName) throws HiveException, NoSuchObjectException {
     try {
       return getMSC().getUniqueConstraints(new UniqueConstraintsRequest(getDefaultCatalog(conf), dbName, tblName));
@@ -5599,6 +5801,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
     }
   }
 
+  @Loggable
   public List<SQLNotNullConstraint> getNotNullConstraintList(String dbName, String tblName) throws HiveException, NoSuchObjectException {
     try {
       return getMSC().getNotNullConstraints(new NotNullConstraintsRequest(getDefaultCatalog(conf), dbName, tblName));
@@ -5609,6 +5812,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
     }
   }
 
+  @Loggable
   public List<SQLDefaultConstraint> getDefaultConstraintList(String dbName, String tblName) throws HiveException, NoSuchObjectException {
     try {
       return getMSC().getDefaultConstraints(new DefaultConstraintsRequest(getDefaultCatalog(conf), dbName, tblName));
@@ -5619,6 +5823,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
     }
   }
 
+  @Loggable
   public List<SQLCheckConstraint> getCheckConstraintList(String dbName, String tblName) throws HiveException, NoSuchObjectException {
     try {
       return getMSC().getCheckConstraints(new CheckConstraintsRequest(getDefaultCatalog(conf),
@@ -5654,6 +5859,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
     return getPrimaryKeys(dbName, tblName, true);
   }
 
+  @Loggable
   private PrimaryKeyInfo getPrimaryKeys(String dbName, String tblName, boolean onlyReliable)
       throws HiveException {
     try {
@@ -5693,6 +5899,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
     return getForeignKeys(dbName, tblName, true);
   }
 
+  @Loggable
   private ForeignKeyInfo getForeignKeys(String dbName, String tblName, boolean onlyReliable)
       throws HiveException {
     try {
@@ -5732,6 +5939,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
     return getUniqueConstraints(dbName, tblName, true);
   }
 
+  @Loggable
   private UniqueConstraint getUniqueConstraints(String dbName, String tblName, boolean onlyReliable)
       throws HiveException {
     try {
@@ -5780,6 +5988,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
    * @return Not null constraints associated with the table.
    * @throws HiveException
    */
+  @Loggable
   public NotNullConstraint getEnabledNotNullConstraints(String dbName, String tblName)
       throws HiveException {
     try {
@@ -5804,6 +6013,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
    * @return CHECK constraints associated with the table.
    * @throws HiveException
    */
+  @Loggable
   public CheckConstraint getEnabledCheckConstraints(String dbName, String tblName)
       throws HiveException {
     try {
@@ -5827,6 +6037,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
    * @return Default constraints associated with the table.
    * @throws HiveException
    */
+  @Loggable
   public DefaultConstraint getEnabledDefaultConstraints(String dbName, String tblName)
       throws HiveException {
     try {
@@ -5843,6 +6054,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
     }
   }
 
+  @Loggable
   private NotNullConstraint getNotNullConstraints(String dbName, String tblName, boolean onlyReliable)
       throws HiveException {
     try {
@@ -5859,6 +6071,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
     }
   }
 
+  @Loggable
   public DefaultConstraint getDefaultConstraints(String dbName, String tblName)
       throws HiveException {
     try {
@@ -5874,6 +6087,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
     }
   }
 
+  @Loggable
   public CheckConstraint getCheckConstraints(String dbName, String tblName)
       throws HiveException {
     try {
@@ -5889,6 +6103,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
     }
   }
 
+  @Loggable
   public void addPrimaryKey(List<SQLPrimaryKey> primaryKeyCols)
     throws HiveException, NoSuchObjectException {
     try {
@@ -5898,6 +6113,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
     }
   }
 
+  @Loggable
   public void addForeignKey(List<SQLForeignKey> foreignKeyCols)
     throws HiveException, NoSuchObjectException {
     try {
@@ -5907,6 +6123,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
     }
   }
 
+  @Loggable
   public void addUniqueConstraint(List<SQLUniqueConstraint> uniqueConstraintCols)
     throws HiveException, NoSuchObjectException {
     try {
@@ -5916,6 +6133,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
     }
   }
 
+  @Loggable
   public void addNotNullConstraint(List<SQLNotNullConstraint> notNullConstraintCols)
     throws HiveException, NoSuchObjectException {
     try {
@@ -5925,6 +6143,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
     }
   }
 
+  @Loggable
   public void addDefaultConstraint(List<SQLDefaultConstraint> defaultConstraints)
       throws HiveException, NoSuchObjectException {
     try {
@@ -5934,6 +6153,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
     }
   }
 
+  @Loggable
   public void addCheckConstraint(List<SQLCheckConstraint> checkConstraints)
       throws HiveException, NoSuchObjectException {
     try {
@@ -5943,6 +6163,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
     }
   }
 
+  @Loggable
   public void createResourcePlan(WMResourcePlan resourcePlan, String copyFromName, boolean ifNotExists)
       throws HiveException {
     String ns = conf.getVar(ConfVars.HIVE_SERVER2_WM_NAMESPACE);
@@ -5963,6 +6184,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
     }
   }
 
+  @Loggable
   public WMFullResourcePlan getResourcePlan(String rpName) throws HiveException {
     try {
       return getMSC().getResourcePlan(rpName, conf.getVar(ConfVars.HIVE_SERVER2_WM_NAMESPACE));
@@ -5973,6 +6195,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
     }
   }
 
+  @Loggable
   public List<WMResourcePlan> getAllResourcePlans() throws HiveException {
     try {
       return getMSC().getAllResourcePlans(conf.getVar(ConfVars.HIVE_SERVER2_WM_NAMESPACE));
@@ -5981,6 +6204,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
     }
   }
 
+  @Loggable
   public void dropResourcePlan(String rpName, boolean ifExists) throws HiveException {
     try {
       String ns = conf.getVar(ConfVars.HIVE_SERVER2_WM_NAMESPACE);
@@ -5994,6 +6218,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
     }
   }
 
+  @Loggable
   public WMFullResourcePlan alterResourcePlan(String rpName, WMNullableResourcePlan resourcePlan,
       boolean canActivateDisabled, boolean isForceDeactivate, boolean isReplace) throws HiveException {
     try {
@@ -6010,6 +6235,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
     }
   }
 
+  @Loggable
   public WMFullResourcePlan getActiveResourcePlan() throws HiveException {
     try {
       String ns = conf.getVar(ConfVars.HIVE_SERVER2_WM_NAMESPACE);
@@ -6019,6 +6245,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
     }
   }
 
+  @Loggable
   public WMValidateResourcePlanResponse validateResourcePlan(String rpName) throws HiveException {
     try {
       String ns = conf.getVar(ConfVars.HIVE_SERVER2_WM_NAMESPACE);
@@ -6028,6 +6255,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
     }
   }
 
+  @Loggable
   public void createWMTrigger(WMTrigger trigger) throws HiveException {
     try {
       String ns = conf.getVar(ConfVars.HIVE_SERVER2_WM_NAMESPACE);
@@ -6042,6 +6270,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
     }
   }
 
+  @Loggable
   public void alterWMTrigger(WMTrigger trigger) throws HiveException {
     try {
       String ns = conf.getVar(ConfVars.HIVE_SERVER2_WM_NAMESPACE);
@@ -6056,6 +6285,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
     }
   }
 
+  @Loggable
   public void dropWMTrigger(String rpName, String triggerName) throws HiveException {
     try {
       getMSC().dropWMTrigger(rpName, triggerName, conf.getVar(ConfVars.HIVE_SERVER2_WM_NAMESPACE));
@@ -6064,6 +6294,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
     }
   }
 
+  @Loggable
   public void createWMPool(WMPool pool) throws HiveException {
     try {
       String ns = conf.getVar(ConfVars.HIVE_SERVER2_WM_NAMESPACE);
@@ -6078,6 +6309,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
     }
   }
 
+  @Loggable
   public void alterWMPool(WMNullablePool pool, String poolPath) throws HiveException {
     try {
       String ns = conf.getVar(ConfVars.HIVE_SERVER2_WM_NAMESPACE);
@@ -6092,6 +6324,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
     }
   }
 
+  @Loggable
   public void dropWMPool(String resourcePlanName, String poolPath) throws HiveException {
     try {
       getMSC().dropWMPool(resourcePlanName, poolPath,
@@ -6101,6 +6334,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
     }
   }
 
+  @Loggable
   public void createOrUpdateWMMapping(WMMapping mapping, boolean isUpdate)
       throws HiveException {
     try {
@@ -6116,6 +6350,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
     }
   }
 
+  @Loggable
   public void dropWMMapping(WMMapping mapping) throws HiveException {
     try {
       String ns = conf.getVar(ConfVars.HIVE_SERVER2_WM_NAMESPACE);
@@ -6131,6 +6366,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
   }
 
   // TODO: eh
+  @Loggable
   public void createOrDropTriggerToPoolMapping(String resourcePlanName, String triggerName,
       String poolPath, boolean shouldDrop) throws HiveException {
     try {
@@ -6142,6 +6378,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
   }
 
   @Nullable
+  @Loggable
   public StorageHandlerInfo getStorageHandlerInfo(Table table)
       throws HiveException {
     try {

@@ -1,0 +1,36 @@
+9848 metadata.Hive: #isCurrentUserOwner
+9753 metadata.Hive: #getInternal
+2088 metadata.Hive: #isCompatible
+17416 metadata.Hive: #get
+16422 metadata.Hive: #getMSC
+1491 metadata.Hive: #getTable
+1253 metadata.Hive: #getConf
+1113 metadata.Hive: #getTableColumnStatistics
+ 923 metadata.Hive: #getUniqueConstraints
+ 923 metadata.Hive: #getPrimaryKeys
+ 923 metadata.Hive: #getNotNullConstraints
+ 923 metadata.Hive: #getForeignKeys
+ 572 metadata.Hive: #logDumpPhase
+ 572 metadata.Hive: #dumpMetaCallTimingWithoutEx
+ 572 metadata.Hive: #dumpAndClearMetaCallTiming
+ 560 metadata.Hive: #close
+ 560 metadata.Hive: #allowClose
+ 465 metadata.Hive: #getAllPartitionsOf
+ 382 metadata.Hive: #closeCurrent
+ 377 metadata.Hive: #createMetaStoreClient
+ 287 metadata.Hive: #registerAllFunctionsOnce
+ 287 metadata.Hive: #getHMSClientCapabilities
+ 287 metadata.Hive: #create
+ 286 metadata.Hive: #clearMetaCallTiming
+ 273 metadata.Hive: #finalize
+ 105 metadata.Hive: #addForeignKey
+  95 metadata.Hive: #getPreprocessedMaterializedViewsFromRegistry
+  94 metadata.Hive: #createHiveConf
+  48 metadata.Hive: #createTable
+  38 metadata.Hive: #createStorageHandler
+  28 metadata.Hive: #alterTable
+  24 metadata.Hive: #getDatabase
+  24 metadata.Hive: #addPrimaryKey
+  14 metadata.Hive: #addNotNullConstraint
+   1 metadata.Hive: #reloadFunctions
+   1 metadata.Hive: #getAllFunctions
